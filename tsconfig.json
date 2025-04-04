@@ -1,3 +1,30 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json"
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@assets/*": ["./src/assets/*"],
+      "@components/*": ["./src/components/*"],
+      "@components/index": ["./src/components/index"],
+      "@navigations/*": ["./src/navigations/*"],
+      "@screens/*": ["./src/screens/*"],
+      "@models": ["./src/models"],
+      "@constants/*": ["./src/constants/*"],
+      "@hooks": ["./src/hooks"],
+      "@providers": ["./src/providers"],
+      "@styles/index": ["./src/styles/index"],
+      "@styles/*": ["./src/styles/*"],
+      "@store/*": ["./src/store/*"],
+      "@helpers/*": ["./src/helpers/*"],
+      "@languages/*": ["./src/languages/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@tw/styles": ["./styles"]
+    }
+  },
+  "moduleResolution": "node",
+  "jsx": "react-native",
+  "resolveJsonModule": true,
+  "esModuleInterop": true,
+  "allowSyntheticDefaultImports": true,
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "exclude": ["node_modules", "dist"]
 }
