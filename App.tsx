@@ -7,8 +7,8 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { Buffer } from 'buffer'
 import QuickCrypto from 'react-native-quick-crypto'
 
+import { RootNavigation } from '@navigations/RootNavigation'
 import { persistor, store } from '@store/index'
-import { SafeAreaView } from 'react-native'
 
 global.Buffer = Buffer
 
@@ -19,7 +19,7 @@ export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <SafeAreaView style={{ flex: 1 }} />
+        <RootNavigation />
       </PersistGate>
     </Provider>
   )
