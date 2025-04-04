@@ -37,3 +37,7 @@ export function delimiterFormat(number: number | string, separator = ',') {
   
     return `${isMinus ? '- ' : ''}${currency}.${decimal}`;
 }
+
+export function shortenAddress(address: string, chars: number = 4) {
+    return `${address.slice(0, chars)}...${address.slice(-chars)}`;
+}
