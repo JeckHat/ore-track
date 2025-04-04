@@ -65,12 +65,14 @@ function tryFromBytes(buffer: Buffer) {
 
 export async function getProofResult(data?: Buffer) {
     if (!data) {
-        throw new Error("Failed to get miner account");
+        console.log("Failed to get proof account")
+        return new Proof()
     }
 
     const proof = tryFromBytes(data);
     if (!proof) {
-        throw new Error("Failed to parse miner account");
+        console.log("Failed to get proof account")
+        return new Proof()
     }
 
     return proof;

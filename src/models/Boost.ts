@@ -61,13 +61,15 @@ function tryFromBytes(buffer: Buffer) {
 export async function getBoostResult(data?: Buffer) {
 
     if (!data) {
-        throw new Error("Failed to get miner account");
+        console.log("Failed to get boost account")
+        return new Boost()
     }
 
-    const proof = tryFromBytes(data);
-    if (!proof) {
-        throw new Error("Failed to parse miner account");
+    const boost = tryFromBytes(data);
+    if (!boost) {
+        console.log("Failed to get boost account")
+        return new Boost()
     }
 
-    return proof;
+    return boost;
 }

@@ -62,13 +62,15 @@ function tryFromBytes(buffer: Buffer) {
 
 export async function getStakeResult(data?: Buffer) {
     if (!data) {
-        throw new Error("Failed to get miner account");
+        console.log("Failed to get stake account")
+        return new Stake()
     }
 
-    const proof = tryFromBytes(data);
-    if (!proof) {
-        throw new Error("Failed to parse miner account");
+    const stake = tryFromBytes(data);
+    if (!stake) {
+        console.log("Failed to get stake account")
+        return new Stake()
     }
 
-    return proof;
+    return stake;
 }
