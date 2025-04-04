@@ -1,4 +1,4 @@
 export { CustomText } from './Texts'
 export { CheckBox, Input } from './Forms'
 export { Button, ButtonIcon } from './Buttons'
-export { KeyboardDismissPressable } from './Views'
+export { KeyboardDismissPressable, OptionMenu } from './Views'
