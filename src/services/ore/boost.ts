@@ -5,7 +5,7 @@ import { store } from "@store/index"
 import { BOOST, BOOST_ID, BOOSTLIST, PROGRAM_ID, PROOF, STAKE } from "@constants"
 import { CustomError, getBoostResult, getStakeResult } from "@models"
 import { stakeActions } from "@store/actions"
-import { getConnection } from "@providers"
+import { getConnection, getStakesRedux } from "@providers"
 
 export async function getBoost(mintPublicKey: PublicKey, boostAddress?: string | PublicKey | null) {
     const connection = getConnection()
@@ -40,7 +40,7 @@ export async function getStake(walletPublicKey: PublicKey, boostPublicKey: Publi
     if (!connection) {
         throw new CustomError("Rpc Connection is undefined", 500)
     }
-    const stakeRedux = store.getState().stake.stakes[boostPublicKey.toBase58()]
+    const stakeRedux = getStakesRedux()[boostPublicKey.toBase58()]
 
     let stakePublicKey: PublicKey
     if (typeof stakeRedux?.stakeAddress === 'string') {
@@ -87,7 +87,7 @@ export async function getBoostProof(boostPublicKey: PublicKey) {
     if (!connection) {
         throw new CustomError("Rpc Connection is undefined", 500)
     }
-    const stakeRedux = store.getState().stake.stakes[boostPublicKey.toBase58()]
+    const stakeRedux = getStakesRedux()[boostPublicKey.toBase58()]
 
     let boostProofPublicKey: PublicKey
     if (stakeRedux?.proofAddress) {

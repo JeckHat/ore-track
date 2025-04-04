@@ -3,7 +3,7 @@ import { SafeAreaView, View } from "react-native"
 import { ChevronRightIcon } from "@assets/icons"
 import { Button, CustomText } from "@components"
 import { SettingScreenProps } from "@navigations/types"
-import { getMnemonic, walletActions } from "@store/actions"
+import { getMnemonic, stakeActions, walletActions } from "@store/actions"
 import { Colors } from "@styles"
 import { store } from "@store/index"
 
@@ -92,6 +92,7 @@ export default function SettingScreen(props: SettingScreenProps) {
                     title="Disconnect"
                     onPress={() => {
                         store.dispatch(walletActions.clearWallet())
+                        store.dispatch(stakeActions.resetStake())
                         props.navigation.navigate("Start")
                     }}
                 />
