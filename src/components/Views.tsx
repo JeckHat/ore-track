@@ -17,7 +17,7 @@ import LinearGradient from "react-native-linear-gradient";
 import { twMerge } from "tailwind-merge";
 
 import { CustomText } from "./Texts";
-import { Colors } from "@styles/index";
+import { Colors } from "@styles";
 import { VerticalDotsIcon } from "@assets/icons";
 
 export function KeyboardDismissPressable(props: ViewProps) {

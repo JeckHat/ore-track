@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { Image, SafeAreaView, View } from 'react-native'
 
 import { StartNavigationProps } from '@navigations/types'
-import { CustomText, CheckBox, Button } from '@components/index'
+import { CustomText, CheckBox, Button } from '@components'
 import { OreLogo } from '@assets/images'
 import { MineIcon } from '@assets/icons'
-import { Colors } from '@styles/index'
+import { Colors } from '@styles'
 
 export default function StartScreen({ navigation }: StartNavigationProps) {
   const [checkedTerm, setCheckedTerm] = useState(false)

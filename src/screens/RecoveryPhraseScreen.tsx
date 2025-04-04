@@ -5,10 +5,10 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import { Keypair } from "@solana/web3.js"
 import { useDispatch } from "react-redux"
 
-import { Button, CustomText, Input, KeyboardDismissPressable } from "@components/index"
+import { Button, CustomText, Input, KeyboardDismissPressable } from "@components"
 import { RecoveryPhraseNavigationProps } from "@navigations/types"
-import { mnemonicToSeedFast } from "@helpers/index"
-import { Colors } from "@styles/index"
+import { mnemonicToSeedFast } from "@helpers"
+import { Colors } from "@styles"
 import { CustomError } from "@models"
 import { saveCredentials, uiActions, walletActions } from "@store/actions"
 import { ChevronLeftIcon } from "@assets/icons"

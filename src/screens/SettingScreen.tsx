@@ -1,10 +1,10 @@
 import { SafeAreaView, View } from "react-native"
 
 import { ChevronRightIcon } from "@assets/icons"
-import { Button, CustomText } from "@components/index"
+import { Button, CustomText } from "@components"
 import { SettingScreenProps } from "@navigations/types"
 import { getMnemonic, walletActions } from "@store/actions"
-import { Colors } from "@styles/index"
+import { Colors } from "@styles"
 import { store } from "@store/index"
 
 export default function SettingScreen(props: SettingScreenProps) {

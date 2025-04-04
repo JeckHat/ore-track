@@ -9,7 +9,7 @@ import {
 import { Boost, CustomError, Numeric, Proof, Stake } from "@models"
 import { store } from "@store/index"
 import { getBoost, getBoostDecimals, getBoostProof, getStake } from "./boost"
-import { BOOST_ID, ORE_MINT, PROGRAM_ID, SOL_MINT, TREASURY } from "@constants/index";
+import { BOOST_ID, ORE_MINT, PROGRAM_ID, SOL_MINT, TREASURY } from "@constants";
 import { getBalance } from "@services/solana";
 
 export function calculateClaimableYield(boost: Boost, boostProof: Proof, stake: Stake) {

@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import dayjs from "dayjs";
 
-import { BOOST_DENOMINATOR } from "@constants/index";
+import { BOOST_DENOMINATOR } from "@constants";
 import { Numeric } from "./Numeric";
 
 export class Boost {

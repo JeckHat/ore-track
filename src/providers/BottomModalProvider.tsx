@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useRef, useState } from "react"
 import { Animated, Dimensions, PanResponder } from "react-native"
 
-import { BottomModal } from "@components/index"
+import { BottomModal } from "@components"
 
 interface ModalContextType {
     showModal: (content?: ReactNode, cancelable?: boolean) => void;

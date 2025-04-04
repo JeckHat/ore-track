@@ -11,16 +11,16 @@ import {
 import { useDispatch, useSelector } from "react-redux"
 import dayjs from 'dayjs'
 
-import { Button, CustomText, SkeletonLoader, OptionMenu, ModalTransaction } from "@components/index"
+import { Button, CustomText, SkeletonLoader, OptionMenu, ModalTransaction } from "@components"
 import Images from "@assets/images"
-import { BOOSTLIST, COMPUTE_UNIT_LIMIT, JUP_API_PRICE, ORE_MINT } from "@constants/index"
+import { BOOSTLIST, COMPUTE_UNIT_LIMIT, JUP_API_PRICE, ORE_MINT } from "@constants"
 import { getKeypair, uiActions } from "@store/actions"
 import { CustomError } from "@models"
 import { RootState } from "@store/types"
 import { StakeDataScreenProps } from "@navigations/types"
 import { useBottomModal } from "@hooks"
 import { claimStakeOREInstruction, getStakeORE } from "@services/ore"
-import { shortenAddress } from "@helpers/index"
+import { shortenAddress } from "@helpers"
 
 interface DataStakeInfo {
     multiplier: number

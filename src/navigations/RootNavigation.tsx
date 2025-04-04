@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { twMerge } from 'tailwind-merge'
 
 import { RootState } from '@store/types'
-import { LoadingModal } from '@components/index'
+import { LoadingModal } from '@components'
 import { BottomModalProvider } from '@providers'
 import MainNavigation from './MainNavigation'
 

@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 
 import { TabNavigationProps } from "./types"
-import { Colors } from "@styles/index"
+import { Colors } from "@styles"
 import { SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
 
 import WalletScreen from "@screens/WalletScreen"

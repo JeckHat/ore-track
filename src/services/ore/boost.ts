@@ -2,7 +2,7 @@ import { Connection, PublicKey } from "@solana/web3.js"
 import { MintLayout } from "@solana/spl-token"
 
 import { store } from "@store/index"
-import { BOOST, BOOST_ID, BOOSTLIST, PROGRAM_ID, PROOF, STAKE } from "@constants/index"
+import { BOOST, BOOST_ID, BOOSTLIST, PROGRAM_ID, PROOF, STAKE } from "@constants"
 import { CustomError, getBoostResult, getStakeResult } from "@models"
 import { stakeActions } from "@store/actions"
 

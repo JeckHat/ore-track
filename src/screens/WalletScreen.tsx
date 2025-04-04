@@ -3,12 +3,12 @@ import { Image, ImageSourcePropType, RefreshControl, SafeAreaView, ScrollView, V
 import { useFocusEffect } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 
-import { ButtonIcon, CustomText, SkeletonLoader } from "@components/index";
+import { ButtonIcon, CustomText, SkeletonLoader } from "@components";
 import Images from "@assets/images";
 import { ChevronRightIcon, ReceiveIcon, SendIcon, StakeIcon, SwapIcon } from "@assets/icons";
-import { Colors } from "@styles/index";
-import { delimiterFormat } from "@helpers/index";
-import { JUP_API_PRICE, TokenInfo, TOKENLIST } from "@constants/index";
+import { Colors } from "@styles";
+import { delimiterFormat } from "@helpers";
+import { JUP_API_PRICE, TokenInfo, TOKENLIST } from "@constants";
 import { RootState } from "@store/types";
 import { getBalance } from "@services/solana";
 

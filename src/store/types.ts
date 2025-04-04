@@ -1,8 +1,6 @@
 import { ReactElement } from 'react'
 import dayjs from 'dayjs'
 
-import { BoostInfo } from "@constants/index"
-
 export interface RootState {
     ui: UiState
     wallet: WalletState

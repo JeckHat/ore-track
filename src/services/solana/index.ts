@@ -2,7 +2,7 @@ import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js"
 
 import { CustomError } from "@models"
 import { store } from "@store/index"
-import { SOL_MINT } from "@constants/index"
+import { SOL_MINT } from "@constants"
 
 export async function getBalance(walletAddress: string, mintAddress: string): Promise<number> {
     const rpcUrl = store.getState().config.rpcUrl

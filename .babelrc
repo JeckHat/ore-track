@@ -18,17 +18,17 @@
                 "alias": {
                     "@assets": "./src/assets",
                     "@components": "./src/components",
-                    "@navigations": "./src/navigations",
-                    "@screens": "./src/screens",
-                    "@models": "./src/models",
                     "@constants": "./src/constants",
-                    "@hooks": "./src/hooks",
-                    "@providers": "./src/providers",
-                    "@styles": "./src/styles",
-                    "@store": "./src/store",
                     "@helpers": "./src/helpers",
-                    "@languages": "./src/languages",
+                    "@hooks": "./src/hooks",
+                    "@models": "./src/models",
                     "@modules": "./src/modules",
+                    "@navigations": "./src/navigations",
+                    "@providers": "./src/providers",
+                    "@screens": "./src/screens",
+                    "@services": "./src/services",
+                    "@store": "./src/store",
+                    "@styles": "./src/styles",                    
                     "@tw/styles": "./styles"
                 }
             } 

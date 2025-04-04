@@ -13,7 +13,7 @@ import {
 
 import Images from "@assets/images";
 import { ChevronRightIcon } from "@assets/icons";
-import { Colors } from "@styles/index";
+import { Colors } from "@styles";
 import { CustomText } from "./Texts"
 import { Button } from "./Buttons";
 
