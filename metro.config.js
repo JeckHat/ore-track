@@ -16,6 +16,11 @@ const config = mergeConfig(defaultConfig, {
             crypto: require.resolve("react-native-quick-crypto"),
             stream: require.resolve("stream-browserify"),
         },
+        assetExts: defaultConfig.resolver.assetExts.filter((ext) => ext !== "svg"),
+        sourceExts: [...defaultConfig.resolver.sourceExts, "svg"],
+    },
+    transformer: {
+        babelTransformerPath: require.resolve("react-native-svg-transformer"),
     },
   /* your config */
 });
