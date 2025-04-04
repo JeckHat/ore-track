@@ -1,6 +1,8 @@
-import React, { useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react";
 import {
     View,
+    Animated,
+    Easing, DimensionValue,
     Dimensions,
     ViewStyle,
     Modal,
@@ -10,17 +12,69 @@ import {
     ViewProps,
     SafeAreaView,
     Keyboard,
-} from "react-native"
+} from "react-native";
+import LinearGradient from "react-native-linear-gradient";
+import { twMerge } from "tailwind-merge";
 
-import { CustomText } from "./Texts"
-import { Colors } from "@styles/index"
-import { VerticalDotsIcon } from "@assets/icons"
+import { CustomText } from "./Texts";
+import { Colors } from "@styles/index";
+import { VerticalDotsIcon } from "@assets/icons";
 
 export function KeyboardDismissPressable(props: ViewProps) {
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()} accessible={false}>
             <SafeAreaView {...props} />
         </TouchableWithoutFeedback>
+    )
+}
+
+interface SkeletonProps {
+    className?: string
+    colors?: (string | number)[]
+    width?: DimensionValue
+    height?: DimensionValue
+}
+
+export function SkeletonLoader ({ 
+    className, 
+    colors = ['#374151', '#4b5563', '#374151']
+  } : SkeletonProps){
+    const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        Animated.loop(
+            Animated.timing(shimmerAnim, {
+                toValue: 1,
+                duration: 600,
+                easing: Easing.linear,
+                useNativeDriver: true,
+            })
+        ).start();
+    }, [])
+
+    const translateX = shimmerAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [-Dimensions.get('screen').width, Dimensions.get('screen').width],
+    })
+
+    return (
+        <View
+            className={twMerge(`overflow-hidden bg-gray-700 rounded-lg`, className)}
+        >
+            <Animated.View
+                className={"h-full w-7/12"}
+                style={{ transform: [{ translateX }] }}
+            >
+                <LinearGradient
+                    className="w-full h-full overflow-hidden"
+                    colors={colors}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                >
+                    <View className=" h-full w-12"/>
+                </LinearGradient>
+            </Animated.View>
+        </View>
     )
 }
 

@@ -1,8 +1,8 @@
 import React, { forwardRef, ReactElement, Ref } from "react";
 import { View, Pressable, Animated, TextInput, TextInputProps } from "react-native";
+import { twMerge } from "tailwind-merge";
 
 import { CustomText } from "./Texts";
-import { twMerge } from "tailwind-merge";
 
 interface InputProps extends TextInputProps {
   containerClassName?: string
