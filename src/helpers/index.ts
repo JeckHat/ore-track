@@ -19,3 +19,21 @@ export async function mnemonicToSeedFast(mnemonic: string): Promise<Buffer> {
         });
     });
 }
+
+export function delimiterFormat(number: number | string, separator = ',') {
+    let newNumber = number.toString();
+    let isMinus = newNumber[0] === '-';
+    let numberString = isMinus ? newNumber.substring(1, newNumber.length - 1) : newNumber;
+    numberString = numberString.split('.')[0];
+    let decimal = newNumber.split('.')[1];
+    let modulus = numberString.length % 3;
+    let currency = numberString.substring(0, modulus);
+    let thousand = numberString.substring(modulus).match(/\d{3}/g);
+  
+    if (thousand) {
+      let separate = modulus ? separator : '';
+      currency += separate + thousand.join(separator);
+    }
+  
+    return `${isMinus ? '- ' : ''}${currency}.${decimal}`;
+}
