@@ -60,7 +60,7 @@ export default function WalletScreen() {
                     if(cacheRef.current[token] && !forceRefresh) {
                         return cacheRef.current[token]
                     }
-                    const data = await fetchToken(TOKENLIST[token].id, token)
+                    const data = await fetchToken(token)
                     cacheRef.current[token] = data
                     return {
                         ...TOKENLIST[token],
@@ -93,7 +93,7 @@ export default function WalletScreen() {
         }
     }
 
-    async function fetchToken(tokenId: string, mintAddress: string) {
+    async function fetchToken(mintAddress: string) {
         try {
             const [balance, price] = await Promise.all([
                 getBalance(walletAddress, mintAddress).then((res) => res),
