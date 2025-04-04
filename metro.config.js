@@ -10,6 +10,13 @@ const { withNativeWind } = require('nativewind/metro');
 const defaultConfig = getDefaultConfig(__dirname);
 
 const config = mergeConfig(defaultConfig, {
+    resolver: {
+        extraNodeModules: {
+            buffer: require.resolve("buffer"),
+            crypto: require.resolve("react-native-quick-crypto"),
+            stream: require.resolve("stream-browserify"),
+        },
+    },
   /* your config */
 });
 
