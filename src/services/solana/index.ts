@@ -1,17 +1,17 @@
-import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js"
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js"
 
 import { CustomError } from "@models"
-import { store } from "@store/index"
 import { SOL_MINT } from "@constants"
+import { getConnection } from "@providers"
 
 export async function getBalance(walletAddress: string, mintAddress: string): Promise<number> {
-    const rpcUrl = store.getState().config.rpcUrl
 
-    if (!rpcUrl) {
-        throw new CustomError("Rpc is undefined", 500)
+    const connection = getConnection()
+
+    if (!connection) {
+        throw new CustomError("Rpc Connection is undefined", 500)
     }
 
-    const connection = new Connection(`https://${rpcUrl}`)
     const walletPubkey = new PublicKey(walletAddress)
 
     if (mintAddress === SOL_MINT) {

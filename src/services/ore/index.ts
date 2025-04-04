@@ -1,4 +1,4 @@
-import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js"
+import { LAMPORTS_PER_SOL, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js"
 import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
     createAssociatedTokenAccountInstruction,
@@ -7,10 +7,10 @@ import {
 } from "@solana/spl-token";
 
 import { Boost, CustomError, Numeric, Proof, Stake } from "@models"
-import { store } from "@store/index"
 import { getBoost, getBoostDecimals, getBoostProof, getStake } from "./boost"
 import { BOOST_ID, ORE_MINT, PROGRAM_ID, SOL_MINT, TREASURY } from "@constants";
 import { getBalance } from "@services/solana";
+import { getConnection, getWalletAddress } from "@providers";
 
 export function calculateClaimableYield(boost: Boost, boostProof: Proof, stake: Stake) {
     let rewards = BigInt(stake.rewards ?? 0);
@@ -44,10 +44,10 @@ export function calculateClaimableYield(boost: Boost, boostProof: Proof, stake: 
 }
 
 export async function getStakeORE(mintAddress: string, boostAddress?: string) {
-    const walletAddress = store.getState().wallet.publicKey
+    const walletAddress = getWalletAddress()
 
     if (!walletAddress) {
-        throw new CustomError("Public Key is undefined", 500)
+        throw new CustomError("Wallet Address is undefined", 500)
     }
 
     const stakerPublicKey = new PublicKey(walletAddress)
@@ -77,18 +77,17 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
 }
 
 export async function claimStakeOREInstruction(mintAddress: string, boostAddress: string) {
-    const rpcUrl = store.getState().config.rpcUrl
-    const walletAddress = store.getState().wallet.publicKey
+    const connection = getConnection()
+    const walletAddress = getWalletAddress()
 
-    if (!rpcUrl) {
-        throw new CustomError("Rpc is undefined", 500)
+    if (!connection) {
+        throw new CustomError("Rpc Connection is undefined", 500)
     }
 
     if (!walletAddress) {
-        throw new CustomError("Public Key is undefined", 500)
+        throw new CustomError("Wallet Address is undefined", 500)
     }
 
-    const connection = new Connection(`https://${rpcUrl}`)
     const staker = new PublicKey(walletAddress)
 
     const transaction = new Transaction();

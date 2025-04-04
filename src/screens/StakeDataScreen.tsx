@@ -96,6 +96,7 @@ export default function StakeDataScreen(props: StakeDataScreenProps) {
                     if(cacheRef.current[boost] && !forceRefresh) {
                         return cacheRef.current[boost]
                     }
+
                     const data = await getStakeORE(BOOSTLIST[boost].lpMint, boost)
                     cacheRef.current[boost] = {
                         multiplier: data.boost.multiplier ?? 0,

@@ -1,14 +1,18 @@
-import { Connection, PublicKey } from "@solana/web3.js"
+import { PublicKey } from "@solana/web3.js"
 import { MintLayout } from "@solana/spl-token"
 
 import { store } from "@store/index"
 import { BOOST, BOOST_ID, BOOSTLIST, PROGRAM_ID, PROOF, STAKE } from "@constants"
 import { CustomError, getBoostResult, getStakeResult } from "@models"
 import { stakeActions } from "@store/actions"
+import { getConnection } from "@providers"
 
 export async function getBoost(mintPublicKey: PublicKey, boostAddress?: string | PublicKey | null) {
-    const rpcUrl = store.getState().config.rpcUrl ?? ""
-    const connection = new Connection(`https://${rpcUrl}`)
+    const connection = getConnection()
+
+    if (!connection) {
+        throw new CustomError("Rpc Connection is undefined", 500)
+    }
 
     let boostPublicKey: PublicKey
     if (!boostAddress) {
@@ -32,9 +36,12 @@ export async function getBoost(mintPublicKey: PublicKey, boostAddress?: string |
 
 
 export async function getStake(walletPublicKey: PublicKey, boostPublicKey: PublicKey) {
-    const rpcUrl = store.getState().config.rpcUrl ?? ""
+    const connection = getConnection()
+    if (!connection) {
+        throw new CustomError("Rpc Connection is undefined", 500)
+    }
     const stakeRedux = store.getState().stake.stakes[boostPublicKey.toBase58()]
-    const connection = new Connection(`https://${rpcUrl}`)
+
     let stakePublicKey: PublicKey
     if (typeof stakeRedux?.stakeAddress === 'string') {
         stakePublicKey = new PublicKey(stakeRedux?.stakeAddress)
@@ -57,8 +64,10 @@ export async function getStake(walletPublicKey: PublicKey, boostPublicKey: Publi
 }
 
 export async function getBoostDecimals(mintPublicKey: PublicKey, boostPublicKey: PublicKey) {
-    const rpcUrl = store.getState().config.rpcUrl ?? ""
-    const connection = new Connection(`https://${rpcUrl}`)
+    const connection = getConnection()
+    if (!connection) {
+        throw new CustomError("Rpc Connection is undefined", 500)
+    }
 
     let decimals = BOOSTLIST[boostPublicKey.toBase58()].decimals
     if (typeof BOOSTLIST[boostPublicKey.toBase58()].decimals !== 'number') {
@@ -74,9 +83,12 @@ export async function getBoostDecimals(mintPublicKey: PublicKey, boostPublicKey:
 }
 
 export async function getBoostProof(boostPublicKey: PublicKey) {
-    const rpcUrl = store.getState().config.rpcUrl ?? ""
+    const connection = getConnection()
+    if (!connection) {
+        throw new CustomError("Rpc Connection is undefined", 500)
+    }
     const stakeRedux = store.getState().stake.stakes[boostPublicKey.toBase58()]
-    const connection = new Connection(`https://${rpcUrl}`)
+
     let boostProofPublicKey: PublicKey
     if (stakeRedux?.proofAddress) {
         boostProofPublicKey = new PublicKey(stakeRedux?.proofAddress)
