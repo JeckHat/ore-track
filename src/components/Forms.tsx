@@ -21,7 +21,6 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(props: Inp
 } = props;
 
   return (
-    // <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View className={`${containerClassName}`}>
       <View
         className={twMerge(`bg-baseComponent px-2 rounded-xl border border-solid border-gray-800 mb-1 ${isError && "border-red-600"}`, inputContainerClassName)}
@@ -39,6 +38,41 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(props: Inp
         {messageError}
       </CustomText>}
     </View>
-    // </TouchableWithoutFeedback>
+  )
+})
+
+interface CheckBoxProps {
+  containerClassName?: string
+  label?: string | ReactElement
+  value?: boolean
+  onChange?: (value: boolean) => void
+}
+
+export const CheckBox = forwardRef<View, CheckBoxProps>(function CheckBox(props: CheckBoxProps, ref: Ref<View>) {
+  const scale = new Animated.Value(1);
+
+  function handlePress() {
+    Animated.sequence([
+      Animated.timing(scale, { toValue: 0.8, duration: 100, useNativeDriver: true }),
+      Animated.timing(scale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+    if (props.onChange) props.onChange(!props.value);
+  };
+
+  return (
+    <View
+      ref={ref}
+      className={twMerge(`flex-row justify-center items-center`, props.containerClassName)}
+    >
+      <Pressable onPress={handlePress}>
+        <Animated.View
+          className={`w-8 h-8 border-2 border-solid ${props.value? "bg-primary border-primary" : "bg-transparent border-lowEmphasis"} mr-3 justify-center items-center rounded-full`}
+          style={{ transform: [{ scale }] }}
+        >
+          {props.value && <CustomText className="text-baseBg text-sm font-PlusJakartaSansBold">✔</CustomText>}
+        </Animated.View>
+      </Pressable>
+      {props.label && <CustomText className='text-primary font-PlusJakartaSans mr-3'>{props.label}</CustomText>}
+    </View>
   )
 })
