@@ -11,7 +11,7 @@ interface ModalContextType {
 export const BottomModalContext = createContext<ModalContextType | undefined>(undefined)
 
 type BottomModalProvider = {
-    cancelable: boolean
+    cancelable?: boolean
     children: ReactNode
 }
 

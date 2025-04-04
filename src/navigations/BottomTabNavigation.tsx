@@ -2,9 +2,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 
 import { TabNavigationProps } from "./types"
 import { Colors } from "@styles/index"
-import { WalletIcon } from "@assets/icons"
+import { SettingIcon, WalletIcon } from "@assets/icons"
 
 import WalletScreen from "@screens/WalletScreen"
+import SettingScreen from "@screens/SettingScreen"
 
 const Tab = createBottomTabNavigator()
 
@@ -47,6 +48,17 @@ export default function TabNavigation(props: TabNavigationProps) {
                     headerTitle: 'Wallet',
                     tabBarIcon({ color, size }) {
                         return <WalletIcon width={size} height={size} color={color} />
+                    },
+                    lazy: true
+                }}
+            />
+            <Tab.Screen
+                name="TabSetting"
+                component={SettingScreen}
+                options={{
+                    headerTitle: 'Wallet',
+                    tabBarIcon({ color, size }) {
+                        return <SettingIcon width={size} height={size} color={color} />
                     },
                     lazy: true
                 }}
