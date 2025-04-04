@@ -3,6 +3,7 @@ import {
     ActivityIndicator,
     Animated,
     BackHandler,
+    Image,
     Modal,
     NativeEventSubscription,
     TouchableWithoutFeedback,
@@ -10,7 +11,11 @@ import {
     ViewStyle,
 } from "react-native";
 
+import Images from "@assets/images";
+import { ChevronRightIcon } from "@assets/icons";
+import { Colors } from "@styles/index";
 import { CustomText } from "./Texts"
+import { Button } from "./Buttons";
 
 export function LoadingModal(props: { show?: boolean }) {
     if (props.show) {
@@ -84,4 +89,113 @@ export function BottomModal(props: BottomModalProps) {
     }
 
     return null
+}
+
+interface ModalTransactionProps {
+    tokenTransfers: {
+        id: string,
+        isLp: boolean,
+        ticker: string,
+        balance: string,
+        tokenImage: string,
+        pairImage?: string | null
+    }[],
+    transferInfo: { label: string, value: string }[],
+    advanced?: [],
+    onClose: () => void,
+    onConfirm: () => void
+}
+
+export function ModalTransaction(props: ModalTransactionProps) {
+    const { tokenTransfers, transferInfo, advanced = [], onClose, onConfirm } = props
+    return (
+        <View className="w-full my-6 px-4">
+            <View className="items-center mb-2">
+                <CustomText className="text-primary font-PlusJakartaSansBold text-xl text-center mb-2">Confirm Transaction</CustomText>
+                <CustomText className="text-primary font-PlusJakartaSans text-sm w-full mb-4 text-center">Balance changes are estimated. Amounts and assets involved are not guaranteed.</CustomText>
+            </View>
+            <View className="bg-baseDarkComponent rounded-2xl overflow-hidden mb-2">
+                {tokenTransfers.map(tokenTransfer => (
+                    <View
+                        key={`token-transfer-${tokenTransfer.id}`}
+                        className="flex-row h-[58px] items-center justify-between px-3 border-solid border-y-[0.5px] border-baseComponent"
+                    >
+                        <View className="flex-row items-center py-3">
+                            {tokenTransfer.isLp && <View className="w-10 h-8">
+                                <Image
+                                    className="w-8 h-8 absolute left-3"
+                                    source={Images[tokenTransfer.pairImage as keyof typeof Images]}
+                                />
+                                <Image
+                                    className="w-8 h-8 mr-3"
+                                    source={Images[tokenTransfer.tokenImage as keyof typeof Images]}
+                                />
+                            </View>}
+                            {!tokenTransfer.isLp && 
+                                <Image
+                                    className="w-8 h-8"
+                                    source={Images[tokenTransfer.tokenImage as keyof typeof Images]}
+                                />
+                            }
+                            <CustomText className="text-primary font-PlusJakartaSansSemiBold mx-2">{tokenTransfer.ticker}</CustomText>
+                        </View>
+                        <View className="flex-1 justify-center items-end">
+                            <CustomText className="text-end font-PlusJakartaSansSemiBold ml-2 text-green-600">
+                                + {tokenTransfer.balance} {tokenTransfer.ticker}
+                            </CustomText>
+                        </View>
+                    </View>
+                ))}
+            </View>
+            <View className="bg-baseDarkComponent rounded-2xl overflow-hidden mb-2">
+                {transferInfo.map((info, idx) => (
+                    <View
+                        key={`transfer-info-${idx}`}
+                        className="flex-row h-[58px] items-center justify-between px-3 border-solid border-y-[0.7px] border-baseComponent"
+                    >
+                        <View className="flex-row items-center py-3">
+                            <CustomText className="text-primary font-PlusJakartaSansSemiBold mx-2">{info.label}</CustomText>
+                        </View>
+                        <View className="flex-1 justify-center items-end">
+                            <CustomText className="text-end font-PlusJakartaSansSemiBold ml-2 text-primary">
+                                {info.value}
+                            </CustomText>
+                        </View>
+                    </View>
+                ))}
+            </View>
+            {advanced.length > 0 && <View className="bg-baseDarkComponent rounded-2xl overflow-hidden mb-2">
+                <View className="flex-row h-[58px] items-center justify-between px-3 border-solid border-y-[0.7px] border-baseComponent">
+                    <View className="flex-row items-center">
+                        <CustomText className="text-primary font-PlusJakartaSansSemiBold mx-2 mb-1">Advanced</CustomText>
+                    </View>
+                    <View className="flex-1 justify-center items-end">
+                        <ChevronRightIcon
+                            width={24} height={24} color={Colors.primary}
+                        />
+                    </View>
+                </View>
+            </View>}
+            
+            <View className="flex-row justify-center gap-2 mt-4">
+                <View className="flex-1">
+                    <Button
+                        containerClassName="w-full rounded-2xl"
+                        className="bg-baseDarkComponent items-center py-2"
+                        textClassName="text-primary"
+                        title="Close"
+                        onPress={onClose}
+                    />
+                </View>
+                <View className="flex-1">
+                    <Button
+                        containerClassName="w-full rounded-2xl"
+                        className="bg-gold items-center py-2"
+                        title="Confirm"
+                        onPress={onConfirm}
+                    />
+                </View>
+            </View>
+        </View>
+    )
 }
