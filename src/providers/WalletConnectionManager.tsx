@@ -48,7 +48,6 @@ store.subscribe(() => {
     const newRpcUrl = state.config.rpcUrl ?? ""
     const newWalletAddress = state.wallet.publicKey ?? ""
 
-    console.log("newWalletAddress", newWalletAddress)
     const newStakes = state.stake.stakes
     
     if (newRpcUrl !== rpcUrl) {
@@ -71,7 +70,6 @@ export function getConnection() {
 }
 
 export function getWalletAddress() {
-    console.log("walletAddress", walletAddress)
     return walletAddress
 }
 
