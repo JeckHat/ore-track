@@ -6,7 +6,7 @@ import { SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
 
 import WalletScreen from "@screens/WalletScreen"
 import SettingScreen from "@screens/SettingScreen"
-import StakeDataScreen from "@screens/StakeDataScreen"
+import TabStakeScreen from "@screens/TabStakeScreen"
 
 const Tab = createBottomTabNavigator()
 
@@ -55,7 +55,7 @@ export default function TabNavigation(props: TabNavigationProps) {
             />
             <Tab.Screen
                 name="TabStake"
-                component={StakeDataScreen}
+                component={TabStakeScreen}
                 options={{
                     headerTitle: 'Stake',
                     tabBarIcon({ color, size }) {
