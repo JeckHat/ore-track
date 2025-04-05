@@ -9,6 +9,7 @@ const persistConfig = {
     key: "PoWMiningSolana_app_v1",
     storage: AsyncStorage,
     whitelist: [
+        "config",
         "wallet",
         "miner"
     ],
