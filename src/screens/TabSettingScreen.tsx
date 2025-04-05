@@ -2,12 +2,12 @@ import { SafeAreaView, View } from "react-native"
 
 import { ChevronRightIcon } from "@assets/icons"
 import { Button, CustomText } from "@components"
-import { SettingScreenProps } from "@navigations/types"
+import { TabSettingScreenProps } from "@navigations/types"
 import { getMnemonic, stakeActions, walletActions } from "@store/actions"
 import { Colors } from "@styles"
 import { store } from "@store/index"
 
-export default function SettingScreen(props: SettingScreenProps) {
+export default function TabSettingScreen(props: TabSettingScreenProps) {
 
     return (
         <SafeAreaView className="flex-1 bg-baseBg">

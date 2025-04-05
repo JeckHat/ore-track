@@ -43,7 +43,7 @@ export type TabStakeScreenProps = {
     route: RouteProp<NavigationTabsParamList, 'TabStake'>
 }
 
-export type SettingScreenProps = {
+export type TabSettingScreenProps = {
     navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabSetting'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
     route: RouteProp<NavigationTabsParamList, 'TabSetting'>
 }

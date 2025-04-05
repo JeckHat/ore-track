@@ -5,7 +5,7 @@ import { Colors, Fonts } from "@styles"
 import { SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
 
 import TabWalletScreen from "@screens/TabWalletScreen"
-import SettingScreen from "@screens/SettingScreen"
+import TabSettingScreen from "@screens/TabSettingScreen"
 import TabStakeScreen from "@screens/TabStakeScreen"
 
 const Tab = createBottomTabNavigator()
@@ -66,7 +66,7 @@ export default function TabNavigation(props: TabNavigationProps) {
             />
             <Tab.Screen
                 name="TabSetting"
-                component={SettingScreen}
+                component={TabSettingScreen}
                 options={{
                     headerTitle: 'Wallet',
                     tabBarIcon({ color, size }) {
