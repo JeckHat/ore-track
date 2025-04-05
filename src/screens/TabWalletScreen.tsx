@@ -11,6 +11,7 @@ import { delimiterFormat } from "@helpers";
 import { JUP_API_PRICE, TokenInfo, TOKENLIST } from "@constants";
 import { RootState } from "@store/types";
 import { getBalance } from "@services/solana";
+import { TabWalletScreenProps } from "@navigations/types";
 
 interface TokenBalance extends TokenInfo {
     mint: string,
@@ -19,7 +20,7 @@ interface TokenBalance extends TokenInfo {
     loading: boolean,
 }
 
-export default function WalletScreen() {
+export default function TabWalletScreen({ navigation }: TabWalletScreenProps) {
     const [total, setTotal] = useState({
         balance: 0,
         loading: true
@@ -140,7 +141,7 @@ export default function WalletScreen() {
                         <ButtonIcon
                             title="Stake"
                             icon={<StakeIcon width={24} height={24} color={Colors.primary}/>}
-                            onPress={() => {}}
+                            onPress={() => navigation.navigate('TabStake')}
                         />
                     </View>
                     <View className="flex-row w-full justify-between items-center mb-2 mt-4 px-4">

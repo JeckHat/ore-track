@@ -33,6 +33,11 @@ type NavigationTabsParamList = {
     TabSetting: {} | undefined
 }
 
+export type TabWalletScreenProps = {
+    navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabWallet'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
+    route: RouteProp<NavigationTabsParamList, 'TabWallet'>
+}
+
 export type TabStakeScreenProps = {
     navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabStake'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
     route: RouteProp<NavigationTabsParamList, 'TabStake'>

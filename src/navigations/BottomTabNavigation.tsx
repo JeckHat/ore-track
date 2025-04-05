@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 
 import { TabNavigationProps } from "./types"
-import { Colors } from "@styles"
+import { Colors, Fonts } from "@styles"
 import { SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
 
-import WalletScreen from "@screens/WalletScreen"
+import TabWalletScreen from "@screens/TabWalletScreen"
 import SettingScreen from "@screens/SettingScreen"
 import TabStakeScreen from "@screens/TabStakeScreen"
 
@@ -19,7 +19,7 @@ export default function TabNavigation(props: TabNavigationProps) {
                 },
                 headerTitleStyle: {
                     color: Colors.primary,
-                    fontFamily: 'PlusJakartaSans-Bold',
+                    fontFamily: Fonts.PlusJakartaSansBold,
                     fontSize: 18
                 },
                 headerTitleAllowFontScaling: false,
@@ -44,7 +44,7 @@ export default function TabNavigation(props: TabNavigationProps) {
         >
             <Tab.Screen
                 name="TabWallet"
-                component={WalletScreen}
+                component={TabWalletScreen}
                 options={{
                     headerTitle: 'Wallet',
                     tabBarIcon({ color, size }) {
