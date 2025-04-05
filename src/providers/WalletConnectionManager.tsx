@@ -3,10 +3,11 @@ import { store } from "@store/index"
 import { StakeInfo } from "@store/types"
 
 
-let connection: Connection | null = null
-let rpcUrl: string | null = null
-let walletAddress: string | null = null
-let stakes: Record<string, StakeInfo> = {}
+const initState = store.getState()
+let connection: Connection = new Connection(`https://${initState.config.rpcUrl}`)
+let rpcUrl: string | null = initState.config.rpcUrl ?? ""
+let walletAddress: string | null = initState.wallet.publicKey ?? ""
+let stakes: Record<string, StakeInfo> = initState.stake.stakes
 
 function isStakeInfoEqual(a: StakeInfo, b: StakeInfo): boolean {
     return (
@@ -46,6 +47,8 @@ store.subscribe(() => {
     const state = store.getState()
     const newRpcUrl = state.config.rpcUrl ?? ""
     const newWalletAddress = state.wallet.publicKey ?? ""
+
+    console.log("newWalletAddress", newWalletAddress)
     const newStakes = state.stake.stakes
     
     if (newRpcUrl !== rpcUrl) {
@@ -68,6 +71,7 @@ export function getConnection() {
 }
 
 export function getWalletAddress() {
+    console.log("walletAddress", walletAddress)
     return walletAddress
 }
 
