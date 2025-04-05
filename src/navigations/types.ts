@@ -6,8 +6,8 @@ type MainStackParamList = {
     Start: {} | undefined
     RecoveryPhrase: { importWallet?: boolean, words?: string, title?: string } | undefined
     BottomTab: {} | undefined
-    Setting: {} | undefined
     Stake: { boost?: string, isDeposit?: boolean } | undefined
+    RPC: {} | undefined
 }
 
 export type StartNavigationProps = {
@@ -18,11 +18,6 @@ export type StartNavigationProps = {
 export type RecoveryPhraseNavigationProps = {
     navigation: NativeStackNavigationProp<MainStackParamList, 'RecoveryPhrase'>
     route: RouteProp<MainStackParamList, 'RecoveryPhrase'>
-}
-
-export type StakeNavigationProps = {
-    navigation: NativeStackNavigationProp<MainStackParamList, 'Stake'>
-    route: RouteProp<MainStackParamList, 'Stake'>
 }
 
 export type TabNavigationProps = {
@@ -46,4 +41,14 @@ export type StakeDataScreenProps = {
 export type SettingScreenProps = {
     navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabSetting'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
     route: RouteProp<NavigationTabsParamList, 'TabSetting'>
+}
+
+export type StakeNavigationProps = {
+    navigation: NativeStackNavigationProp<MainStackParamList, 'Stake'>
+    route: RouteProp<MainStackParamList, 'Stake'>
+}
+
+export type RPCNavigationProps = {
+    navigation: NativeStackNavigationProp<MainStackParamList, 'RPC'>
+    route: RouteProp<MainStackParamList, 'RPC'>
 }

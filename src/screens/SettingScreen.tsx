@@ -83,7 +83,7 @@ export default function SettingScreen(props: SettingScreenProps) {
                             />
                         </View>
                     }
-                    onPress={() => {}}
+                    onPress={() => props.navigation.navigate("RPC")}
                 />
                 <Button
                     containerClassName="rounded-2xl mx-4"
