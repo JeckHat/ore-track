@@ -43,6 +43,11 @@ export type TabPoolScreenProps = {
     route: RouteProp<NavigationTabsParamList, 'TabPool'>
 }
 
+export type TabMineScreenProps = {
+    navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabMine'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
+    route: RouteProp<NavigationTabsParamList, 'TabMine'>
+}
+
 export type TabStakeScreenProps = {
     navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabStake'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
     route: RouteProp<NavigationTabsParamList, 'TabStake'>
