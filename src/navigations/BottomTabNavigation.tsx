@@ -2,11 +2,12 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 
 import { TabNavigationProps } from "./types"
 import { Colors, Fonts } from "@styles"
-import { SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
+import { DataIcon, SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
 
 import TabWalletScreen from "@screens/TabWalletScreen"
-import TabSettingScreen from "@screens/TabSettingScreen"
+import TabPoolScreen from "@screens/TabPoolScreen"
 import TabStakeScreen from "@screens/TabStakeScreen"
+import TabSettingScreen from "@screens/TabSettingScreen"
 
 const Tab = createBottomTabNavigator()
 
@@ -54,6 +55,17 @@ export default function TabNavigation(props: TabNavigationProps) {
                 }}
             />
             <Tab.Screen
+                name="TabPool"
+                component={TabPoolScreen}
+                options={{
+                    headerTitle: 'Pools',
+                    tabBarIcon({ color, size }) {
+                        return <DataIcon width={size} height={size} color={color} />
+                    },
+                    lazy: true
+                }}
+            />
+            <Tab.Screen
                 name="TabStake"
                 component={TabStakeScreen}
                 options={{
@@ -68,7 +80,7 @@ export default function TabNavigation(props: TabNavigationProps) {
                 name="TabSetting"
                 component={TabSettingScreen}
                 options={{
-                    headerTitle: 'Wallet',
+                    headerTitle: 'Settings',
                     tabBarIcon({ color, size }) {
                         return <SettingIcon width={size} height={size} color={color} />
                     },

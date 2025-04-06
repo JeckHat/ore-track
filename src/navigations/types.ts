@@ -27,7 +27,7 @@ export type TabNavigationProps = {
 
 type NavigationTabsParamList = {
     TabWallet: {} | undefined
-    TabData: {} | undefined
+    TabPool: {} | undefined
     TabMine: {} | undefined
     TabStake: {} | undefined
     TabSetting: {} | undefined
@@ -36,6 +36,11 @@ type NavigationTabsParamList = {
 export type TabWalletScreenProps = {
     navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabWallet'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
     route: RouteProp<NavigationTabsParamList, 'TabWallet'>
+}
+
+export type TabPoolScreenProps = {
+    navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabPool'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
+    route: RouteProp<NavigationTabsParamList, 'TabPool'>
 }
 
 export type TabStakeScreenProps = {
