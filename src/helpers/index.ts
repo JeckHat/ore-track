@@ -41,3 +41,11 @@ export function delimiterFormat(number: number | string, separator = ',') {
 export function shortenAddress(address: string, chars: number = 4) {
     return `${address.slice(0, chars)}...${address.slice(-chars)}`;
 }
+
+export function bigIntToNumber(bn: bigint): number {
+    const MAX_SAFE = BigInt(Number.MAX_SAFE_INTEGER);
+    if (bn > MAX_SAFE) {
+        throw new Error(`BigInt value ${bn} is too large to convert safely to a number.`);
+    }
+    return Number(bn);
+}

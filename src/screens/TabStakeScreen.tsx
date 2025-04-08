@@ -13,7 +13,7 @@ import dayjs from 'dayjs'
 
 import { Button, CustomText, SkeletonLoader, OptionMenu, ModalTransaction } from "@components"
 import Images from "@assets/images"
-import { BOOSTLIST, COMPUTE_UNIT_LIMIT, JUP_API_PRICE, ORE_MINT } from "@constants"
+import { BOOST_DENOMINATOR, BOOSTLIST, COMPUTE_UNIT_LIMIT, JUP_API_PRICE, ORE_MINT } from "@constants"
 import { getKeypair, uiActions } from "@store/actions"
 import { CustomError } from "@models"
 import { RootState } from "@store/types"
@@ -99,7 +99,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
 
                     const data = await getStakeORE(BOOSTLIST[boost].lpMint, boost)
                     cacheRef.current[boost] = {
-                        multiplier: data.boost.multiplier ?? 0,
+                        multiplier: (data.boost.weight ?? 0) / BOOST_DENOMINATOR,
                         deposits: data.boost.totalDeposits ?? 0,
                         myDeposits: data.stake.balance ?? 0,
                         stakers: data.boost.totalStakers ?? 0,
@@ -191,7 +191,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
             const connection = new Connection(`https://${rpcUrl}`)
             const publicKey = new PublicKey(walletAddress)
             const boosts: string[] = []
-            let rewards = 0
+            let rewards = 0n
             const transaction = new Transaction()
             transaction.add(
                 ComputeBudgetProgram.setComputeUnitLimit({
@@ -217,12 +217,14 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                 throw new CustomError("Fee is empty", 500)
             }
             const estimatedFee = feeCalculator.value / LAMPORTS_PER_SOL
+
+            let newRewards = rewards / 10n ** 11n
             
             let tokenTransfers = [{
                 id: 'ore',
                 ticker: 'ORE',
                 isLp: false,
-                balance: rewards.toFixed(11),
+                balance: Number(newRewards).toFixed(11),
                 tokenImage: 'OreToken'
             }]
 

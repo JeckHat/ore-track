@@ -6,41 +6,57 @@ import {
     TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
 
-import { Boost, CustomError, Numeric, Proof, Stake } from "@models"
-import { getBoost, getBoostDecimals, getBoostProof, getStake } from "./boost"
-import { BOOST_ID, ORE_MINT, PROGRAM_ID, SOL_MINT, TREASURY } from "@constants";
+import { Boost, BoostConfig, CustomError, Numeric, Proof, Stake } from "@models"
+import { getBoost, getBoostConfig, getBoostDecimals, getBoostProof, getStake } from "./boost"
+import { BOOST_ID, BOOSTLIST, KAMINO_API, METEORA_API, ORE_MINT, PROGRAM_ID, SOL_MINT, TREASURY } from "@constants";
 import { getBalance } from "@services/solana";
 import { getConnection, getWalletAddress } from "@providers";
+import { bigIntToNumber } from "@helpers";
 
-export function calculateClaimableYield(boost: Boost, boostProof: Proof, stake: Stake) {
+export function calculateClaimableYield(boost: Boost, boostProof: Proof, stake: Stake, boostConfig: BoostConfig) {
     let rewards = BigInt(stake.rewards ?? 0);
-    if (!boost.rewardsFactor) {
-        return Number(rewards)
-    }
+    let configRewardsFactor = boostConfig.rewardsFactor
     let boostRewardsFactor = boost.rewardsFactor
+
+    if (!configRewardsFactor) {
+        configRewardsFactor = new Numeric(BigInt(0))
+    }
+
     if (!boostRewardsFactor) {
         boostRewardsFactor = new Numeric(BigInt(0))
     }
 
     if (!boost.totalDeposits) {
-        return Number(rewards)
+        return rewards
     }
 
-    if (boostProof.balance && boostProof.balance > 0) {
-        let extraFactor = Numeric.fromFraction(boostProof.balance, boost.totalDeposits);
-        boostRewardsFactor = boostRewardsFactor.add(extraFactor);
+    if (!boost.lastRewardsFactor) {
+        return rewards
     }
 
     if (!stake.lastRewardsFactor) {
-        return Number(rewards)
+        return rewards
     }
-    
-    if (boostRewardsFactor.gt(stake.lastRewardsFactor)) {
-        let accumulatedRewards = boostRewardsFactor.sub(stake.lastRewardsFactor);
-        let personalRewards = accumulatedRewards.mul(Numeric.fromU64(stake?.balance ?? 0));
-        rewards = rewards + personalRewards.toU64();
+
+    if (boostProof.balance && boostProof.balance > 0 && boostConfig.totalWeight) {
+        const extraFactor = Numeric.fromFraction(boostProof.balance, boostConfig.totalWeight)
+        configRewardsFactor = configRewardsFactor.add(extraFactor)
     }
-    return Number(rewards);
+
+    if(configRewardsFactor.gt(boost.lastRewardsFactor)) {
+        const accumulatedRewards = configRewardsFactor.sub(boost.lastRewardsFactor)
+        const boostRewards = accumulatedRewards.mul(Numeric.fromU64(boost.weight ?? 0))
+        const delta = boostRewards.div(Numeric.fromU64(boost.totalDeposits ?? 1))
+        boostRewardsFactor = boostRewardsFactor.add(delta)
+    }
+
+    if(boostRewardsFactor.gt(stake.lastRewardsFactor)) {
+        let accumulatedRewards = boostRewardsFactor.sub(stake.lastRewardsFactor)
+        let personalRewards = accumulatedRewards.mul(Numeric.fromU64(stake?.balance ?? 0))
+        rewards = rewards + personalRewards.toU64()
+    }
+
+    return rewards;
 }
 
 export async function getStakeORE(mintAddress: string, boostAddress?: string) {
@@ -59,9 +75,11 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
 
     const decimals = await getBoostDecimals(mintPublicKey, boostPublicKey)
 
-    const { boostProof, boostProofPublicKey } = await getBoostProof(boostPublicKey)
+    const { boostConfig, boostConfigPublicKey } = await getBoostConfig()
 
-    const rewards = calculateClaimableYield(boost, boostProof, stake)
+    const { boostProof, boostProofPublicKey } = await getBoostProof(boostConfigPublicKey)
+
+    const rewards = calculateClaimableYield(boost, boostProof, stake, boostConfig)
 
     return {
         mintPublicKey: mintPublicKey,
@@ -72,7 +90,75 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
         stakePublicKey: stakePublicKey,
         boostProof: boostProof,
         boostProofPublicKey: boostProofPublicKey,
-        rewards: rewards,
+        rewards: bigIntToNumber(rewards),
+        boostConfig: boostConfig,
+        boostConfigPublicKey: boostConfigPublicKey
+    }
+}
+
+export async function getLiquidityPair(lpId: string, defi: string, boostAddress: string) {
+    const connection = getConnection()
+
+    const mintAddress = BOOSTLIST[boostAddress].lpMint
+    
+    if(defi === 'kamino') {
+        const response = await fetch(`${KAMINO_API}${lpId}/metrics/?env=mainnet-beta&status=LIVE`, {
+            method: 'GET'
+        })
+        const resData = await response.json()
+
+        const tokenA = resData.tokenAMint
+        const tokenB = resData.tokenBMint
+        const balanceA = resData?.vaultBalances.tokenA.total
+        const balanceB = resData?.vaultBalances.tokenB.total
+        const totalValueUsd = resData.totalValueLocked
+
+        const lpMintSupply = await connection.getTokenSupply(new PublicKey(mintAddress))
+        const shares = parseFloat(lpMintSupply.value.amount)
+
+        const { stake, decimals } = await getStakeORE(mintAddress, boostAddress)
+        const stakeShare = (stake.balance ?? 0) / shares 
+
+        const stakeAmountA = parseFloat(balanceA) * stakeShare
+        const stakeAmountB = parseFloat(balanceB) * stakeShare
+        return {
+            stakeBalance: (stake.balance ?? 0) / Math.pow(10, decimals),
+            stakeAmountORE: tokenA === ORE_MINT? stakeAmountA : stakeAmountB,
+            stakeAmountPair: tokenB === ORE_MINT? stakeAmountA : stakeAmountB,
+            LPBalanceORE: tokenA === ORE_MINT? parseFloat(balanceA) : parseFloat(balanceB),
+            LPBalancePair: tokenB === ORE_MINT? parseFloat(balanceA) : parseFloat(balanceB),
+            totalValueUsd: totalValueUsd,
+            shares: shares,
+        }
+
+    } else {
+        const response = await fetch(`${METEORA_API}${lpId}`, {
+            method: 'GET'
+        })
+        const resData = await response.json()
+        const tokenA = resData?.[0]?.pool_token_mints[0]
+        const tokenB = resData?.[0]?.pool_token_mints[1]
+        const balanceA = resData?.[0]?.pool_token_amounts[0]
+        const balanceB = resData?.[0]?.pool_token_amounts[1]
+        const totalValueUsd = resData?.[0]?.pool_tvl
+
+        const lpMintSupply = await connection.getTokenSupply(new PublicKey(mintAddress))
+        const shares = parseFloat(lpMintSupply.value.amount)
+
+        const { stake, decimals } = await getStakeORE(mintAddress, boostAddress)
+        const stakeShare = (stake.balance ?? 0) / shares 
+
+        const stakeAmountA = parseFloat(balanceA) * stakeShare
+        const stakeAmountB = parseFloat(balanceB) * stakeShare
+        return {
+            stakeBalance: (stake.balance ?? 0) / Math.pow(10, decimals),
+            stakeAmountORE: tokenA === ORE_MINT? stakeAmountA : stakeAmountB,
+            stakeAmountPair: tokenB === ORE_MINT? stakeAmountA : stakeAmountB,
+            LPBalanceORE: tokenA === ORE_MINT? parseFloat(balanceA) : parseFloat(balanceB),
+            LPBalancePair: tokenB === ORE_MINT? parseFloat(balanceA) : parseFloat(balanceB),
+            totalValueUsd: totalValueUsd,
+            shares: shares,
+        }
     }
 }
 
@@ -115,10 +201,11 @@ export async function claimStakeOREInstruction(mintAddress: string, boostAddress
         boostProof,
         boostPublicKey,
         stakePublicKey,
-        boostProofPublicKey
+        boostProofPublicKey,
+        boostConfig
     } = await getStakeORE(mintAddress, boostAddress)
 
-    const rewards = calculateClaimableYield(boost, boostProof, stake)
+    const rewards = calculateClaimableYield(boost, boostProof, stake, boostConfig)
     const amountBuffer = Buffer.alloc(8)
     amountBuffer.writeBigUInt64LE(BigInt(rewards))
     
@@ -184,5 +271,5 @@ export async function claimStakeOREInstruction(mintAddress: string, boostAddress
         );
     } 
 
-    return { transaction, rewards: rewards / Math.pow(10, 11), estimatedFee, connection };
+    return { transaction, rewards: rewards / (10n ** 11n), estimatedFee, connection };
 }

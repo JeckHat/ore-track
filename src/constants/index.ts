@@ -9,6 +9,7 @@ export const BOOST_ID = "BoostzzkNfCA9D1qNuN5xZxB5ErbK4zQuBeTHGDpXT1"
 export const PROOF = new Uint8Array([112, 114, 111, 111, 102])
 export const BOOST = new Uint8Array([98, 111, 111, 115, 116])
 export const STAKE = new Uint8Array([115, 116, 97, 107, 101])
+export const CONFIG = new Uint8Array([99, 111, 110, 102, 105, 103])
 export const TREASURY = new Uint8Array([116, 114, 101, 97, 115, 117, 114, 121])
 export const MINT = new Uint8Array([109, 105, 110, 116])
 export const MINT_NOISE = new Uint8Array([89, 157, 88, 232, 243, 249, 197, 132, 199, 49, 19, 234, 91, 94, 150, 41])

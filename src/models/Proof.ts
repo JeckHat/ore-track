@@ -6,19 +6,19 @@ export class Proof {
     challenge?: Uint8Array
     lastHash?: Uint8Array
     lastHashAt?: number
-    lastStakeAt?: number
+    lastClaimAt?: number
     miner?: string
     totalHashes?: number
     totalRewards?: number
 
     constructor(authority?: string, balance?: number, challenge?: Uint8Array, lastHash?: Uint8Array, lastHashAt?: number,
-        lastStakeAt?: number, miner?: string, totalHashes?: number, totalRewards?: number) {
+        lastClaimAt?: number, miner?: string, totalHashes?: number, totalRewards?: number) {
         this.authority = authority;
         this.balance = balance;
         this.challenge = challenge;
         this.lastHash = lastHash;
         this.lastHashAt = lastHashAt;
-        this.lastStakeAt = lastStakeAt;
+        this.lastClaimAt = lastClaimAt;
         this.miner = miner;
         this.totalHashes = totalHashes;
         this.totalRewards = totalRewards;
@@ -45,7 +45,7 @@ function tryFromBytes(buffer: Buffer) {
         const lastHashAt = Number(buffer.readBigInt64LE(offset))
         offset += 8;
 
-        const lastStakeAt = Number(buffer.readBigInt64LE(offset))
+        const lastClaimAt = Number(buffer.readBigInt64LE(offset))
         offset += 8;
 
         const miner = new PublicKey(buffer.subarray(offset, offset + 32)).toString();
@@ -57,7 +57,7 @@ function tryFromBytes(buffer: Buffer) {
         const totalRewards = Number(buffer.readBigUInt64LE(offset))
         offset += 8;
 
-        return new Proof(authority, balance, challenge, lastHash, lastHashAt, lastStakeAt, miner, totalHashes, totalRewards);
+        return new Proof(authority, balance, challenge, lastHash, lastHashAt, lastClaimAt, miner, totalHashes, totalRewards);
     } catch (error) {
         return null;
     }

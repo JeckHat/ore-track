@@ -2,8 +2,8 @@ import { PublicKey } from "@solana/web3.js"
 import { MintLayout } from "@solana/spl-token"
 
 import { store } from "@store/index"
-import { BOOST, BOOST_ID, BOOSTLIST, PROGRAM_ID, PROOF, STAKE } from "@constants"
-import { CustomError, getBoostResult, getStakeResult } from "@models"
+import { BOOST, BOOST_ID, BOOSTLIST, CONFIG, PROGRAM_ID, PROOF, STAKE } from "@constants"
+import { CustomError, getBoostConfigResult, getBoostResult, getProofResult, getStakeResult } from "@models"
 import { stakeActions } from "@store/actions"
 import { getConnection, getStakesRedux } from "@providers"
 
@@ -106,7 +106,24 @@ export async function getBoostProof(boostPublicKey: PublicKey) {
     }
 
     const proofAccountInfo = await connection.getAccountInfo(boostProofPublicKey)
-    const boostProof = await getStakeResult(proofAccountInfo?.data)
+    const boostProof = await getProofResult(proofAccountInfo?.data)
     
     return { boostProof, boostProofPublicKey }
+}
+
+export async function getBoostConfig() {
+    const connection = getConnection()
+    if (!connection) {
+        throw new CustomError("Rpc Connection is undefined", 500)
+    }
+
+    const boostConfigPublicKey = PublicKey.findProgramAddressSync(
+        [...[CONFIG]],
+        new PublicKey(BOOST_ID)
+    )?.[0]
+
+    const configAccountInfo = await connection.getAccountInfo(boostConfigPublicKey)
+    const boostConfig = await getBoostConfigResult(configAccountInfo?.data)
+    
+    return { boostConfig, boostConfigPublicKey }
 }
