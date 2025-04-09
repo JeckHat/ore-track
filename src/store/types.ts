@@ -5,6 +5,7 @@ export interface RootState {
     ui: UiState
     wallet: WalletState
     config: ConfigState
+    pool: { pools: Record<string, PoolState> }
     stake: StakeState
 }
 
@@ -58,3 +59,14 @@ export interface MinerState {
     miners: Record<string, MinerInfo>
     pools: Record<string, PoolMinerInfo>
 }
+
+export interface PoolState {
+    walletAddress?: string | null
+    balanceOre: number
+    balanceCoal: number
+    runningOre: boolean
+    runningCoal: boolean
+    lastUpdateAt: string
+    lastClaimAt: string
+}
+

@@ -22,4 +22,5 @@ export const BOOST_DENOMINATOR = 1000
 export const COMPUTE_UNIT_LIMIT = 500000
 
 export * from './token'
+export * from './pool'
 export * from './boost'
