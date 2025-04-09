@@ -87,7 +87,7 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                             lastUpdateAt: dateNow.toISOString(),
                         }
                     } else {
-                        if (dateNow.diff(dayjs(storageData.lastUpdateAt), "minutes") >= 2) {
+                        if (dateNow.diff(dayjs(storageData.lastUpdateAt), "minute") >= 2) {
                             storageData = {
                                 ...storageData,
                                 ...balanceNow,
