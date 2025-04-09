@@ -11,7 +11,7 @@ import {
 import { useDispatch, useSelector } from "react-redux"
 import dayjs from 'dayjs'
 
-import { CustomText } from "@components"
+import { CustomText, SkeletonLoader } from "@components"
 import Images from "@assets/images"
 import { RootState } from "@store/types"
 import { shortenAddress } from "@helpers"
@@ -136,22 +136,24 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                                     className="h-6 w-6 mr-1 rounded-full"
                                     source={Images.OreToken}
                                 />
-                                <CustomText
+                                {!total.loading && <CustomText
                                     className="text-primary font-PlusJakartaSans text-sm"
                                 >
                                     {total.balanceOre?.toFixed(11)} ORE
-                                </CustomText>
+                                </CustomText>}
+                                {total.loading && <SkeletonLoader className="mt-1 bg-gray-700 rounded-lg w-32 h-[14px]" />}
                             </View>
                             <View className="flex-row items-center">
                                 <Image
                                     className="h-6 w-6 mr-1 rounded-full"
                                     source={Images.CoalToken}
                                 />
-                                <CustomText
+                                {!total.loading && <CustomText
                                     className="text-primary font-PlusJakartaSans text-sm"
                                 >
                                     {total.balanceCoal?.toFixed(11)} COAL
-                                </CustomText>
+                                </CustomText>}
+                                {total.loading && <SkeletonLoader className="mt-1 bg-gray-700 rounded-lg w-32 h-[14px]" />}
                             </View>
                         </View>
                         <CustomText className="text-primary ml-2 font-PlusJakartaSansSemiBold text-xl mt-4">
