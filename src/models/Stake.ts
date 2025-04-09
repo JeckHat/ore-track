@@ -6,14 +6,14 @@ export class Stake {
     authority?: string
     balance?: number
     boost?: string
-    lastClaimAt?: dayjs.Dayjs
-    lastDespositAt?: dayjs.Dayjs
-    lastWithdrawAt?: dayjs.Dayjs // .format('YYYY-MM-DD HH:mm:ss')
+    lastClaimAt?: string
+    lastDespositAt?: string
+    lastWithdrawAt?: string
     lastRewardsFactor?: Numeric
     rewards?: number
 
-    constructor(authority?: string, balance?: number, boost?: string, lastClaimAt?: dayjs.Dayjs, lastDespositAt?: dayjs.Dayjs,
-        lastWithdrawAt?: dayjs.Dayjs, lastRewardsFactor?: Numeric, rewards?: number) {
+    constructor(authority?: string, balance?: number, boost?: string, lastClaimAt?: string, lastDespositAt?: string,
+        lastWithdrawAt?: string, lastRewardsFactor?: Numeric, rewards?: number) {
         this.authority = authority;
         this.balance = balance;
         this.boost = boost;
@@ -39,16 +39,16 @@ function tryFromBytes(buffer: Buffer) {
         const boost = new PublicKey(buffer.subarray(offset, offset + 32)).toString();
         offset += 32;
 
-        const lastClaimAt = dayjs.unix(Number(buffer.readBigInt64LE(offset)));
+        const lastClaimAt = dayjs.unix(Number(buffer.readBigInt64LE(offset))).toISOString();
         offset += 8;
 
-        const lastDespositAt = dayjs.unix(Number(buffer.readBigInt64LE(offset)));
+        const lastDespositAt = dayjs.unix(Number(buffer.readBigInt64LE(offset))).toISOString();
         offset += 8;
 
-        const lastWithdrawAt = dayjs.unix(Number(buffer.readBigInt64LE(offset)));
+        const lastWithdrawAt = dayjs.unix(Number(buffer.readBigInt64LE(offset))).toISOString();
         offset += 8;
 
-        const lastRewardsFactor = new Numeric(Array.from(buffer.slice(offset, offset + 16)));
+        const lastRewardsFactor = new Numeric(Array.from(buffer.subarray(offset, offset + 16)));
         offset += 16;
 
         const rewards = Number(buffer.readBigUInt64LE(offset));

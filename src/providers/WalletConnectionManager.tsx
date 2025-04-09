@@ -1,26 +1,46 @@
 import { Connection } from "@solana/web3.js"
+
 import { store } from "@store/index"
-import { StakeInfo } from "@store/types"
+import { BoostState } from "@store/types"
 
 
 const initState = store.getState()
 let connection: Connection = new Connection(`https://${initState.config.rpcUrl}`)
 let rpcUrl: string | null = initState.config.rpcUrl ?? ""
 let walletAddress: string | null = initState.wallet.publicKey ?? ""
-let stakes: Record<string, StakeInfo> = initState.stake.stakes
+let boosts: Record<string, BoostState> = initState.boost.boosts
 
-function isStakeInfoEqual(a: StakeInfo, b: StakeInfo): boolean {
+function isBoostEqual(a: BoostState, b: BoostState): boolean {
     return (
-      a.stakeAddress === b.stakeAddress &&
-      a.proofAddress === b.proofAddress &&
-      a.decimalsLp === b.decimalsLp &&
-      a.rewards === b.rewards
+        a.boost?.rewardsFactor?.bits === b.boost?.rewardsFactor?.bits &&
+        a.boost?.totalDeposits === b.boost?.totalDeposits &&
+        a.boostAddress === b.boostAddress &&
+        a.stake?.balance === a.stake?.balance &&
+        a.stake?.lastClaimAt === a.stake?.lastClaimAt &&
+        a.stake?.lastDespositAt === a.stake?.lastDespositAt &&
+        a.stake?.lastWithdrawAt === a.stake?.lastWithdrawAt &&
+        a.stake?.lastRewardsFactor?.bits === a.stake?.lastRewardsFactor?.bits &&
+        a.stake?.rewards === a.stake?.rewards &&
+        a.stakeAddress === b.stakeAddress &&
+        a.boostConfig?.rewardsFactor?.bits === b.boostConfig?.rewardsFactor?.bits &&
+        a.boostConfig?.takeRate === b.boostConfig?.takeRate &&
+        a.boostConfig?.len === b.boostConfig?.len &&
+        a.boostConfig?.totalWeight === b.boostConfig?.totalWeight &&
+        a.boostConfigAddress === b.boostConfigAddress &&
+        a.boostProof?.balance === b.boostProof?.balance && 
+        a.boostProof?.lastClaimAt === b.boostProof?.lastClaimAt && 
+        a.boostProof?.lastHashAt === b.boostProof?.lastHashAt && 
+        a.boostProof?.totalRewards === b.boostProof?.totalRewards && 
+        a.boostProof?.totalHashes === b.boostProof?.totalHashes && 
+        a.boostProofAddress === b.boostProofAddress && 
+        a.decimals === b.decimals &&
+        a.rewards === b.rewards
     );
 }
 
-function isRecordEqual(
-    recordA: Record<string, StakeInfo>,
-    recordB: Record<string, StakeInfo>
+function isBoostRecordEqual(
+    recordA: Record<string, BoostState>,
+    recordB: Record<string, BoostState>
   ): boolean {
     const keysA = Object.keys(recordA);
     const keysB = Object.keys(recordB);
@@ -33,7 +53,7 @@ function isRecordEqual(
         const a = recordA[key];
         const b = recordB[key];
     
-        if (!isStakeInfoEqual(a, b)) return false;
+        if (!isBoostEqual(a, b)) return false;
     }
   
     return true;
@@ -48,7 +68,7 @@ store.subscribe(() => {
     const newRpcUrl = state.config.rpcUrl ?? ""
     const newWalletAddress = state.wallet.publicKey ?? ""
 
-    const newStakes = state.stake.stakes
+    const newBoosts = state.boost.boosts
     
     if (newRpcUrl !== rpcUrl) {
         createConnection(newRpcUrl)
@@ -59,8 +79,8 @@ store.subscribe(() => {
         walletAddress = newWalletAddress
     }
 
-    if(!isRecordEqual(newStakes, stakes)) {
-        stakes = { ...newStakes }
+    if (!isBoostRecordEqual(boosts, newBoosts)) {
+        boosts = { ...newBoosts }
     }
 
 })
@@ -73,6 +93,6 @@ export function getWalletAddress() {
     return walletAddress
 }
 
-export function getStakesRedux() {
-    return stakes
+export function getBoostsRedux() {
+    return boosts
 }

@@ -12,6 +12,8 @@ import { BOOST_ID, BOOSTLIST, KAMINO_API, METEORA_API, ORE_MINT, PROGRAM_ID, SOL
 import { getBalance } from "@services/solana";
 import { getConnection, getWalletAddress } from "@providers";
 import { bigIntToNumber } from "@helpers";
+import { store } from "@store/index";
+import { boostActions } from "@store/actions";
 
 export function calculateClaimableYield(boost: Boost, boostProof: Proof, stake: Stake, boostConfig: BoostConfig) {
     let rewards = BigInt(stake.rewards ?? 0);
@@ -71,15 +73,48 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
 
     const { boost, boostPublicKey } = await getBoost(mintPublicKey, boostAddress)
 
+    store.dispatch(boostActions.updateBoostRedux({
+        boostAddress: boostPublicKey.toBase58(),
+        boost: boost
+    }))
+
     const { stake, stakePublicKey } = await getStake(stakerPublicKey, boostPublicKey)
+
+    store.dispatch(boostActions.updateStakeRedux({
+        boostAddress: boostPublicKey.toBase58(),
+        stake: stake,
+        stakeAddress: stakePublicKey.toBase58()
+    }))
 
     const decimals = await getBoostDecimals(mintPublicKey, boostPublicKey)
 
+    store.dispatch(boostActions.updateDecimals({
+        boostAddress: boostPublicKey.toBase58(),
+        decimals: decimals,
+    }))
+
     const { boostConfig, boostConfigPublicKey } = await getBoostConfig()
+
+    store.dispatch(boostActions.updateConfigRedux({
+        boostAddress: boostPublicKey.toBase58(),
+        boostConfig: boostConfig,
+        boostConfigAddress: boostConfigPublicKey.toBase58()
+    }))
 
     const { boostProof, boostProofPublicKey } = await getBoostProof(boostConfigPublicKey)
 
+    store.dispatch(boostActions.updateProofRedux({
+        boostAddress: boostPublicKey.toBase58(),
+        boostProof: boostProof,
+        boostProofAddress: boostProofPublicKey.toBase58()
+    }))
+
     const rewards = calculateClaimableYield(boost, boostProof, stake, boostConfig)
+
+    store.dispatch(boostActions.updateRewards({
+        boostAddress: boostPublicKey.toBase58(),
+        rewards: bigIntToNumber(rewards / 10n ** 11n)
+    }))
 
     return {
         mintPublicKey: mintPublicKey,
@@ -90,9 +125,9 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
         stakePublicKey: stakePublicKey,
         boostProof: boostProof,
         boostProofPublicKey: boostProofPublicKey,
-        rewards: bigIntToNumber(rewards),
         boostConfig: boostConfig,
-        boostConfigPublicKey: boostConfigPublicKey
+        boostConfigPublicKey: boostConfigPublicKey,
+        rewards: bigIntToNumber(rewards),
     }
 }
 

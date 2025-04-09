@@ -5,7 +5,7 @@ import { BOOST_DENOMINATOR } from "@constants";
 import { Numeric } from "./Numeric";
 
 export class Boost {
-    expiredAt?: dayjs.Dayjs
+    expiredAt?: string
     lastRewardsFactor?: Numeric
     mint?: string
     rewardsFactor?: Numeric
@@ -14,7 +14,7 @@ export class Boost {
     weight?: number
     withdrawFee?: number
 
-    constructor(expiredAt?: dayjs.Dayjs, lastRewardsFactor?: Numeric, mint?: string, rewardsFactor?: Numeric,
+    constructor(expiredAt?: string, lastRewardsFactor?: Numeric, mint?: string, rewardsFactor?: Numeric,
         totalDeposits?: number, totalStakers?: number, weight?: number, withdrawFee?: number) {
         this.expiredAt = expiredAt;
         this.lastRewardsFactor = lastRewardsFactor;
@@ -32,16 +32,16 @@ function tryFromBytes(buffer: Buffer) {
         let offset = 0;
         offset += 8;
 
-        const expiredAt = dayjs.unix(Number(buffer.readBigInt64LE(offset)));
+        const expiredAt = dayjs.unix(Number(buffer.readBigInt64LE(offset))).toISOString();
         offset += 8;
 
-        const lastRewardsFactor = new Numeric(Array.from(buffer.slice(offset, offset + 16)));
+        const lastRewardsFactor = new Numeric(Array.from(buffer.subarray(offset, offset + 16)));
         offset += 16;
 
         const mint = new PublicKey(buffer.subarray(offset, offset + 32)).toBase58();
         offset += 32;
 
-        const rewardsFactor = new Numeric(Array.from(buffer.slice(offset, offset + 16)));
+        const rewardsFactor = new Numeric(Array.from(buffer.subarray(offset, offset + 16)));
         offset += 16;
 
         const totalDeposits = Number(buffer.readBigUInt64LE(offset));
@@ -116,7 +116,7 @@ function configTryFromBytes(buffer: Buffer) {
         const len = Number(buffer.readBigUInt64LE(offset));
         offset += 8;
 
-        const rewardsFactor = new Numeric(Array.from(buffer.slice(offset, offset + 16)));
+        const rewardsFactor = new Numeric(Array.from(buffer.subarray(offset, offset + 16)));
         offset += 16;
 
         const takeRate = Number(buffer.readBigUInt64LE(offset));

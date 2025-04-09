@@ -1,11 +1,9 @@
 import { PublicKey } from "@solana/web3.js"
 import { MintLayout } from "@solana/spl-token"
 
-import { store } from "@store/index"
 import { BOOST, BOOST_ID, BOOSTLIST, CONFIG, PROGRAM_ID, PROOF, STAKE } from "@constants"
 import { CustomError, getBoostConfigResult, getBoostResult, getProofResult, getStakeResult } from "@models"
-import { stakeActions } from "@store/actions"
-import { getConnection, getStakesRedux } from "@providers"
+import { getConnection, getBoostsRedux } from "@providers"
 
 export async function getBoost(mintPublicKey: PublicKey, boostAddress?: string | PublicKey | null) {
     const connection = getConnection()
@@ -40,22 +38,16 @@ export async function getStake(walletPublicKey: PublicKey, boostPublicKey: Publi
     if (!connection) {
         throw new CustomError("Rpc Connection is undefined", 500)
     }
-    const stakeRedux = getStakesRedux()[boostPublicKey.toBase58()]
+    const boostRedux = getBoostsRedux()[boostPublicKey.toBase58()]
 
     let stakePublicKey: PublicKey
-    if (typeof stakeRedux?.stakeAddress === 'string') {
-        stakePublicKey = new PublicKey(stakeRedux?.stakeAddress)
+    if (typeof boostRedux?.stakeAddress === 'string') {
+        stakePublicKey = new PublicKey(boostRedux?.stakeAddress)
     } else {
         stakePublicKey = PublicKey.findProgramAddressSync(
             [...[STAKE], ...[walletPublicKey.toBytes()], ...[boostPublicKey.toBytes()]],
             new PublicKey(BOOST_ID)
         )?.[0]
-        store.dispatch(stakeActions.addStake({
-            boost: boostPublicKey.toBase58(),
-            stake: {
-                stakeAddress: stakePublicKey.toBase58(),
-            }
-        }))
     }
     const stakeAccountInfo = await connection.getAccountInfo(stakePublicKey)
     const stake = await getStakeResult(stakeAccountInfo?.data)
@@ -87,22 +79,16 @@ export async function getBoostProof(boostPublicKey: PublicKey) {
     if (!connection) {
         throw new CustomError("Rpc Connection is undefined", 500)
     }
-    const stakeRedux = getStakesRedux()[boostPublicKey.toBase58()]
+    const stakeRedux = getBoostsRedux()[boostPublicKey.toBase58()]
 
     let boostProofPublicKey: PublicKey
-    if (stakeRedux?.proofAddress) {
-        boostProofPublicKey = new PublicKey(stakeRedux?.proofAddress)
+    if (stakeRedux?.boostProofAddress) {
+        boostProofPublicKey = new PublicKey(stakeRedux?.boostProofAddress)
     } else {
         boostProofPublicKey = PublicKey.findProgramAddressSync(
             [...[PROOF], ...[boostPublicKey.toBytes()]],
             new PublicKey(PROGRAM_ID)
         )?.[0]
-        store.dispatch(stakeActions.addStake({
-            boost: boostPublicKey.toBase58(),
-            stake: {
-                proofAddress: boostProofPublicKey.toBase58(),
-            }
-        }))
     }
 
     const proofAccountInfo = await connection.getAccountInfo(boostProofPublicKey)

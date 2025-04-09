@@ -1,12 +1,13 @@
 import { ReactElement } from 'react'
 import dayjs from 'dayjs'
+import { Boost, BoostConfig, Proof, Stake } from '@models'
 
 export interface RootState {
     ui: UiState
     wallet: WalletState
     config: ConfigState
     pool: { pools: Record<string, PoolState> }
-    stake: StakeState
+    boost: { boosts: Record<string, BoostState> }
 }
 
 interface bottomModalState {
@@ -35,12 +36,21 @@ export interface StakeInfo {
     lastClaimAt: dayjs.Dayjs
     lastDepositAt: dayjs.Dayjs
     lastWithdrawAt: dayjs.Dayjs
-    decimalsLp: number
+    decimals?: number
     rewards: number
 }
 
-export interface StakeState {
-    stakes: Record<string, StakeInfo>
+export interface BoostState {
+    boost?: Boost
+    boostAddress?: string
+    stake?: Stake
+    stakeAddress?: string
+    boostConfig?: BoostConfig
+    boostConfigAddress?: string
+    boostProof?: Proof
+    boostProofAddress?: string
+    decimals?: number
+    rewards?: number
 }
 
 export interface MinerInfo {

@@ -3,7 +3,7 @@ import { SafeAreaView, View } from "react-native"
 import { ChevronRightIcon } from "@assets/icons"
 import { Button, CustomText } from "@components"
 import { TabSettingScreenProps } from "@navigations/types"
-import { getMnemonic, stakeActions, walletActions } from "@store/actions"
+import { boostActions, getMnemonic, walletActions } from "@store/actions"
 import { Colors } from "@styles"
 import { store } from "@store/index"
 
@@ -92,7 +92,7 @@ export default function TabSettingScreen(props: TabSettingScreenProps) {
                     title="Disconnect"
                     onPress={() => {
                         store.dispatch(walletActions.clearWallet())
-                        store.dispatch(stakeActions.resetStake())
+                        store.dispatch(boostActions.resetBoosts())
                         props.navigation.navigate("Start")
                     }}
                 />

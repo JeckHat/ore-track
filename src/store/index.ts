@@ -11,8 +11,8 @@ const persistConfig = {
     whitelist: [
         "config",
         "wallet",
-        "miner",
-        "pool"
+        "pool",
+        "boost"
     ],
 };
 
