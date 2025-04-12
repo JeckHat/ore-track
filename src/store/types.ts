@@ -7,7 +7,7 @@ export interface RootState {
     wallet: WalletState
     config: ConfigState
     pool: { pools: Record<string, PoolState> }
-    boost: { boosts: Record<string, BoostState> }
+    boost: BoostState
 }
 
 interface bottomModalState {
@@ -40,18 +40,23 @@ export interface StakeInfo {
     rewards: number
 }
 
-export interface BoostState {
+export interface BoostType {
     boost?: Boost
     boostAddress?: string
     stake?: Stake
     stakeAddress?: string
+    decimals?: number
+    rewards?: number
+    avgRewards?: number
+}
+
+export interface BoostState {
+    boosts: Record<string, BoostType>
     boostConfig?: BoostConfig
     boostConfigAddress?: string
     boostProof?: Proof
     boostProofAddress?: string
-    decimals?: number
-    rewards?: number
-    avgRewards?: number
+    socketAccounts: Record<string, { id: string, account: string }>
 }
 
 export interface MinerInfo {

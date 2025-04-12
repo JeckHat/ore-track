@@ -3,7 +3,7 @@ import { MintLayout } from "@solana/spl-token"
 
 import { BOOST, BOOST_ID, BOOSTLIST, CONFIG, PROGRAM_ID, PROOF, STAKE } from "@constants"
 import { CustomError, getBoostConfigResult, getBoostResult, getProofResult, getStakeResult } from "@models"
-import { getConnection, getBoostsRedux } from "@providers"
+import { getConnection, getBoostsRedux, getBoostProofAddress } from "@providers"
 
 export async function getBoost(mintPublicKey: PublicKey, boostAddress?: string | PublicKey | null) {
     const connection = getConnection()
@@ -79,11 +79,11 @@ export async function getBoostProof(boostPublicKey: PublicKey) {
     if (!connection) {
         throw new CustomError("Rpc Connection is undefined", 500)
     }
-    const stakeRedux = getBoostsRedux()[boostPublicKey.toBase58()]
+    const boostProofAddress = getBoostProofAddress()
 
     let boostProofPublicKey: PublicKey
-    if (stakeRedux?.boostProofAddress) {
-        boostProofPublicKey = new PublicKey(stakeRedux?.boostProofAddress)
+    if (boostProofAddress) {
+        boostProofPublicKey = new PublicKey(boostProofAddress)
     } else {
         boostProofPublicKey = PublicKey.findProgramAddressSync(
             [...[PROOF], ...[boostPublicKey.toBytes()]],

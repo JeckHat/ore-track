@@ -1,15 +1,16 @@
+import { BoostConfig, Proof } from "@models"
 import { Connection } from "@solana/web3.js"
 
 import { store } from "@store/index"
-import { BoostState } from "@store/types"
+import { BoostState, BoostType } from "@store/types"
 
 const initState = store.getState()
 let connection: Connection = new Connection(`https://${initState.config!.rpcUrl}`)
 let rpcUrl: string | null = initState.config?.rpcUrl ?? ""
 let walletAddress: string | null = initState.wallet?.publicKey ?? ""
-let boosts: Record<string, BoostState> = initState.boost?.boosts ?? {}
+let boost: BoostState = initState.boost ?? { boosts: {}, socketAccounts: {} }
 
-function isBoostEqual(a: BoostState, b: BoostState): boolean {
+function isBoostEqual(a: BoostType, b: BoostType): boolean {
     return (
         a.boost?.rewardsFactor?.bits === b.boost?.rewardsFactor?.bits &&
         a.boost?.totalDeposits === b.boost?.totalDeposits &&
@@ -21,25 +22,35 @@ function isBoostEqual(a: BoostState, b: BoostState): boolean {
         a.stake?.lastRewardsFactor?.bits === a.stake?.lastRewardsFactor?.bits &&
         a.stake?.rewards === a.stake?.rewards &&
         a.stakeAddress === b.stakeAddress &&
-        a.boostConfig?.rewardsFactor?.bits === b.boostConfig?.rewardsFactor?.bits &&
-        a.boostConfig?.takeRate === b.boostConfig?.takeRate &&
-        a.boostConfig?.len === b.boostConfig?.len &&
-        a.boostConfig?.totalWeight === b.boostConfig?.totalWeight &&
-        a.boostConfigAddress === b.boostConfigAddress &&
-        a.boostProof?.balance === b.boostProof?.balance && 
-        a.boostProof?.lastClaimAt === b.boostProof?.lastClaimAt && 
-        a.boostProof?.lastHashAt === b.boostProof?.lastHashAt && 
-        a.boostProof?.totalRewards === b.boostProof?.totalRewards && 
-        a.boostProof?.totalHashes === b.boostProof?.totalHashes && 
-        a.boostProofAddress === b.boostProofAddress && 
         a.decimals === b.decimals &&
         a.rewards === b.rewards
     );
 }
 
+function isBoostConfigEqual(a?: BoostConfig, b?: BoostConfig): boolean {
+    if (a === undefined && b === undefined) return false;
+    return (
+        a?.rewardsFactor?.bits === b?.rewardsFactor?.bits &&
+        a?.takeRate === b?.takeRate &&
+        a?.len === b?.len &&
+        a?.totalWeight === b?.totalWeight
+    );
+}
+
+function isBoostProofEqual(a?: Proof, b?: Proof): boolean {
+    if (a === undefined && b === undefined) return false;
+    return (
+        a?.balance === b?.balance && 
+        a?.lastClaimAt === b?.lastClaimAt && 
+        a?.lastHashAt === b?.lastHashAt && 
+        a?.totalRewards === b?.totalRewards && 
+        a?.totalHashes === b?.totalHashes
+    );
+}
+
 function isBoostRecordEqual(
-    recordA: Record<string, BoostState>,
-    recordB: Record<string, BoostState>
+    recordA: Record<string, BoostType>,
+    recordB: Record<string, BoostType>
   ): boolean {
     const keysA = Object.keys(recordA);
     const keysB = Object.keys(recordB);
@@ -67,7 +78,7 @@ store.subscribe(() => {
     const newRpcUrl = state.config?.rpcUrl ?? ""
     const newWalletAddress = state.wallet?.publicKey ?? ""
 
-    const newBoosts = state.boost?.boosts ?? {}
+    const newBoosts = state.boost ?? { boosts: {}, socketAccounts: {} }
     
     if (newRpcUrl !== rpcUrl) {
         createConnection(newRpcUrl)
@@ -78,8 +89,16 @@ store.subscribe(() => {
         walletAddress = newWalletAddress
     }
 
-    if (!isBoostRecordEqual(boosts, newBoosts)) {
-        boosts = { ...newBoosts }
+    if (!isBoostRecordEqual(boost.boosts, newBoosts.boosts)) {
+        boost.boosts = { ...newBoosts.boosts }
+    }
+
+    if (boost.boostConfigAddress !== newBoosts.boostConfigAddress) {
+        boost.boostConfig = newBoosts.boostConfig?.toJSON()
+    }
+
+    if (boost.boostProofAddress !== newBoosts.boostProofAddress) {
+        boost.boostProofAddress = newBoosts.boostProofAddress
     }
 
 })
@@ -93,5 +112,13 @@ export function getWalletAddress() {
 }
 
 export function getBoostsRedux() {
-    return boosts
+    return boost.boosts
+}
+
+export function getBoostConfigAddress() {
+    return boost.boostConfigAddress
+}
+
+export function getBoostProofAddress() {
+    return boost.boostProofAddress
 }

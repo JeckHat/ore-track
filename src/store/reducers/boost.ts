@@ -4,8 +4,9 @@ import dayjs from 'dayjs'
 
 import { BoostState } from '@store/types'
 
-const initialState: { boosts: Record<string, BoostState>} = {
-    boosts: {}
+const initialState: BoostState = {
+    boosts: {},
+    socketAccounts: {}
 }
 
 const boostSlice = createSlice({
@@ -17,7 +18,7 @@ const boostSlice = createSlice({
             state.boosts = {
                 ...state.boosts,
                 [boostAddress]: {
-                    ...state.boosts[action.payload.boostAddress],
+                    ...state.boosts[boostAddress],
                     boost: boost.toJSON(),
                     boostAddress: boostAddress
                 }
@@ -34,27 +35,15 @@ const boostSlice = createSlice({
                 }
             }
         },
-        updateConfigRedux(state, action: PayloadAction<{ boostAddress: string, boostConfigAddress: string, boostConfig: BoostConfig }>) {
-            const { boostAddress, boostConfigAddress, boostConfig } = action.payload
-            state.boosts = {
-                ...state.boosts,
-                [boostAddress]: {
-                    ...state.boosts[boostAddress],
-                    boostConfig: boostConfig.toJSON(),
-                    boostConfigAddress: boostConfigAddress
-                }
-            }
+        updateConfigRedux(state, action: PayloadAction<{ boostConfigAddress: string, boostConfig: BoostConfig }>) {
+            const { boostConfigAddress, boostConfig } = action.payload
+            state.boostConfig = boostConfig.toJSON()
+            state.boostConfigAddress = boostConfigAddress
         },
-        updateProofRedux(state, action: PayloadAction<{ boostAddress: string, boostProofAddress: string, boostProof: Proof }>) {
-            const { boostAddress, boostProofAddress, boostProof } = action.payload
-            state.boosts = {
-                ...state.boosts,
-                [boostAddress]: {
-                    ...state.boosts[boostAddress],
-                    boostProof: boostProof.toJSON(),
-                    boostProofAddress: boostProofAddress
-                }
-            }
+        updateProofRedux(state, action: PayloadAction<{ boostProofAddress: string, boostProof: Proof }>) {
+            const { boostProofAddress, boostProof } = action.payload
+            state.boostProof = boostProof.toJSON()
+            state.boostProofAddress = boostProofAddress
         },
         updateDecimals(state, action: PayloadAction<{ boostAddress: string, decimals: number }>) {
             const { boostAddress, decimals } = action.payload
@@ -78,6 +67,17 @@ const boostSlice = createSlice({
                     ...state.boosts[boostAddress],
                     rewards: rewards,
                     avgRewards: average
+                }
+            }
+        },
+        addSocket(state, action: PayloadAction<{ type: string, address: string }>) {
+            const { type, address } = action.payload
+            state.socketAccounts = {
+                ...state.socketAccounts,
+                [`${type}-${address}`]: {
+                    ...state.socketAccounts[`${type}-${address}`],
+                    id: `${type}-${address}`,
+                    account: address 
                 }
             }
         },

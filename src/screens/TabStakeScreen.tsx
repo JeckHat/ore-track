@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Image, RefreshControl, SafeAreaView, ScrollView, View } from "react-native"
 import { useFocusEffect } from "@react-navigation/native"
 import {
@@ -9,7 +9,6 @@ import {
     Transaction
 } from "@solana/web3.js"
 import { useDispatch, useSelector } from "react-redux"
-import dayjs from 'dayjs'
 
 import { Button, CustomText, SkeletonLoader, OptionMenu, ModalTransaction } from "@components"
 import Images from "@assets/images"
@@ -22,20 +21,6 @@ import { useBottomModal } from "@hooks"
 import { claimStakeOREInstruction, getStakeORE } from "@services/ore"
 import { shortenAddress } from "@helpers"
 
-interface DataStakeInfo {
-    weight: number
-    deposits: number
-    myDeposits: number
-    stakers: number
-    myShare: number
-    rewards: number
-    decimals: number
-    loading: boolean
-    average?: number
-    lastClaimAt?: string | null
-    claimAt?: string | null
-}
-
 export default function TabStakeScreen(props: TabStakeScreenProps) {
     const [orePrice, setOrePrice] = useState(0.0)
     const [yieldData, setYieldData] = useState({
@@ -43,40 +28,23 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
         avg: 0,
         loading: true
     })
-    const [stakeData, setStakeData] = useState<Record<string, DataStakeInfo>>(
-        Object.entries(BOOSTLIST).reduce((acc, [key, value]) => {
-            acc[key] = {
-                ...value,
-                weight: 0,
-                deposits: 0,
-                myDeposits: 0,
-                stakers: 0,
-                myShare: 0.00,
-                rewards: 0,
-                decimals: 0,
-                lastClaimAt: null,
-                loading: true
-            }
-            return acc;
-        }, {} as Record<string, DataStakeInfo>)
-    )
-    const cacheRef = useRef<Record<string, DataStakeInfo | null>>({})
     const dispatch = useDispatch()
     const { showModal, hideModal } = useBottomModal()
 
+    const boosts = useSelector((state: RootState) => state.boost.boosts)
     const rpcUrl = useSelector((state: RootState) => state.config.rpcUrl)
     const walletAddress = useSelector((state: RootState) => state.wallet.publicKey)
 
     useFocusEffect(
         useCallback(() => {
-            loadData(true)
+            loadData()
         }, [])
     )
 
-    async function loadData(forceRefresh = false) {
+    async function loadData() {
         try {
             await Promise.all([
-                loadStakes(forceRefresh),
+                loadStakes(),
                 loadPrice(),
                 getLPAmount()
             ])
@@ -85,75 +53,27 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
         }
     }
 
-    async function onRefresh() {
-        loadData(true)
-    }
+    useEffect(() => {
+        const values = Object.values(boosts).filter(token => token)
+        const { total, avg } = values.reduce(
+            (acc, token) => {
+                acc.total += Number(token.rewards ?? 0)
+                acc.avg += Number(token.avgRewards ?? 0)
+                return acc
+            },
+            { total: 0, avg: 0 }
+        )
+        setYieldData({
+            total: total,
+            avg: avg,
+            loading: false
+        })
+    }, [JSON.stringify(boosts)])
 
-    async function loadStakes(forceRefresh = false) {
-        try {
-            const results = await Promise.all(
-                Object.keys(BOOSTLIST).map(async (boost) => {
-                    if(cacheRef.current[boost] && !forceRefresh) {
-                        return cacheRef.current[boost]
-                    }
-
-                    const data = await getStakeORE(BOOSTLIST[boost].lpMint, boost)
-                    cacheRef.current[boost] = {
-                        weight: (data.boost.weight ?? 0),
-                        deposits: data.boost.totalDeposits ?? 0,
-                        myDeposits: data.stake.balance ?? 0,
-                        stakers: data.boost.totalStakers ?? 0,
-                        myShare: ((data.stake.balance ?? 0) / (data.boost.totalDeposits ?? 1)) * 100 ?? 0.000,
-                        rewards: data.rewards ?? 0,
-                        decimals: data.decimals ?? 0,
-                        lastClaimAt: data.stake.lastClaimAt ?? null,
-                        loading: false
-                    }
-                    return cacheRef.current[boost]
-                })
-            )
-            let avgReward = 0.0
-            const newData: Record<string, DataStakeInfo> = Object.entries(BOOSTLIST).reduce(
-                (acc, [key, value], index) => {
-                    let estimate = 0.0
-                    if(results[index].lastClaimAt) {
-                        let divided = dayjs(new Date()).diff(dayjs(results[index]?.lastClaimAt), 'minute')
-                        divided = divided === 0 ? 1 : divided
-                        estimate = ((results[index]?.rewards ?? 0) / divided) * 60 * 24
-                        avgReward += estimate
-                    }
-
-                    acc[key] = {
-                        ...value,
-                        weight: results[index]?.weight ?? 0,
-                        deposits: results[index]?.deposits ?? 0,
-                        myDeposits: results[index]?.myDeposits ?? 0,
-                        stakers: results[index]?.stakers ?? 0,
-                        myShare: results[index]?.myShare ?? 0.000,
-                        rewards: results[index]?.rewards ?? 0,
-                        decimals: results[index]?.decimals ?? 0,
-                        lastClaimAt: results[index]?.lastClaimAt ?? null,
-                        average: estimate,
-                        loading: false,
-                    }
-                    return acc
-                }, 
-            {} as Record<string, DataStakeInfo>)
-
-            const total = Object.values(newData)
-                .filter((token) => token)
-                .reduce((sum, token) => sum + (token?.rewards ?? 0), 0)
-            setYieldData({
-                total: total,
-                avg: avgReward,
-                loading: false
-            })
-
-            setStakeData(newData)
-
-        } catch(error) {
-            console.log("error getStakes", error)
-        }
+    async function loadStakes() {
+        Object.keys(BOOSTLIST).map(async (boost) => {
+            await getStakeORE(BOOSTLIST[boost].lpMint, boost)
+        })
     }
 
     async function loadPrice() {
@@ -261,13 +181,13 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
     
                             await connection.confirmTransaction(signature, "confirmed")
                             setTimeout(() => {
-                                onRefresh()
+                                loadData()
                                 dispatch(uiActions.showLoading(false))
                             }, 5000)
                         } catch(error) {
                             console.log("error", error)
                             setTimeout(() => {
-                                onRefresh()
+                                loadData()
                                 dispatch(uiActions.showLoading(false))
                             }, 5000)
                         }
@@ -277,7 +197,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
         } catch(error) {
             console.log("error", error)
             setTimeout(() => {
-                onRefresh()
+                loadData()
                 dispatch(uiActions.showLoading(false))
             }, 5000)
             throw error
@@ -287,7 +207,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
     return (
         <SafeAreaView className="flex-1 bg-baseBg">
             <ScrollView
-                refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh}/>}
+                refreshControl={<RefreshControl refreshing={false} onRefresh={loadData}/>}
                 contentContainerClassName="grow-1 pb-[52px]" stickyHeaderIndices={[0]}
             >
                 <View className="pt-2 mb-1 items-center px-10 bg-baseBg">
@@ -379,10 +299,10 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                             <StakeRow
                                 key={`stakescreen-${BOOSTLIST[boost].id}`}
                                 boost={boost}
-                                stakeData={stakeData}
                                 orePrice={orePrice}
                                 loadStakes={loadStakes}
                                 navigationProps={props}
+                                loading={yieldData.loading}
                             />
                         ))}
                     </View>
@@ -394,36 +314,32 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
 
 interface StakeRowProps {
     boost: string
-    stakeData: Record<string, DataStakeInfo>
     orePrice: number
-    loadStakes: (forceRefresh: boolean) => void,
+    loading: boolean
+    loadStakes: () => void,
     navigationProps: TabStakeScreenProps
 }
 
 function StakeRow(props: StakeRowProps) {
-    const { boost, stakeData, orePrice, loadStakes, navigationProps } = props
+    const { boost, orePrice, loadStakes, loading, navigationProps } = props
     const walletAddress = useSelector((state: RootState) => state.wallet.publicKey)
+    const boosts = useSelector((state: RootState) => state.boost.boosts)
     const dispatch = useDispatch()
     
     const { showModal, hideModal } = useBottomModal()
 
     return (
         <View key={`boost-${BOOSTLIST[boost].id}`} className="flex-row mx-4 items-center border-l-[0.5px] border-b-[0.5px] border-solid border-gray-600">
-            {stakeData[boost].loading && <View className="w-12 h-full flex-row justify-center items-center px-1 border-r-[0.5px] border-gray-600">
+            {loading && <View className="w-12 h-full flex-row justify-center items-center px-1 border-r-[0.5px] border-gray-600">
                 <SkeletonLoader
                     className="rounded-lg bg-gray-900 w-[90%] h-8 overflow-hidden"
                     colors={["#111827", "#1f2937", "#111827"]}
                 />
             </View>}
-            {!stakeData[boost].loading && <View className="w-12 h-full flex-row items-center justify-center border-r-[0.5px] border-gray-600">
+            {!loading && <View className="w-12 h-full flex-row items-center justify-center border-r-[0.5px] border-gray-600">
                 <OptionMenu
                     containerClassName="w-12 h-12 items-center self-center justify-center"
                     menu={[{
-                        text: 'View',
-                        onPress: async () => {
-                            navigationProps.navigation.navigate('Stake')
-                        }
-                    }, {
                         text: 'Claim',
                         onPress: async () => {
                             try {
@@ -471,7 +387,7 @@ function StakeRow(props: StakeRowProps) {
                                                 await instruction.connection.confirmTransaction(signature, "confirmed")
                                                 
                                                 setTimeout(() => {
-                                                    loadStakes(true)
+                                                    loadStakes()
                                                     dispatch(uiActions.showLoading(false))
                                                 }, 5000)
                                             } catch(error) {
@@ -529,47 +445,47 @@ function StakeRow(props: StakeRowProps) {
                 </View>
             </View>
             <View className="w-24 h-full flex-row justify-center items-center px-1 border-r-[0.5px] border-gray-600">
-                {stakeData[boost] && <CustomText className="w-18 justify-center text-primary text-md font-PlusJakartaSansBold">
-                    {stakeData[boost].stakers}
+                {boosts[boost] && <CustomText className="w-18 justify-center text-primary text-md font-PlusJakartaSansBold">
+                    {boosts[boost].boost?.totalStakers ?? 0}
                 </CustomText>}
             </View>
             <View className="w-[90px] h-full flex-row justify-center items-center px-1 border-r-[0.5px] border-gray-600">
-                {stakeData[boost] && <CustomText className="text-primary text-md font-PlusJakartaSansBold">
-                    {`${stakeData[boost].weight}`}
+                {boosts[boost] && <CustomText className="text-primary text-md font-PlusJakartaSansBold">
+                    {`${boosts[boost].boost?.weight}`}
                 </CustomText>}
             </View>
             <View className="w-56 h-full flex-row justify-end items-center px-1 border-r-[0.5px] border-gray-600">
-                {stakeData[boost] && <CustomText className="text-primary text-md font-LatoBold">
-                    {stakeData[boost].deposits / Math.pow(10, stakeData[boost].decimals)}
+                {boosts[boost] && <CustomText className="text-primary text-md font-LatoBold">
+                    {(boosts[boost].boost?.totalDeposits ?? 0) / Math.pow(10, boosts[boost].decimals ?? 0)}
                 </CustomText>}
             </View>
             <View className="w-56 h-full flex-row justify-end items-center px-1 border-r-[0.5px] border-gray-600">
-                {stakeData[boost] && <CustomText className="text-primary text-md font-LatoBold">
-                    {stakeData[boost].myDeposits / Math.pow(10, stakeData[boost].decimals)}
+                {boosts[boost] && <CustomText className="text-primary text-md font-LatoBold">
+                    {(boosts[boost].stake?.balance ?? 0) / Math.pow(10, boosts[boost].decimals ?? 0)}
                 </CustomText>}
             </View>
             <View className="w-24 h-full flex-row justify-center items-center px-1 border-r-[0.5px] border-gray-600">
-                {stakeData[boost] && <CustomText className="text-primary text-md font-PlusJakartaSansBold">
-                    {`${stakeData[boost].myShare.toFixed(3)}%`}
+                {boosts[boost] && <CustomText className="text-primary text-md font-PlusJakartaSansBold">
+                    {`${((boosts[boost].stake?.balance ?? 0) / (boosts[boost].boost?.totalDeposits ?? 1) * 100).toFixed(3)}%`}
                 </CustomText>}
             </View>
             <View className="w-56 h-full flex-row justify-end items-center px-1 border-r-[0.5px] border-gray-600">
                 <View className="items-end">
-                    {stakeData[boost] && <CustomText className="text-primary text-md font-LatoBold">
-                        {(stakeData[boost].rewards / Math.pow(10, 11)).toFixed(11)} ORE
+                    {boosts[boost] && <CustomText className="text-primary text-md font-LatoBold">
+                        {((boosts[boost].rewards ?? 0) / Math.pow(10, 11)).toFixed(11)} ORE
                     </CustomText>}
-                    {stakeData[boost] && <CustomText className="text-green-500 text-md font-PlusJakartaSansBold">
-                        {`($${(stakeData[boost].rewards / Math.pow(10, 11) * orePrice).toFixed(2)})`}
+                    {boosts[boost] && <CustomText className="text-green-500 text-md font-PlusJakartaSansBold">
+                        {`($${((boosts[boost].rewards ?? 0) / Math.pow(10, 11) * orePrice).toFixed(2)})`}
                     </CustomText>}
                 </View>
             </View>
             <View className="w-56 h-full flex-row justify-end items-center px-1 pr-2 border-r-[0.5px] border-gray-600">
                 <View className="items-end">
-                    {stakeData[boost] && <CustomText className="text-primary text-md font-LatoBold">
-                        {((stakeData[boost].average ?? 0)  / Math.pow(10, 11)).toFixed(11)} ORE
+                    {boosts[boost] && <CustomText className="text-primary text-md font-LatoBold">
+                        {((boosts[boost].avgRewards ?? 0) / Math.pow(10, 11)).toFixed(11)} ORE
                     </CustomText>}
-                    {stakeData[boost] && <CustomText className="text-green-500 text-md font-PlusJakartaSansBold">
-                        {`($${((stakeData[boost].average ?? 0) / Math.pow(10, 11) * orePrice).toFixed(2)})`}
+                    {boosts[boost] && <CustomText className="text-green-500 text-md font-PlusJakartaSansBold">
+                        {`($${((boosts[boost].avgRewards ?? 0) / Math.pow(10, 11) * orePrice).toFixed(2)})`}
                     </CustomText>}
                 </View>
             </View>

@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { ConfigState } from '@store/types'
 
 const initialState: ConfigState = {
-    rpcUrl: "amaleta-5y8tse-fast-mainnet.helius-rpc.com/",
+    rpcUrl: "api.devnet.solana.com",
 }
 
 const configSlice = createSlice({

@@ -24,7 +24,6 @@ export default function RPCScreen({ navigation }: RPCNavigationProps) {
             await connection.getRecentPrioritizationFees()
             dispatch(configActions.setRpcUrl(rpc))
         } catch(error) {
-            console.log("asdas")
             console.log("error", error)
         } finally {
             dispatch(uiActions.showLoading(false))

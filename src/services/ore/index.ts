@@ -77,6 +77,10 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
         boostAddress: boostPublicKey.toBase58(),
         boost: boost
     }))
+    store.dispatch(boostActions.addSocket({
+        type: 'boost',
+        address: boostPublicKey.toBase58(),
+    }))
 
     const { stake, stakePublicKey } = await getStake(stakerPublicKey, boostPublicKey)
 
@@ -84,6 +88,10 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
         boostAddress: boostPublicKey.toBase58(),
         stake: stake,
         stakeAddress: stakePublicKey.toBase58()
+    }))
+    store.dispatch(boostActions.addSocket({
+        type: 'stake',
+        address: stakePublicKey.toBase58(),
     }))
 
     const decimals = await getBoostDecimals(mintPublicKey, boostPublicKey)
@@ -96,17 +104,23 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
     const { boostConfig, boostConfigPublicKey } = await getBoostConfig()
 
     store.dispatch(boostActions.updateConfigRedux({
-        boostAddress: boostPublicKey.toBase58(),
         boostConfig: boostConfig,
         boostConfigAddress: boostConfigPublicKey.toBase58()
+    }))
+    store.dispatch(boostActions.addSocket({
+        type: 'boostConfig',
+        address: boostConfigPublicKey.toBase58(),
     }))
 
     const { boostProof, boostProofPublicKey } = await getBoostProof(boostConfigPublicKey)
 
     store.dispatch(boostActions.updateProofRedux({
-        boostAddress: boostPublicKey.toBase58(),
         boostProof: boostProof,
         boostProofAddress: boostProofPublicKey.toBase58()
+    }))
+    store.dispatch(boostActions.addSocket({
+        type: 'boostProof',
+        address: boostProofPublicKey.toBase58(),
     }))
 
     const rewards = calculateClaimableYield(boost, boostProof, stake, boostConfig)

@@ -5,11 +5,13 @@ import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 import com.oremobile.modules.CpuUsageModule
+import com.oremobile.modules.SolanaWebSocketModule
 
 class OreMobilePackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         return listOf(
-            CpuUsageModule(reactContext)
+            CpuUsageModule(reactContext),
+            SolanaWebSocketModule(reactContext)
         )
     }
 
