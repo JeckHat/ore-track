@@ -89,7 +89,10 @@ store.subscribe(() => {
     }
 
     if (!isBoostRecordEqual(boost.boosts, newBoosts.boosts)) {
-        boost.boosts = { ...newBoosts.boosts }
+        boost = {
+            ...boost,
+            boosts: { ...newBoosts.boosts }
+        }
     }
 
     if (newBoosts.boostConfig) {
