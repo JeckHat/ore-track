@@ -64,17 +64,23 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
             { total: 0, avg: 0 }
         )
         setYieldData({
+            ...yieldData,
             total: total,
             avg: avg,
-            loading: false
         })
     }, [JSON.stringify(boosts)])
 
     async function loadStakes() {
-        Object.keys(BOOSTLIST).map(async (boost) => {
+        const promises = Object.keys(BOOSTLIST).map((boost) => {
             if (!boosts[boost]) {
-                await getStakeORE(BOOSTLIST[boost].lpMint, boost)
+                return getStakeORE(BOOSTLIST[boost].lpMint, boost)
             }
+        })
+
+        await Promise.all(promises)
+        setYieldData({
+            ...yieldData,
+            loading: false
         })
     }
 
