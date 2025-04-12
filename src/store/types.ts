@@ -51,6 +51,7 @@ export interface BoostState {
     boostProofAddress?: string
     decimals?: number
     rewards?: number
+    avgRewards?: number
 }
 
 export interface MinerInfo {

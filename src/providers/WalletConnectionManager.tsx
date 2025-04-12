@@ -3,12 +3,11 @@ import { Connection } from "@solana/web3.js"
 import { store } from "@store/index"
 import { BoostState } from "@store/types"
 
-
 const initState = store.getState()
-let connection: Connection = new Connection(`https://${initState.config.rpcUrl}`)
-let rpcUrl: string | null = initState.config.rpcUrl ?? ""
-let walletAddress: string | null = initState.wallet.publicKey ?? ""
-let boosts: Record<string, BoostState> = initState.boost.boosts
+let connection: Connection = new Connection(`https://${initState.config!.rpcUrl}`)
+let rpcUrl: string | null = initState.config?.rpcUrl ?? ""
+let walletAddress: string | null = initState.wallet?.publicKey ?? ""
+let boosts: Record<string, BoostState> = initState.boost?.boosts ?? {}
 
 function isBoostEqual(a: BoostState, b: BoostState): boolean {
     return (
@@ -65,10 +64,10 @@ function createConnection(rpcUrl: string) {
 
 store.subscribe(() => {
     const state = store.getState()
-    const newRpcUrl = state.config.rpcUrl ?? ""
-    const newWalletAddress = state.wallet.publicKey ?? ""
+    const newRpcUrl = state.config?.rpcUrl ?? ""
+    const newWalletAddress = state.wallet?.publicKey ?? ""
 
-    const newBoosts = state.boost.boosts
+    const newBoosts = state.boost?.boosts ?? {}
     
     if (newRpcUrl !== rpcUrl) {
         createConnection(newRpcUrl)

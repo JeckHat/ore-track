@@ -23,6 +23,29 @@ export class Proof {
         this.totalHashes = totalHashes;
         this.totalRewards = totalRewards;
     }
+
+    toJSON() {
+        return {
+            __type: 'Proof',
+            ...this,
+            challenge: this.challenge ? Array.from(this.challenge) : undefined,
+            lastHash: this.lastHash ? Array.from(this.lastHash) : undefined,
+        };
+    }
+    
+    static fromJSON(json: any): Proof {
+        return new Proof(
+            json.authority,
+            json.balance,
+            json.challenge ? new Uint8Array(json.challenge) : undefined,
+            json.lastHash ? new Uint8Array(json.lastHash) : undefined,
+            json.lastHashAt,
+            json.lastClaimAt,
+            json.miner,
+            json.totalHashes,
+            json.totalRewards
+        );
+    }
 }
 
 function tryFromBytes(buffer: Buffer) {

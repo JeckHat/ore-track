@@ -10,6 +10,17 @@ export class Numeric {
         }
     }
 
+    toJSON() {
+        return {
+            __type: 'Numeric',
+            bits: this.bits.toString()
+        }
+    }
+
+    static fromJSON(json: any): Numeric {
+        return new Numeric(json.bits);
+    }
+
     static fromBytes(buffer: Buffer) {
         if (buffer.length !== 16) throw new Error("Numeric is not 16 byte!");
         let hex = Buffer.from(buffer).reverse().toString("hex"); // Little-endian

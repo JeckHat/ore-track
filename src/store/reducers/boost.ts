@@ -1,4 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { Boost, BoostConfig, Proof, Stake } from '@models'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import dayjs from 'dayjs'
 
 import { BoostState } from '@store/types'
 
@@ -10,82 +12,75 @@ const boostSlice = createSlice({
     name: 'boost',
     initialState: initialState,
     reducers: {
-        updateBoostRedux(state, action) {
+        updateBoostRedux(state, action: PayloadAction<{ boostAddress: string, boost: Boost }>) {
+            const { boostAddress, boost } = action.payload
             state.boosts = {
                 ...state.boosts,
-                [action.payload.boostAddress]: {
+                [boostAddress]: {
                     ...state.boosts[action.payload.boostAddress],
-                    boost: action.payload.boost,
-                    boostAddress: action.payload.boostAddress
+                    boost: boost.toJSON(),
+                    boostAddress: boostAddress
                 }
             }
         },
-        updateStakeRedux(state, action) {
+        updateStakeRedux(state, action: PayloadAction<{ boostAddress: string, stakeAddress: string, stake: Stake }>) {
+            const { boostAddress, stakeAddress, stake } = action.payload
             state.boosts = {
                 ...state.boosts,
-                [action.payload.boostAddress]: {
-                    ...state.boosts[action.payload.boostAddress],
-                    stake: action.payload.stake,
-                    stakeAddress: action.payload.stakeAddress
+                [boostAddress]: {
+                    ...state.boosts[boostAddress],
+                    stake: stake.toJSON(),
+                    stakeAddress: stakeAddress
                 }
             }
         },
-        updateConfigRedux(state, action) {
+        updateConfigRedux(state, action: PayloadAction<{ boostAddress: string, boostConfigAddress: string, boostConfig: BoostConfig }>) {
+            const { boostAddress, boostConfigAddress, boostConfig } = action.payload
             state.boosts = {
                 ...state.boosts,
-                [action.payload.boostAddress]: {
-                    ...state.boosts[action.payload.boostAddress],
-                    boostConfig: action.payload.boostConfig,
-                    boostConfigAddress: action.payload.boostConfigAddress
+                [boostAddress]: {
+                    ...state.boosts[boostAddress],
+                    boostConfig: boostConfig.toJSON(),
+                    boostConfigAddress: boostConfigAddress
                 }
             }
         },
-        updateProofRedux(state, action) {
+        updateProofRedux(state, action: PayloadAction<{ boostAddress: string, boostProofAddress: string, boostProof: Proof }>) {
+            const { boostAddress, boostProofAddress, boostProof } = action.payload
             state.boosts = {
                 ...state.boosts,
-                [action.payload.boostAddress]: {
-                    ...state.boosts[action.payload.boostAddress],
-                    boostProof: action.payload.boostProof,
-                    boostProofAddress: action.payload.boostProofAddress
+                [boostAddress]: {
+                    ...state.boosts[boostAddress],
+                    boostProof: boostProof.toJSON(),
+                    boostProofAddress: boostProofAddress
                 }
             }
         },
-        updateDecimals(state, action) {
+        updateDecimals(state, action: PayloadAction<{ boostAddress: string, decimals: number }>) {
+            const { boostAddress, decimals } = action.payload
             state.boosts = {
                 ...state.boosts,
-                [action.payload.boostAddress]: {
-                    ...state.boosts[action.payload.boostAddress],
-                    decimals: action.payload.decimals
+                [boostAddress]: {
+                    ...state.boosts[boostAddress],
+                    decimals: decimals
                 }
             }
         },
-        updateRewards(state, action) {
+        updateRewards(state, action: PayloadAction<{ boostAddress: string, rewards: number }>) {
+            const { boostAddress, rewards } = action.payload
+            let claimAt = state.boosts[boostAddress].stake?.lastClaimAt ?? dayjs().toISOString()
+            let divided = dayjs(new Date()).diff(dayjs(claimAt), 'minute')
+            divided = divided === 0 ? 1 : divided
+            let average = rewards / divided * 60 * 24
             state.boosts = {
                 ...state.boosts,
-                [action.payload.boostAddress]: {
-                    ...state.boosts[action.payload.boostAddress],
-                    rewards: action.payload.rewards
+                [boostAddress]: {
+                    ...state.boosts[boostAddress],
+                    rewards: rewards,
+                    avgRewards: average
                 }
             }
         },
-        // addStake(state, action) {
-        //     state.stakes = {
-        //         ...state.stakes,
-        //         [action.payload.boost]: {
-        //             ...state.stakes[action.payload.boost],
-        //             ...action.payload.stake
-        //         }
-        //     }
-        // },
-        // setClaimStake(state, action) {
-        //     state.stakes = {
-        //         ...state.stakes,
-        //         [action.payload]: {
-        //             ...state.stakes[action.payload],
-        //             claimAt: new Date().toISOString()
-        //         }
-        //     }
-        // },
         resetBoosts(state) {
             Object.assign(state, initialState);
         }

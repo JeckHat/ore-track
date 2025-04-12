@@ -1,7 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import dayjs from "dayjs";
 
-import { BOOST_DENOMINATOR } from "@constants";
 import { Numeric } from "./Numeric";
 
 export class Boost {
@@ -24,6 +23,23 @@ export class Boost {
         this.totalStakers = totalStakers;
         this.weight = weight;
         this.withdrawFee = withdrawFee;
+    }
+
+    toJSON() {
+        return {
+            __type: 'Boost',
+            ...this,
+            lastRewardsFactor: this.lastRewardsFactor?.toJSON(),
+            rewardsFactor: this.rewardsFactor?.toJSON(),
+        };
+      }
+    
+    static fromJSON(json: any): Boost {
+        return new Boost(
+            json.expiredAt, Numeric.fromJSON(json.lastRewardsFactor), json.mint,
+            Numeric.fromJSON(json?.rewardsFactor), json.totalDeposits, json.totalStakers,
+            json.weight, json.withdrawFee
+        )
     }
 }
 
@@ -94,6 +110,20 @@ export class BoostConfig {
         this.rewardsFactor = rewardsFactor;
         this.takeRate = takeRate;
         this.totalWeight = totalWeight;
+    }
+
+    toJSON() {
+        return {
+            __type: 'BoostConfig',
+            ...this,
+            rewardsFactor: this.rewardsFactor?.toJSON(),
+        };
+    }
+    
+    static fromJSON(json: any): BoostConfig {
+        return new BoostConfig(json.admin, json.boosts, json.len,
+            Numeric.fromJSON(json.rewardsFactor), json.takeRate, json.totalWeight
+        )
     }
 }
 

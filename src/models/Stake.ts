@@ -23,6 +23,21 @@ export class Stake {
         this.lastRewardsFactor = lastRewardsFactor;
         this.rewards = rewards;
     }
+
+    toJSON() {
+        return {
+            __type: 'Stake',
+            ...this,
+            lastRewardsFactor: this.lastRewardsFactor?.toJSON(),
+        };
+    }
+    
+    static fromJSON(json: any): Stake {
+        return new Stake(json.authority, json.balance, json.boost, json.lastClaimAt,
+            json.lastDespositAt, json.lastWithdrawAt, Numeric.fromJSON(json.lastRewardsFactor),
+            json.rewards
+        )
+    }
 }
 
 function tryFromBytes(buffer: Buffer) {

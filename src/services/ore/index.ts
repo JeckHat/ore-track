@@ -113,7 +113,7 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
 
     store.dispatch(boostActions.updateRewards({
         boostAddress: boostPublicKey.toBase58(),
-        rewards: bigIntToNumber(rewards / 10n ** 11n)
+        rewards: bigIntToNumber(rewards)
     }))
 
     return {
