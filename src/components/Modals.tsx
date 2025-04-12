@@ -98,7 +98,8 @@ interface ModalTransactionProps {
         ticker: string,
         balance: string,
         tokenImage: string,
-        pairImage?: string | null
+        pairImage?: string | null,
+        isMinus?: boolean
     }[],
     transferInfo: { label: string, value: string }[],
     advanced?: [],
@@ -140,9 +141,12 @@ export function ModalTransaction(props: ModalTransactionProps) {
                             <CustomText className="text-primary font-PlusJakartaSansSemiBold mx-2">{tokenTransfer.ticker}</CustomText>
                         </View>
                         <View className="flex-1 justify-center items-end">
-                            <CustomText className="text-end font-PlusJakartaSansSemiBold ml-2 text-green-600">
+                            {!tokenTransfer.isMinus && <CustomText className="text-end font-PlusJakartaSansSemiBold ml-2 text-green-600">
                                 + {tokenTransfer.balance} {tokenTransfer.ticker}
-                            </CustomText>
+                            </CustomText>}
+                            {tokenTransfer.isMinus && <CustomText className="text-end font-PlusJakartaSansSemiBold ml-2 text-red-600">
+                                - {tokenTransfer.balance} {tokenTransfer.ticker}
+                            </CustomText>}
                         </View>
                     </View>
                 ))}

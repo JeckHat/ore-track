@@ -1,16 +1,26 @@
 import { useEffect, useReducer, useState } from "react";
 import { Image, RefreshControl, SafeAreaView, ScrollView, View } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { twMerge } from "tailwind-merge";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import {
+    ComputeBudgetProgram,
+    LAMPORTS_PER_SOL,
+    PublicKey,
+    SendTransactionError,
+    TransactionMessage,
+    VersionedTransaction
+} from "@solana/web3.js";
 
-import { Button, CustomText, Input, OptionMenu } from "@components";
+import { Button, CustomText, Input, ModalTransaction, OptionMenu } from "@components";
 import { StakeNavigationProps } from "@navigations/types";
-import { BOOSTLIST, ORE_MINT, TOKENLIST } from "@constants";
+import { BOOSTLIST, COMPUTE_UNIT_LIMIT, ORE_MINT, TOKENLIST } from "@constants";
 import Images from "@assets/images";
 import { RootState } from "@store/types";
-import { getLiquidityPair, getStakeORE } from "@services/ore";
+import { depositStakeInstruction, getLiquidityPair, getStakeORE } from "@services/ore";
 import { getBalance } from "@services/solana";
+import { getConnection } from "@providers";
+import { getKeypair, uiActions } from "@store/actions";
+import { useBottomModal } from "@hooks";
 
 interface FormState {
     tokenOre: {
@@ -186,6 +196,10 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
     const [forms, onChangeForms] = useReducer(formReducer, initialState)
     const [priorityFee, setPriorityFee] = useState(5000 / LAMPORTS_PER_SOL)
 
+    const dispatch = useDispatch()
+
+    const { showModal, hideModal } = useBottomModal()
+
     useEffect(() => {
         const interval = setInterval(() => {
             loadData()
@@ -249,6 +263,115 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
         } catch(error) {
 
         }
+    }
+
+    async function onStake() {
+        try{
+            let instructions = []
+            
+            instructions.push(ComputeBudgetProgram.setComputeUnitLimit({
+                units: COMPUTE_UNIT_LIMIT
+            }))
+
+            const depositInstruction = await depositStakeInstruction(boostData?.lpMint, boostAddress)
+            const lpBalance = await getBalance(walletAddress, boostData?.lpMint)
+
+            instructions.push(depositInstruction)
+    
+            const connection = getConnection()
+    
+            let latestBlock = await connection.getLatestBlockhash();
+    
+            let messageV0 = new TransactionMessage({
+                payerKey: new PublicKey(walletAddress),
+                recentBlockhash: latestBlock.blockhash,
+                instructions: instructions,
+            }).compileToLegacyMessage();
+    
+            let trx = new VersionedTransaction(messageV0);
+    
+            const fee = await connection.getFeeForMessage(trx.message, "confirmed")
+    
+            const dynamicPriorityFee = fee.value ?? 0
+    
+            instructions.splice(1, 0, ComputeBudgetProgram.setComputeUnitPrice({ microLamports: dynamicPriorityFee }))
+    
+            latestBlock = await connection.getLatestBlockhash();
+    
+            messageV0 = new TransactionMessage({
+                payerKey: new PublicKey(walletAddress),
+                recentBlockhash: latestBlock.blockhash,
+                instructions: instructions,
+            }).compileToLegacyMessage();
+    
+            trx = new VersionedTransaction(messageV0)
+
+            const tokenTransfers = [{
+                id: 'ore',
+                ticker: 'ORE',
+                isLp: false,
+                balance: lpBalance,
+                tokenImage: 'OreToken',
+                isMinus: true
+            }]
+
+            let transferInfo = [
+                {
+                    label: 'Account',
+                    value: walletAddress ?? ""
+                },
+                {
+                    label: 'Network Fee',
+                    value: `${dynamicPriorityFee / LAMPORTS_PER_SOL} SOL`
+                }
+            ]
+
+            onShowModal(tokenTransfers, transferInfo, trx)
+    
+        } catch(error: any | SendTransactionError) {
+            console.log("error", error)
+            console.log("logs", error.getLogs())
+        }
+    }
+
+    async function onUnstake() {
+
+    }
+
+    function onShowModal(tokenTransfers: any[], transferInfo: any[], transaction: VersionedTransaction) {
+        const connection = getConnection()
+        showModal(
+            <ModalTransaction
+                tokenTransfers={tokenTransfers}
+                transferInfo={transferInfo}
+                onClose={hideModal}
+                onConfirm={async () => {
+                    try {
+                        hideModal()
+                        dispatch(uiActions.showLoading(true))
+                        const keypair = await getKeypair()
+                        transaction.sign([keypair])    
+                        
+                        const signature = await connection.sendTransaction(transaction, {
+                            skipPreflight: false,
+                        });
+                        await connection.confirmTransaction(signature, "confirmed")
+
+                        setTimeout(() => {
+                            loadData()
+                            dispatch(uiActions.showLoading(false))
+                        }, 5000)
+
+                    } catch(error) {
+                        console.log("error", error)
+                        setTimeout(() => {
+                            loadData()
+                            dispatch(uiActions.showLoading(false))
+                        }, 5000)
+                    }
+                }}
+            />
+        )
     }
     
     return (
@@ -503,7 +626,7 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
                             textClassName="text-sm mb-[1px]"
                             disabled={forms.stakeData.unstake <= 0}
                             title={route.params?.isDeposit? "Stake Token" : "Withdraw Token"}
-                            onPress={() => {}}
+                            onPress={route.params?.isDeposit? onStake : onUnstake}
                         />
                     </View>
                 )}
