@@ -26,8 +26,6 @@ export function RootNavigation() {
   const socketAccounts = useSelector((state: RootState) => state.boost.socketAccounts) ?? {}
   const boostRedux = useSelector((state: RootState) => state.boost) ?? {}
 
-  console.log(boostRedux)
-
   const dispatch = useDispatch()
 
   const accounts = useMemo(() => {
@@ -61,7 +59,7 @@ export function RootNavigation() {
           dispatch(boostActions.updateStakeRedux({
             stake: stake,
             stakeAddress: sockets[1],
-            boostAddress: stake.boost!
+            boostAddress: stake.boost ?? ""
           }))
           break;
         }
@@ -84,14 +82,6 @@ export function RootNavigation() {
           break;
         }
       }
-      if (sockets[0] === "boostProof") {
-        const boostProof = await getProofResult(buffer)
-        calculateRewards({ boostProof })
-        dispatch(boostActions.updateProofRedux({
-          boostProof: boostProof,
-          boostProofAddress: sockets[1]
-        }))
-      }
     } catch(error) {
       console.log("error", error)
     }
@@ -99,10 +89,13 @@ export function RootNavigation() {
 
   function calculateRewards(params: paramsCalculate) {
     Object.keys(boostRedux.boosts).map((bst) => {
-      const boost = params.boost ?? Boost.fromJSON(boostRedux.boosts[bst].boost)
-      const stake = params.stake ?? Stake.fromJSON(boostRedux.boosts[bst].stake)
-      const boostConfig = params.boostConfig ?? BoostConfig.fromJSON(boostRedux.boostConfig)
-      const boostProof = params.boostProof ?? Proof.fromJSON(boostRedux.boostProof)
+      let boost = params.boost ?? Boost.fromJSON(boostRedux.boosts[bst].boost)
+      let stake = params.stake ?? Stake.fromJSON(boostRedux.boosts[bst].stake)
+      let boostConfig = params.boostConfig ?? BoostConfig.fromJSON(boostRedux.boostConfig)
+      let boostProof = params.boostProof ?? Proof.fromJSON(boostRedux.boostProof)
+
+      if (!boost || !stake || !boostConfig || !boostProof) return
+
       const rewards = calculateClaimableYield(boost, boostProof, stake, boostConfig)
       dispatch(boostActions.updateRewards({
         rewards: Number(rewards),

@@ -37,13 +37,19 @@ const boostSlice = createSlice({
         },
         updateConfigRedux(state, action: PayloadAction<{ boostConfigAddress: string, boostConfig: BoostConfig }>) {
             const { boostConfigAddress, boostConfig } = action.payload
-            state.boostConfig = boostConfig.toJSON()
-            state.boostConfigAddress = boostConfigAddress
+            Object.assign(state, {
+                ...state,
+                boostConfig: boostConfig.toJSON(),
+                boostConfigAddress: boostConfigAddress,
+            })
         },
         updateProofRedux(state, action: PayloadAction<{ boostProofAddress: string, boostProof: Proof }>) {
             const { boostProofAddress, boostProof } = action.payload
-            state.boostProof = boostProof.toJSON()
-            state.boostProofAddress = boostProofAddress
+            Object.assign(state, {
+                ...state,
+                boostProof: boostProof.toJSON(),
+                boostProofAddress: boostProofAddress,
+            })
         },
         updateDecimals(state, action: PayloadAction<{ boostAddress: string, decimals: number }>) {
             const { boostAddress, decimals } = action.payload
@@ -61,13 +67,13 @@ const boostSlice = createSlice({
             let divided = dayjs(new Date()).diff(dayjs(claimAt), 'minute')
             divided = divided === 0 ? 1 : divided
             let average = rewards / divided * 60 * 24
-            state.boosts = {
-                ...state.boosts,
-                [boostAddress]: {
-                    ...state.boosts[boostAddress],
-                    rewards: rewards,
-                    avgRewards: average
-                }
+
+            if (!state.boosts[boostAddress]) return
+
+            state.boosts[boostAddress] = {
+                ...state.boosts[boostAddress],
+                rewards,
+                avgRewards: average
             }
         },
         addSocket(state, action: PayloadAction<{ type: string, address: string }>) {
