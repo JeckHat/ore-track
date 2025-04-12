@@ -133,6 +133,11 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
 
 export async function getLiquidityPair(lpId: string, defi: string, boostAddress: string) {
     const connection = getConnection()
+    const walletAddress = getWalletAddress()
+
+    if (!walletAddress) {
+        throw new CustomError("Wallet Address is undefined", 500)
+    }
 
     const mintAddress = BOOSTLIST[boostAddress].lpMint
     
@@ -151,7 +156,8 @@ export async function getLiquidityPair(lpId: string, defi: string, boostAddress:
         const lpMintSupply = await connection.getTokenSupply(new PublicKey(mintAddress))
         const shares = parseFloat(lpMintSupply.value.amount)
 
-        const { stake, decimals } = await getStakeORE(mintAddress, boostAddress)
+        const { stake } = await getStake(new PublicKey(walletAddress), new PublicKey(boostAddress))
+        const decimals = await getBoostDecimals(new PublicKey(mintAddress), new PublicKey(boostAddress))
         const stakeShare = (stake.balance ?? 0) / shares 
 
         const stakeAmountA = parseFloat(balanceA) * stakeShare
@@ -180,7 +186,8 @@ export async function getLiquidityPair(lpId: string, defi: string, boostAddress:
         const lpMintSupply = await connection.getTokenSupply(new PublicKey(mintAddress))
         const shares = parseFloat(lpMintSupply.value.amount)
 
-        const { stake, decimals } = await getStakeORE(mintAddress, boostAddress)
+        const { stake } = await getStake(new PublicKey(walletAddress), new PublicKey(boostAddress))
+        const decimals = await getBoostDecimals(new PublicKey(mintAddress), new PublicKey(boostAddress))
         const stakeShare = (stake.balance ?? 0) / shares 
 
         const stakeAmountA = parseFloat(balanceA) * stakeShare
@@ -242,7 +249,7 @@ export async function claimStakeOREInstruction(mintAddress: string, boostAddress
 
     const rewards = calculateClaimableYield(boost, boostProof, stake, boostConfig)
     const amountBuffer = Buffer.alloc(8)
-    amountBuffer.writeBigUInt64LE(BigInt(rewards))
+    amountBuffer.writeBigUInt64LE(rewards)
     
     const beneficiaryPublicKey = getAssociatedTokenAddressSync(
         new PublicKey(ORE_MINT),
@@ -306,5 +313,5 @@ export async function claimStakeOREInstruction(mintAddress: string, boostAddress
         );
     } 
 
-    return { transaction, rewards: rewards / (10n ** 11n), estimatedFee, connection };
+    return { transaction, rewards: bigIntToNumber(rewards), estimatedFee, connection };
 }

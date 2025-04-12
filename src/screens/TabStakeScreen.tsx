@@ -13,7 +13,7 @@ import dayjs from 'dayjs'
 
 import { Button, CustomText, SkeletonLoader, OptionMenu, ModalTransaction } from "@components"
 import Images from "@assets/images"
-import { BOOST_DENOMINATOR, BOOSTLIST, COMPUTE_UNIT_LIMIT, JUP_API_PRICE, ORE_MINT } from "@constants"
+import { BOOSTLIST, COMPUTE_UNIT_LIMIT, JUP_API_PRICE, ORE_MINT } from "@constants"
 import { getKeypair, uiActions } from "@store/actions"
 import { CustomError } from "@models"
 import { RootState } from "@store/types"
@@ -23,7 +23,7 @@ import { claimStakeOREInstruction, getStakeORE } from "@services/ore"
 import { shortenAddress } from "@helpers"
 
 interface DataStakeInfo {
-    multiplier: number
+    weight: number
     deposits: number
     myDeposits: number
     stakers: number
@@ -32,7 +32,7 @@ interface DataStakeInfo {
     decimals: number
     loading: boolean
     average?: number
-    lastClaimAt: dayjs.Dayjs | null
+    lastClaimAt?: string | null
     claimAt?: string | null
 }
 
@@ -47,7 +47,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
         Object.entries(BOOSTLIST).reduce((acc, [key, value]) => {
             acc[key] = {
                 ...value,
-                multiplier: 0,
+                weight: 0,
                 deposits: 0,
                 myDeposits: 0,
                 stakers: 0,
@@ -69,7 +69,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
 
     useFocusEffect(
         useCallback(() => {
-            loadData(false)
+            loadData(true)
         }, [])
     )
 
@@ -99,7 +99,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
 
                     const data = await getStakeORE(BOOSTLIST[boost].lpMint, boost)
                     cacheRef.current[boost] = {
-                        multiplier: (data.boost.weight ?? 0) / BOOST_DENOMINATOR,
+                        weight: (data.boost.weight ?? 0),
                         deposits: data.boost.totalDeposits ?? 0,
                         myDeposits: data.stake.balance ?? 0,
                         stakers: data.boost.totalStakers ?? 0,
@@ -117,7 +117,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                 (acc, [key, value], index) => {
                     let estimate = 0.0
                     if(results[index].lastClaimAt) {
-                        let divided = dayjs(new Date()).diff(results[index]?.lastClaimAt, 'minute')
+                        let divided = dayjs(new Date()).diff(dayjs(results[index]?.lastClaimAt), 'minute')
                         divided = divided === 0 ? 1 : divided
                         estimate = ((results[index]?.rewards ?? 0) / divided) * 60 * 24
                         avgReward += estimate
@@ -125,7 +125,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
 
                     acc[key] = {
                         ...value,
-                        multiplier: results[index]?.multiplier ?? 0,
+                        weight: results[index]?.weight ?? 0,
                         deposits: results[index]?.deposits ?? 0,
                         myDeposits: results[index]?.myDeposits ?? 0,
                         stakers: results[index]?.stakers ?? 0,
@@ -191,7 +191,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
             const connection = new Connection(`https://${rpcUrl}`)
             const publicKey = new PublicKey(walletAddress)
             const boosts: string[] = []
-            let rewards = 0n
+            let rewards = 0
             const transaction = new Transaction()
             transaction.add(
                 ComputeBudgetProgram.setComputeUnitLimit({
@@ -217,14 +217,12 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                 throw new CustomError("Fee is empty", 500)
             }
             const estimatedFee = feeCalculator.value / LAMPORTS_PER_SOL
-
-            let newRewards = rewards / 10n ** 11n
             
             let tokenTransfers = [{
                 id: 'ore',
                 ticker: 'ORE',
                 isLp: false,
-                balance: Number(newRewards).toFixed(11),
+                balance: (rewards / Math.pow(10, 11)).toFixed(11),
                 tokenImage: 'OreToken'
             }]
 
@@ -359,7 +357,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                                 <CustomText className="text-primary text-md font-PlusJakartaSansBold">Stakers</CustomText>
                             </View>
                             <View className="w-[90px] px-1 py-2 items-center border-r-[0.5px] border-gray-600">
-                                <CustomText className="text-primary text-md font-PlusJakartaSansBold">Multiplier</CustomText>
+                                <CustomText className="text-primary text-md font-PlusJakartaSansBold">Weight</CustomText>
                             </View>
                             <View className="w-56 px-1 py-2 items-center border-r-[0.5px] border-gray-600">
                                 <CustomText className="text-primary text-md font-PlusJakartaSansBold">Deposits</CustomText>
@@ -435,7 +433,7 @@ function StakeRow(props: StakeRowProps) {
                                     id: 'ore',
                                     ticker: 'ORE',
                                     isLp: false,
-                                    balance: instruction.rewards.toString(),
+                                    balance: (instruction.rewards / Math.pow(10, 11)).toString(),
                                     tokenImage: 'OreToken'
                                 }]
 
@@ -537,7 +535,7 @@ function StakeRow(props: StakeRowProps) {
             </View>
             <View className="w-[90px] h-full flex-row justify-center items-center px-1 border-r-[0.5px] border-gray-600">
                 {stakeData[boost] && <CustomText className="text-primary text-md font-PlusJakartaSansBold">
-                    {`${stakeData[boost].multiplier}x`}
+                    {`${stakeData[boost].weight}`}
                 </CustomText>}
             </View>
             <View className="w-56 h-full flex-row justify-end items-center px-1 border-r-[0.5px] border-gray-600">
