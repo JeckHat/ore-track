@@ -3,9 +3,8 @@ export interface PoolInfo {
     name: string
     isCoal: boolean
     api: {
-        base?: string,
-        balance?: string,
-        responseBalance?: (res: any) => { balanceOre: number, balanceCoal: 0 }
+        base?: string
+        getBalance?: (pubkey: string) => Promise<{ balanceOre: number, balanceCoal: number }>
     }
 }
 
@@ -16,13 +15,14 @@ export const POOL_LIST: Record<string, PoolInfo> = {
         isCoal: false,
         api: {
             base: 'https://official.ec1ipse.me',
-            balance: '/member/',
-            responseBalance: (res) => {
+            getBalance: async (pubkey: string) => {
+                const response = await fetch(`https://official.ec1ipse.me/member/${pubkey}`)
+                const res = await response.json()
                 return {
                     balanceOre: res.total_balance / Math.pow(10, 11),
                     balanceCoal: 0
                 }
-            }
+            },
         }
     },
     'pool-gpool': {
@@ -31,13 +31,14 @@ export const POOL_LIST: Record<string, PoolInfo> = {
         isCoal: false,
         api: {
             base: 'https://api.gpool.cloud',
-            balance: '/balance?pubkey=',
-            responseBalance: (res) => {
+            getBalance: async (pubkey: string) => {
+                const response = await fetch(`https://api.gpool.cloud/member/${pubkey}/balance`)
+                const res = await response.json()
                 return {
                     balanceOre: (res.earned - res.claimed) / Math.pow(10, 11),
                     balanceCoal: 0
                 }
-            }
+            },
         }
     },
     'pool-excalivator': {
@@ -46,13 +47,14 @@ export const POOL_LIST: Record<string, PoolInfo> = {
         isCoal: true,
         api: {
             base: 'https://pool.coal-pool.xyz',
-            balance: '/miner/rewards?pubkey=',
-            responseBalance: (res) => {
+            getBalance: async (pubkey: string) => {
+                const response = await fetch(`https://pool.coal-pool.xyz/miner/rewards?pubkey=${pubkey}`)
+                const res = await response.json()
                 return {
                     balanceOre: res.ore,
                     balanceCoal: res.coal
                 }
-            }
+            },
         }
     },
     'pool-oreminepool': {

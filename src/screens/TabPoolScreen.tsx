@@ -53,12 +53,12 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
 
     async function loadData() {
         const poolList = Object.keys(POOL_LIST)
-            .filter(filterId => POOL_LIST[filterId].api.base && POOL_LIST[filterId].api.balance)
+            .filter(filterId => POOL_LIST[filterId].api.getBalance)
             .map(poolId => {
                 let address = pools[poolId]?.walletAddress ?? walletAddress
                 return {
                     id: poolId,
-                    fetch: fetch(`${POOL_LIST[poolId].api.base}${POOL_LIST[poolId].api.balance}${address}`)
+                    fetch: POOL_LIST[poolId].api.getBalance?.(address)
                 }
             })
         const results = await Promise.allSettled(poolList.map(pool => {
@@ -66,8 +66,7 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
         }))
         results.forEach(async (result, idx) => {
             if (result.status === 'fulfilled') {
-                const json = await result.value.json()
-                let balanceNow = POOL_LIST[poolList[idx].id].api?.responseBalance?.(json)
+                let balanceNow = result.value
                 let dateNow = dayjs()
                 let storageData = pools[poolList[idx].id]
 
