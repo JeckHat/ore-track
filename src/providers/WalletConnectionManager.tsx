@@ -77,7 +77,6 @@ store.subscribe(() => {
     const state = store.getState()
     const newRpcUrl = state.config?.rpcUrl ?? ""
     const newWalletAddress = state.wallet?.publicKey ?? ""
-
     const newBoosts = state.boost ?? { boosts: {}, socketAccounts: {} }
     
     if (newRpcUrl !== rpcUrl) {
@@ -93,12 +92,36 @@ store.subscribe(() => {
         boost.boosts = { ...newBoosts.boosts }
     }
 
+    if (newBoosts.boostConfig) {
+        if (!isBoostConfigEqual(boost.boostConfig, newBoosts.boostConfig)) {
+            boost = {
+                ...boost,
+                boostConfig: newBoosts.boostConfig
+            }
+        }
+    }
+
+    if (newBoosts.boostProof) {
+        if (!isBoostProofEqual(boost.boostProof, newBoosts.boostProof)) {
+            boost = {
+                ...boost,
+                boostProof: newBoosts.boostProof
+            }
+        }
+    }
+
     if (boost.boostConfigAddress !== newBoosts.boostConfigAddress) {
-        boost.boostConfig = newBoosts.boostConfig?.toJSON()
+        boost = {
+            ...boost,
+            boostConfigAddress: newBoosts.boostConfigAddress
+        }
     }
 
     if (boost.boostProofAddress !== newBoosts.boostProofAddress) {
-        boost.boostProofAddress = newBoosts.boostProofAddress
+        boost = {
+            ...boost,
+            boostProofAddress: newBoosts.boostProofAddress
+        }
     }
 
 })

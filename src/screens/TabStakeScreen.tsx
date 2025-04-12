@@ -72,7 +72,9 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
 
     async function loadStakes() {
         Object.keys(BOOSTLIST).map(async (boost) => {
-            await getStakeORE(BOOSTLIST[boost].lpMint, boost)
+            if (!boosts[boost]) {
+                await getStakeORE(BOOSTLIST[boost].lpMint, boost)
+            }
         })
     }
 

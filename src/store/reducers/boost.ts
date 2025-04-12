@@ -72,7 +72,7 @@ const boostSlice = createSlice({
 
             state.boosts[boostAddress] = {
                 ...state.boosts[boostAddress],
-                rewards,
+                rewards: rewards,
                 avgRewards: average
             }
         },
