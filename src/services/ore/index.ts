@@ -84,63 +84,24 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
     const mintPublicKey = new PublicKey(mintAddress)
 
     const { boost, boostPublicKey } = await getBoost(mintPublicKey, boostAddress)
-
-    store.dispatch(boostActions.updateBoostRedux({
-        boostAddress: boostPublicKey.toBase58(),
-        boost: boost
-    }))
-    store.dispatch(boostActions.addSocket({
-        type: 'boost',
-        address: boostPublicKey.toBase58(),
-    }))
-
     const { stake, stakePublicKey } = await getStake(stakerPublicKey, boostPublicKey)
-
-    store.dispatch(boostActions.updateStakeRedux({
-        boostAddress: boostPublicKey.toBase58(),
-        stake: stake,
-        stakeAddress: stakePublicKey.toBase58()
-    }))
-    store.dispatch(boostActions.addSocket({
-        type: 'stake',
-        address: stakePublicKey.toBase58(),
-    }))
-
     const decimals = await getBoostDecimals(mintPublicKey, boostPublicKey)
-
-    store.dispatch(boostActions.updateDecimals({
-        boostAddress: boostPublicKey.toBase58(),
-        decimals: decimals,
-    }))
-
     const { boostConfig, boostConfigPublicKey } = await getBoostConfig()
-
-    store.dispatch(boostActions.updateConfigRedux({
-        boostConfig: boostConfig,
-        boostConfigAddress: boostConfigPublicKey.toBase58()
-    }))
-    store.dispatch(boostActions.addSocket({
-        type: 'boostConfig',
-        address: boostConfigPublicKey.toBase58(),
-    }))
-
     const { boostProof, boostProofPublicKey } = await getBoostProof(boostConfigPublicKey)
 
-    store.dispatch(boostActions.updateProofRedux({
-        boostProof: boostProof,
-        boostProofAddress: boostProofPublicKey.toBase58()
-    }))
-    store.dispatch(boostActions.addSocket({
-        type: 'boostProof',
-        address: boostProofPublicKey.toBase58(),
+    store.dispatch(boostActions.updateBoost({
+        boost: boost.toJSON(),
+        boostAddress: boostPublicKey.toBase58(),
+        stake: stake.toJSON(),
+        stakeAddress: stakePublicKey.toBase58(),
+        boostConfig: boostConfig.toJSON(),
+        boostConfigAddress: boostConfigPublicKey.toBase58(),
+        boostProof: boostProof.toJSON(),
+        boostProofAddress: boostProofPublicKey.toBase58(),
+        decimals: decimals
     }))
 
     const rewards = calculateClaimableYield(boost, boostProof, stake, boostConfig)
-
-    store.dispatch(boostActions.updateRewards({
-        boostAddress: boostPublicKey.toBase58(),
-        rewards: bigIntToNumber(rewards)
-    }))
 
     return {
         mintPublicKey: mintPublicKey,

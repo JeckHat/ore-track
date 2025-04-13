@@ -121,8 +121,13 @@ export class BoostConfig {
     }
     
     static fromJSON(json: any): BoostConfig {
-        return new BoostConfig(json.admin, json.boosts, json.len,
-            Numeric.fromJSON(json.rewardsFactor), json.takeRate, json.totalWeight
+        return new BoostConfig(
+            json.admin,
+            json.boosts,
+            json.len,
+            Numeric.fromJSON(json.rewardsFactor),
+            json.takeRate,
+            json.totalWeight
         )
     }
 }

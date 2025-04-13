@@ -8,7 +8,7 @@ const initState = store.getState()
 let connection: Connection = new Connection(`https://${initState.config!.rpcUrl}`)
 let rpcUrl: string | null = initState.config?.rpcUrl ?? ""
 let walletAddress: string | null = initState.wallet?.publicKey ?? ""
-let boost: BoostState = initState.boost ?? { boosts: {}, socketAccounts: {} }
+let boost: BoostState = initState.boost ?? { boosts: {}, socketAccounts: {}, rewards: 0, avgRewards: 0 }
 
 function isBoostEqual(a: BoostType, b: BoostType): boolean {
     return (
@@ -77,7 +77,7 @@ store.subscribe(() => {
     const state = store.getState()
     const newRpcUrl = state.config?.rpcUrl ?? ""
     const newWalletAddress = state.wallet?.publicKey ?? ""
-    const newBoosts = state.boost ?? { boosts: {}, socketAccounts: {} }
+    const newBoosts = state.boost ?? { boosts: {}, socketAccounts: {}, rewards: 0, avgRewards: 0 }
     
     if (newRpcUrl !== rpcUrl) {
         createConnection(newRpcUrl)

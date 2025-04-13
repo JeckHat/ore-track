@@ -46,39 +46,39 @@ export function RootNavigation() {
       switch(sockets[0]) {
         case "boost": {
           const boost = await getBoostResult(buffer)
-          calculateRewards({ boost })
           dispatch(boostActions.updateBoostRedux({
-            boost: boost,
+            boost: boost.toJSON(),
             boostAddress: sockets[1]
           }))
+          dispatch(boostActions.updateAllRewards())
           break;
         }
         case "stake": {
           const stake = await getStakeResult(buffer)
-          calculateRewards({ stake })
           dispatch(boostActions.updateStakeRedux({
-            stake: stake,
+            stake: stake.toJSON(),
             stakeAddress: sockets[1],
             boostAddress: stake.boost ?? ""
           }))
+          dispatch(boostActions.updateAllRewards())
           break;
         }
         case "boostProof": {
           const boostProof = await getProofResult(buffer)
-          calculateRewards({ boostProof })
           dispatch(boostActions.updateProofRedux({
-            boostProof: boostProof,
+            boostProof: boostProof.toJSON(),
             boostProofAddress: sockets[1]
           }))
+          dispatch(boostActions.updateAllRewards())
           break;
         }
         case "boostConfig": {
           const boostConfig = await getBoostConfigResult(buffer)
-          calculateRewards({ boostConfig })
           dispatch(boostActions.updateConfigRedux({
-            boostConfig: boostConfig,
+            boostConfig: boostConfig.toJSON(),
             boostConfigAddress: sockets[1]
           }))
+          dispatch(boostActions.updateAllRewards())
           break;
         }
       }
@@ -86,24 +86,6 @@ export function RootNavigation() {
       console.log("error", error)
     }
   }
-
-  function calculateRewards(params: paramsCalculate) {
-    Object.keys(boostRedux.boosts).map((bst) => {
-      let boost = params.boost ?? Boost.fromJSON(boostRedux.boosts[bst].boost)
-      let stake = params.stake ?? Stake.fromJSON(boostRedux.boosts[bst].stake)
-      let boostConfig = params.boostConfig ?? BoostConfig.fromJSON(boostRedux.boostConfig)
-      let boostProof = params.boostProof ?? Proof.fromJSON(boostRedux.boostProof)
-
-      if (!boost || !stake || !boostConfig || !boostProof) return
-
-      const rewards = calculateClaimableYield(boost, boostProof, stake, boostConfig)
-      dispatch(boostActions.updateRewards({
-        rewards: Number(rewards),
-        boostAddress: bst
-      }))
-    })
-  }
-  
   
   return (
     <BottomModalProvider>

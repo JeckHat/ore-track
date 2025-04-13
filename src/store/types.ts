@@ -46,8 +46,8 @@ export interface BoostType {
     stake?: Stake
     stakeAddress?: string
     decimals?: number
-    rewards?: number
-    avgRewards?: number
+    rewards: number
+    avgRewards: number
 }
 
 export interface BoostState {
@@ -57,6 +57,8 @@ export interface BoostState {
     boostProof?: Proof
     boostProofAddress?: string
     socketAccounts: Record<string, { id: string, account: string }>
+    rewards: number
+    avgRewards: number
 }
 
 export interface MinerInfo {

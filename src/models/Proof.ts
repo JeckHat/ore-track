@@ -28,8 +28,8 @@ export class Proof {
         return {
             __type: 'Proof',
             ...this,
-            challenge: this.challenge ? Array.from(this.challenge) : undefined,
-            lastHash: this.lastHash ? Array.from(this.lastHash) : undefined,
+            challenge: this.challenge ? Array.from(this.challenge) : [],
+            lastHash: this.lastHash ? Array.from(this.lastHash)  : [],
         };
     }
     
@@ -37,8 +37,8 @@ export class Proof {
         return new Proof(
             json.authority,
             json.balance,
-            json.challenge ? new Uint8Array(json.challenge) : undefined,
-            json.lastHash ? new Uint8Array(json.lastHash) : undefined,
+            json.challenge ? new Uint8Array(json.challenge) : new Uint8Array(),
+            json.lastHash ? new Uint8Array(json.lastHash) : new Uint8Array(),
             json.lastHashAt,
             json.lastClaimAt,
             json.miner,

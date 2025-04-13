@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import { Image, RefreshControl, SafeAreaView, ScrollView, View } from "react-native"
 import { useFocusEffect } from "@react-navigation/native"
 import {
@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { Button, CustomText, SkeletonLoader, OptionMenu, ModalTransaction } from "@components"
 import Images from "@assets/images"
 import { BOOSTLIST, COMPUTE_UNIT_LIMIT, JUP_API_PRICE, ORE_MINT } from "@constants"
-import { getKeypair, uiActions } from "@store/actions"
+import { boostActions, getKeypair, uiActions } from "@store/actions"
 import { CustomError } from "@models"
 import { RootState } from "@store/types"
 import { TabStakeScreenProps } from "@navigations/types"
@@ -23,15 +23,11 @@ import { shortenAddress } from "@helpers"
 
 export default function TabStakeScreen(props: TabStakeScreenProps) {
     const [orePrice, setOrePrice] = useState(0.0)
-    const [yieldData, setYieldData] = useState({
-        total: 0,
-        avg: 0,
-        loading: true
-    })
+    const [loading, setLoading] = useState(true)
     const dispatch = useDispatch()
     const { showModal, hideModal } = useBottomModal()
 
-    const boosts = useSelector((state: RootState) => state.boost.boosts)
+    const boostData = useSelector((state: RootState) => state.boost)
     const rpcUrl = useSelector((state: RootState) => state.config.rpcUrl)
     const walletAddress = useSelector((state: RootState) => state.wallet.publicKey)
 
@@ -53,35 +49,16 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
         }
     }
 
-    useEffect(() => {
-        const values = Object.values(boosts).filter(token => token)
-        const { total, avg } = values.reduce(
-            (acc, token) => {
-                acc.total += Number(token.rewards ?? 0)
-                acc.avg += Number(token.avgRewards ?? 0)
-                return acc
-            },
-            { total: 0, avg: 0 }
-        )
-        setYieldData({
-            ...yieldData,
-            total: total,
-            avg: avg,
-        })
-    }, [JSON.stringify(boosts)])
-
     async function loadStakes() {
         const promises = Object.keys(BOOSTLIST).map((boost) => {
-            if (!boosts[boost]) {
+            if (!boostData.boosts[boost]) {
                 return getStakeORE(BOOSTLIST[boost].lpMint, boost)
             }
         })
 
         await Promise.all(promises)
-        setYieldData({
-            ...yieldData,
-            loading: false
-        })
+        await dispatch(boostActions.updateAllRewards())
+        setLoading(false)
     }
 
     async function loadPrice() {
@@ -222,29 +199,29 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                     <CustomText className="font-PlusJakartaSans text-primary text-sm self-start mb-1">
                         My Total Yield
                     </CustomText>
-                    {yieldData.loading && <SkeletonLoader
+                    {loading && <SkeletonLoader
                         className="rounded-xl bg-gray-900 mb-6 mt-1 w-full h-10"
                         colors={["#111827", "#1f2937", "#111827"]}
                     />}
-                    {!yieldData.loading && <View className="flex-row items-center justify-end self-end mb-6">
+                    {!loading && <View className="flex-row items-center justify-end self-end mb-6">
                         <Image
                             className="w-12 h-12 mr-2"
                             source={Images.OreToken}
                         />
                         <CustomText className="font-LatoBold text-primary text-2xl">
-                            {(yieldData.total / Math.pow(10, 11)).toFixed(11)} ORE
+                            {(boostData.rewards / Math.pow(10, 11)).toFixed(11)} ORE
                         </CustomText>
                         <View className="self-end absolute top-9">
-                            <CustomText className="font-PlusJakartaSans text-green-400 text-sm">
-                                (${(yieldData.total / Math.pow(10, 11) * orePrice).toFixed(2)})
+                            <CustomText className="font-PlusJakartaSansSemiBold text-green-400 text-sm">
+                                (${(boostData.rewards / Math.pow(10, 11) * orePrice).toFixed(2)})
                             </CustomText>
                         </View>
                     </View>}
-                    {yieldData.loading && <SkeletonLoader
+                    {loading && <SkeletonLoader
                         className="rounded-full bg-gray-900 w-full h-14 overflow-hidden mb-6"
                         colors={["#111827", "#1f2937", "#111827"]}
                     />}
-                    {!yieldData.loading && <Button
+                    {!loading && <Button
                         containerClassName="rounded-full w-full mb-6 border-2 border-solid border-gold"
                         className="py-2 bg-baseBg rounded-full items-center"
                         textClassName="text-gold"
@@ -254,22 +231,22 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                     <CustomText className="font-PlusJakartaSans text-primary text-sm self-start mb-1">
                         My Daily Avg
                     </CustomText>
-                    {yieldData.loading && <SkeletonLoader
+                    {loading && <SkeletonLoader
                         className="rounded-xl bg-gray-900 mb-6 mt-1 w-full h-10"
                         colors={["#111827", "#1f2937", "#111827"]}
                         width={"100%"} height={32}
                     />}
-                    {!yieldData.loading && <View className="flex-row items-center justify-end self-end mb-6">
+                    {!loading && <View className="flex-row items-center justify-end self-end mb-6">
                         <Image
                             className="w-12 h-12 mr-2"
                             source={Images.OreToken}
                         />
                         <CustomText className="font-LatoBold text-primary text-2xl">
-                            {(yieldData.avg / Math.pow(10, 11)).toFixed(11)} ORE
+                            {(boostData.avgRewards / Math.pow(10, 11)).toFixed(11)} ORE
                         </CustomText>
                         <View className="self-end absolute top-9">
-                            <CustomText className="font-PlusJakartaSans text-green-400 text-sm">
-                                (${(yieldData.avg / Math.pow(10, 11) * orePrice).toFixed(2)})
+                            <CustomText className="font-PlusJakartaSansSemiBold text-green-400 text-sm">
+                                (${(boostData.avgRewards / Math.pow(10, 11) * orePrice).toFixed(2)})
                             </CustomText>
                         </View>
                     </View>}
@@ -310,7 +287,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                                 orePrice={orePrice}
                                 loadStakes={loadStakes}
                                 navigationProps={props}
-                                loading={yieldData.loading}
+                                loading={loading}
                             />
                         ))}
                     </View>
