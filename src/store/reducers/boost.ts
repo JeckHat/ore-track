@@ -3,26 +3,89 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import dayjs from 'dayjs'
 
 import { BoostState } from '@store/types'
+import { calculateClaimableYield } from '@services/ore'
 
 const initialState: BoostState = {
     boosts: {},
-    socketAccounts: {}
+    boostConfig: undefined,
+    boostConfigAddress: undefined,
+    boostProof: undefined,
+    boostProofAddress: undefined,
+    socketAccounts: {},
+    rewards: 0,
+    avgRewards: 0
+}
+
+type boostAction = PayloadAction<{
+    boost: Boost
+    boostAddress: string
+    stake: Stake
+    stakeAddress: string
+    boostProof: Proof
+    boostProofAddress: string
+    boostConfig: BoostConfig
+    boostConfigAddress: string,
+    decimals: number
+}>
+
+function generateSockets(socketAccounts: typeof initialState.socketAccounts, type: string, address: string){
+    return {
+        ...socketAccounts,
+        [`${type}-${address}`]: {
+            ...socketAccounts[`${type}-${address}`],
+            id: `${type}-${address}`,
+            account: address 
+        }
+    }
 }
 
 const boostSlice = createSlice({
     name: 'boost',
     initialState: initialState,
     reducers: {
+        updateBoost(state, action: boostAction){
+            const {
+                boost,
+                boostAddress,
+                stake,
+                stakeAddress,
+                boostProof,
+                boostProofAddress,
+                boostConfig,
+                boostConfigAddress,
+                decimals
+            } = action.payload
+            state.boosts = {
+                ...state.boosts,
+                [boostAddress]: {
+                    ...state.boosts[boostAddress],
+                    boost: boost,
+                    boostAddress: boostAddress,
+                    stake: stake,
+                    stakeAddress: stakeAddress,
+                    decimals: decimals
+                }
+            }
+            state.boostConfig = boostConfig
+            state.boostConfigAddress = boostConfigAddress
+            state.boostProof = boostProof
+            state.boostProofAddress = boostProofAddress
+            state.socketAccounts = generateSockets(state.socketAccounts, 'boost', boostAddress)
+            state.socketAccounts = generateSockets(state.socketAccounts, 'stake', stakeAddress)
+            state.socketAccounts = generateSockets(state.socketAccounts, 'boostProof', boostProofAddress)
+            state.socketAccounts = generateSockets(state.socketAccounts, 'boostConfig', boostConfigAddress)
+        },
         updateBoostRedux(state, action: PayloadAction<{ boostAddress: string, boost: Boost }>) {
             const { boostAddress, boost } = action.payload
             state.boosts = {
                 ...state.boosts,
                 [boostAddress]: {
                     ...state.boosts[boostAddress],
-                    boost: boost.toJSON(),
+                    boost: boost,
                     boostAddress: boostAddress
                 }
             }
+            state.socketAccounts = generateSockets(state.socketAccounts, 'boost', boostAddress)
         },
         updateStakeRedux(state, action: PayloadAction<{ boostAddress: string, stakeAddress: string, stake: Stake }>) {
             const { boostAddress, stakeAddress, stake } = action.payload
@@ -30,62 +93,57 @@ const boostSlice = createSlice({
                 ...state.boosts,
                 [boostAddress]: {
                     ...state.boosts[boostAddress],
-                    stake: stake.toJSON(),
+                    stake: stake,
                     stakeAddress: stakeAddress
                 }
             }
+            state.socketAccounts = generateSockets(state.socketAccounts, 'stake', stakeAddress)
         },
         updateConfigRedux(state, action: PayloadAction<{ boostConfigAddress: string, boostConfig: BoostConfig }>) {
             const { boostConfigAddress, boostConfig } = action.payload
             Object.assign(state, {
                 ...state,
-                boostConfig: boostConfig.toJSON(),
+                boostConfig: boostConfig,
                 boostConfigAddress: boostConfigAddress,
             })
+            state.socketAccounts = generateSockets(state.socketAccounts, 'boostConfig', boostConfigAddress)
         },
         updateProofRedux(state, action: PayloadAction<{ boostProofAddress: string, boostProof: Proof }>) {
             const { boostProofAddress, boostProof } = action.payload
             Object.assign(state, {
                 ...state,
-                boostProof: boostProof.toJSON(),
+                boostProof: boostProof,
                 boostProofAddress: boostProofAddress,
             })
+            state.socketAccounts = generateSockets(state.socketAccounts, 'boostProof', boostProofAddress)
         },
-        updateDecimals(state, action: PayloadAction<{ boostAddress: string, decimals: number }>) {
-            const { boostAddress, decimals } = action.payload
-            state.boosts = {
-                ...state.boosts,
-                [boostAddress]: {
-                    ...state.boosts[boostAddress],
-                    decimals: decimals
-                }
-            }
-        },
-        updateRewards(state, action: PayloadAction<{ boostAddress: string, rewards: number }>) {
-            const { boostAddress, rewards } = action.payload
-            let claimAt = state.boosts[boostAddress].stake?.lastClaimAt ?? dayjs().toISOString()
-            let divided = dayjs(new Date()).diff(dayjs(claimAt), 'minute')
-            divided = divided === 0 ? 1 : divided
-            let average = rewards / divided * 60 * 24
+        updateAllRewards(state){
+            let globalRewards = 0
+            let globalAvg = 0
+            Object.keys(state.boosts).map((key) => {
+                if(state.boosts[key].boost && state.boosts[key].stake && state.boostProof && state.boostConfig) {
+                    const boost = Boost.fromJSON(state.boosts[key].boost)
+                    const stake = Stake.fromJSON(state.boosts[key].stake)
+                    const boostProof = Proof.fromJSON(state.boostProof)
+                    const boostConfig = BoostConfig.fromJSON(state.boostConfig)
 
-            if (!state.boosts[boostAddress]) return
+                    let rewards = Number(calculateClaimableYield(boost, boostProof, stake, boostConfig))
+                    let claimAt = state.boosts[key].stake?.lastClaimAt ?? dayjs().toISOString()
+                    let divided = dayjs(new Date()).diff(dayjs(claimAt), 'minute')
 
-            state.boosts[boostAddress] = {
-                ...state.boosts[boostAddress],
-                rewards: rewards,
-                avgRewards: average
-            }
-        },
-        addSocket(state, action: PayloadAction<{ type: string, address: string }>) {
-            const { type, address } = action.payload
-            state.socketAccounts = {
-                ...state.socketAccounts,
-                [`${type}-${address}`]: {
-                    ...state.socketAccounts[`${type}-${address}`],
-                    id: `${type}-${address}`,
-                    account: address 
+                    divided = divided === 0 ? 1 : divided
+                    globalRewards += rewards
+                    globalAvg += (rewards / divided * 60 * 24)
+
+                    state.boosts[key] = {
+                        ...state.boosts[key],
+                        rewards: rewards,
+                        avgRewards: (rewards / divided * 60 * 24)
+                    }
                 }
-            }
+            })
+            state.rewards = globalRewards
+            state.avgRewards = globalAvg
         },
         resetBoosts(state) {
             Object.assign(state, initialState);
