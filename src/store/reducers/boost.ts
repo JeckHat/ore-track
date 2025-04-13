@@ -121,7 +121,8 @@ const boostSlice = createSlice({
             let globalRewards = 0
             let globalAvg = 0
             Object.keys(state.boosts).map((key) => {
-                if(state.boosts[key].boost && state.boosts[key].stake && state.boostProof && state.boostConfig) {
+                if(state.boosts[key].boost && state.boosts[key].stake && state.boostProof
+                    && state.boostConfig && state.boosts[key].stakeAddress) {
                     const boost = Boost.fromJSON(state.boosts[key].boost)
                     const stake = Stake.fromJSON(state.boosts[key].stake)
                     const boostProof = Proof.fromJSON(state.boostProof)

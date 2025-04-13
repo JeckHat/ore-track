@@ -18,7 +18,7 @@ export class Numeric {
     }
 
     static fromJSON(json: any): Numeric {
-        return new Numeric(json.bits);
+        return new Numeric(json?.bits ?? 0n);
     }
 
     static fromBytes(buffer: Buffer) {
