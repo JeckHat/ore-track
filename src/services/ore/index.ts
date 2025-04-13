@@ -1,7 +1,10 @@
-import { LAMPORTS_PER_SOL, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js"
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js"
 import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
+    createAssociatedTokenAccountIdempotentInstruction,
     createAssociatedTokenAccountInstruction,
+    createCloseAccountInstruction,
+    createSyncNativeInstruction,
     getAssociatedTokenAddressSync,
     TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
@@ -10,6 +13,7 @@ import { Boost, BoostConfig, CustomError, Numeric, Proof, Stake } from "@models"
 import { getBoost, getBoostConfig, getBoostDecimals, getBoostProof, getStake } from "./boost"
 import {
     BOOST_ID,
+    BoostInfo,
     BOOSTLIST,
     CONFIG,
     KAMINO_API,
@@ -19,6 +23,7 @@ import {
     PROOF,
     SOL_MINT,
     STAKE,
+    TOKENLIST,
     TREASURY
 } from "@constants";
 import { getBalance } from "@services/solana";
@@ -26,6 +31,7 @@ import { getConnection, getWalletAddress } from "@providers";
 import { bigIntToNumber } from "@helpers";
 import { store } from "@store/index";
 import { boostActions } from "@store/actions";
+import { depositMeteoraInstruction } from "@services/meteora";
 
 export function calculateClaimableYield(boost: Boost, boostProof: Proof, stake: Stake, boostConfig: BoostConfig) {
     let rewards = BigInt(stake.rewards ?? 0);
@@ -305,8 +311,6 @@ export async function claimStakeOREInstruction(mintAddress: string, boostAddress
 
 export async function depositStakeInstruction(mintAddress: string, boostAddress: string) {
     const walletAddress = getWalletAddress()
-    const connection = getConnection()
-
     if (!walletAddress) {
         throw new CustomError("Wallet Address is undefined", 500)
     }
@@ -362,12 +366,6 @@ export async function depositStakeInstruction(mintAddress: string, boostAddress:
     const bufferMax = Buffer.alloc(8);
     bufferMax.writeBigUInt64LE(18446744073709551615n);
 
-    // let instructions = []
-
-    // instructions.push(ComputeBudgetProgram.setComputeUnitLimit({
-    //     units: COMPUTE_UNIT_LIMIT
-    // }))
-
     // instructions.push(
     //     SystemProgram.transfer({
     //         fromPubkey: walletPublicKey,
@@ -400,4 +398,95 @@ export async function depositStakeInstruction(mintAddress: string, boostAddress:
     })
 
     return depositInstruction
+}
+
+export async function tokenToLPInstruction(boostInfo: BoostInfo, oreBalance: string, pairBalance: string) {
+    const walletAddress = getWalletAddress()
+    if (!walletAddress) {
+        throw new CustomError("Wallet Address is undefined", 500)
+    }
+
+    const connection = getConnection()
+    const walletPublicKey = new PublicKey(walletAddress)
+
+    const mintPublicKey = new PublicKey(boostInfo.lpMint)
+    let feeAta = 0
+
+    let instructions = []
+    const mintAta = getAssociatedTokenAddressSync(mintPublicKey, walletPublicKey);
+    const accountInfo = await connection.getAccountInfo(mintAta);
+    if (!accountInfo) {
+        instructions.push(
+            createAssociatedTokenAccountInstruction(
+                walletPublicKey,
+                walletPublicKey,
+                mintPublicKey,
+                TOKEN_PROGRAM_ID
+            )
+        )
+        const lamports = await connection.getMinimumBalanceForRentExemption(boostInfo.ataSize);
+        feeAta += lamports
+    }
+    
+    const solPubKey = new PublicKey(SOL_MINT)
+    let wsolAmount = 0
+    if (boostInfo.pairMint === SOL_MINT) {
+        wsolAmount = parseFloat(pairBalance)
+    }
+
+    const wsolAta = getAssociatedTokenAddressSync(solPubKey, walletPublicKey)
+    if (wsolAmount > 0) {
+        instructions.push(
+            createAssociatedTokenAccountIdempotentInstruction(
+                walletPublicKey,
+                wsolAta,
+                walletPublicKey,
+                solPubKey
+            )
+        )
+        instructions.push(
+            SystemProgram.transfer({
+                fromPubkey: walletPublicKey,
+                toPubkey: wsolAta,
+                lamports: wsolAmount * LAMPORTS_PER_SOL
+            })
+        )
+        instructions.push(
+            createSyncNativeInstruction(
+                wsolAta,
+                TOKEN_PROGRAM_ID
+            )
+        )
+    }
+    
+    if(boostInfo?.defi === 'kamino') {
+
+    }
+    
+    if(boostInfo?.defi === 'meteora') {
+        const oreAmount = parseFloat(oreBalance) * Math.pow(10, 11)
+        const pairAmount = parseFloat(oreBalance) * Math.pow(10, TOKENLIST[boostInfo?.pairMint ?? ""].decimals)
+
+        const depositInstructions = await depositMeteoraInstruction(
+            boostInfo?.lpId,
+            oreAmount,
+            pairAmount,
+            1
+        )
+        instructions.push(depositInstructions)
+    }
+    
+    if (wsolAmount > 0) {
+        const closeAccountInstructions = createCloseAccountInstruction(
+            wsolAta,
+            walletPublicKey,
+            walletPublicKey
+        )
+        instructions.push(closeAccountInstructions)
+    }
+
+    return {
+        instructions: instructions,
+        feeAta: feeAta
+    }
 }

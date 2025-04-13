@@ -20,10 +20,16 @@ export async function getBalance(walletAddress: string, mintAddress: string): Pr
     }
 
     const account = await connection.getTokenAccountsByOwner(walletPubkey, { mint: new PublicKey(mintAddress) })
-    let balanceMintAddress
+    let tokenAmount
     if (account?.value?.[0]) {
-        balanceMintAddress = await connection.getTokenAccountBalance(account.value[0].pubkey)
+        tokenAmount = await connection.getTokenAccountBalance(account.value[0].pubkey)
     }
     
-    return balanceMintAddress?.value?.uiAmount ?? 0
+    return tokenAmount?.value?.uiAmount ?? 0
+}
+
+export async function getTokenBalance(tokenAddress: string): Promise<number> {
+    const connection = getConnection()
+    const tokenAmount = await connection.getTokenAccountBalance(new PublicKey(tokenAddress))
+    return tokenAmount?.value?.uiAmount ?? 0
 }

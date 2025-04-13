@@ -12,6 +12,7 @@ export interface BoostInfo {
     pairId?: string | null
     pairTicker?: string | null
     decimals: number
+    ataSize: number
 }
 
 export const BOOSTLIST_LEGACY: Record<string, BoostInfo> = {
@@ -28,7 +29,8 @@ export const BOOSTLIST_LEGACY: Record<string, BoostInfo> = {
         pairMint: null,
         pairImage: null,
         pairTicker: null,
-        decimals: 11
+        decimals: 11,
+        ataSize: 165
     },
     "48J2TSpVpwmrwW84sMERcZigeAeFuUnC8bKHp7ET6RXt": {
         id: 'kore-sol',
@@ -43,7 +45,8 @@ export const BOOSTLIST_LEGACY: Record<string, BoostInfo> = {
         pairMint: 'So11111111111111111111111111111111111111112',
         pairImage: 'SolanaToken',
         pairTicker: 'SOL',
-        decimals: 6
+        decimals: 6,
+        ataSize: 165
     },
     "D4qtrWeNpJnZpmT9Fe2kx5oJf3E4ovorZgE6K6ux7Lqt": {
         id: 'ore-sol-mlp',
@@ -58,7 +61,8 @@ export const BOOSTLIST_LEGACY: Record<string, BoostInfo> = {
         pairMint: 'So11111111111111111111111111111111111111112',
         pairImage: 'SolanaToken',
         pairTicker: 'SOL',
-        decimals: 11
+        decimals: 11,
+        ataSize: 165
     },
     "EExSorxnhxVKqnhNT4dNPNa8zvRBNBgju6n91F9cnKKy": {
         id: 'kore-hnt',
@@ -73,7 +77,8 @@ export const BOOSTLIST_LEGACY: Record<string, BoostInfo> = {
         pairMint: 'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
         pairImage: 'HntToken',
         pairTicker: 'HNT',
-        decimals: 6
+        decimals: 6,
+        ataSize: 165
     },
     "A2Sb1oxg2H3ecbAHaJFXccufyC7pD1CMEakJhcz2TeH9": {
         id: 'ore-sol-usdc',
@@ -88,7 +93,8 @@ export const BOOSTLIST_LEGACY: Record<string, BoostInfo> = {
         pairMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         pairImage: 'UsdcToken',
         pairTicker: 'USDC',
-        decimals: 11
+        decimals: 11,
+        ataSize: 165
     }
 }
 
@@ -106,7 +112,8 @@ export const BOOSTLIST: Record<string, BoostInfo> = {
         pairMint: null,
         pairImage: null,
         pairTicker: null,
-        decimals: 11
+        decimals: 11,
+        ataSize: 165
     },
     "5ksboZUb57ZuwEkRRHCK8s6BpiNABneKndvkowZdvGhy": {
         id: 'kore-sol',
@@ -121,7 +128,8 @@ export const BOOSTLIST: Record<string, BoostInfo> = {
         pairMint: 'So11111111111111111111111111111111111111112',
         pairImage: 'SolanaToken',
         pairTicker: 'SOL',
-        decimals: 6
+        decimals: 6,
+        ataSize: 165
     },
     "5qVQiZXaRffQUqD4NmJ5EXHBAbmfdABZxUb714cJATQp": {
         id: 'ore-sol-mlp',
@@ -136,7 +144,8 @@ export const BOOSTLIST: Record<string, BoostInfo> = {
         pairMint: 'So11111111111111111111111111111111111111112',
         pairImage: 'SolanaToken',
         pairTicker: 'SOL',
-        decimals: 11
+        decimals: 11,
+        ataSize: 165
     },
     "h4nsGY9yhdfSW6Fwb6WSJEi9hHCviLdzQjcqzYWeKhd": {
         id: 'kore-hnt',
@@ -151,7 +160,8 @@ export const BOOSTLIST: Record<string, BoostInfo> = {
         pairMint: 'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
         pairImage: 'HntToken',
         pairTicker: 'HNT',
-        decimals: 6
+        decimals: 6,
+        ataSize: 165
     },
     "8BEzwBTDsKWnjgjxi8Cca7ZatPZQhxUMgS8qWzBhDhrC": {
         id: 'ore-sol-usdc',
@@ -166,6 +176,7 @@ export const BOOSTLIST: Record<string, BoostInfo> = {
         pairMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         pairImage: 'UsdcToken',
         pairTicker: 'USDC',
-        decimals: 11
+        decimals: 11,
+        ataSize: 165
     }
 }

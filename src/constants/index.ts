@@ -5,6 +5,8 @@ export const COAL_MINT = "E3yUqBNTZxV8ELvW99oRLC7z4ddbJqqR4NphwrMug9zu"
 export const PROGRAM_ID = "oreV2ZymfyeXgNgBdqMkumTqqAprVqgBWQfoYkrtKWQ"
 export const BOOST_ID_LEGACY = "BoosTyJFPPtrqJTdi49nnztoEWDJXfDRhyb2fha6PPy"
 export const BOOST_ID = "BoostzzkNfCA9D1qNuN5xZxB5ErbK4zQuBeTHGDpXT1"
+export const METEORA_VAULT_ID = "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi"
+export const METEORA_AMM_ID = "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"
 
 export const PROOF = new Uint8Array([112, 114, 111, 111, 102])
 export const BOOST = new Uint8Array([98, 111, 111, 115, 116])
