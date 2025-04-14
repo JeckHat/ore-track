@@ -5,7 +5,7 @@ import { Colors, Fonts } from "@styles"
 import { RootState } from "@store/types"
 
 import StartScreen from "@screens/StartScreen"
-import RecoveryPhraseScreen from "@screens/RecoveryPhraseScreen"
+import PrivateKeyScreen from "@screens/PrivateKeyScreen"
 import TabNavigation from "./BottomTabNavigation"
 import StakeScreen from "@screens/StakeScreen"
 import RPCScreen from "@screens/RPCScreen"
@@ -16,15 +16,15 @@ export default function MainNavigation() {
     const publicKey = useSelector((state: RootState) => state.wallet.publicKey)
 
     return (
-        <NativeStack.Navigator initialRouteName={publicKey? "BottomTab" : "Start"}>
+        <NativeStack.Navigator initialRouteName={publicKey? "Start" : "Start"}>
             <NativeStack.Screen
                 name="Start"
                 component={StartScreen}
                 options={{ headerShown: false }}
             />
             <NativeStack.Screen
-                name="RecoveryPhrase"
-                component={RecoveryPhraseScreen}
+                name="PrivateKey"
+                component={PrivateKeyScreen}
                 options={{ headerShown: false }}
             />
             <NativeStack.Screen

@@ -4,7 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type MainStackParamList = {
     Start: {} | undefined
-    RecoveryPhrase: { importWallet?: boolean, words?: string, title?: string } | undefined
+    PrivateKey: { importWallet?: boolean, words?: string, title?: string, isSeedPhrase?: boolean } | undefined
     BottomTab: {} | undefined
     Stake: { boost?: string, isDeposit?: boolean } | undefined
     RPC: {} | undefined
@@ -15,9 +15,9 @@ export type StartNavigationProps = {
     route: RouteProp<MainStackParamList, 'Start'>
 }
 
-export type RecoveryPhraseNavigationProps = {
-    navigation: NativeStackNavigationProp<MainStackParamList, 'RecoveryPhrase'>
-    route: RouteProp<MainStackParamList, 'RecoveryPhrase'>
+export type PrivateKeyNavigationProps = {
+    navigation: NativeStackNavigationProp<MainStackParamList, 'PrivateKey'>
+    route: RouteProp<MainStackParamList, 'PrivateKey'>
 }
 
 export type TabNavigationProps = {

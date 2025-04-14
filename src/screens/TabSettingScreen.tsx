@@ -46,7 +46,7 @@ export default function TabSettingScreen(props: TabSettingScreenProps) {
                     }
                     onPress={async () => {
                         const mnemonic = await getMnemonic()
-                        props.navigation.navigate('RecoveryPhrase', {
+                        props.navigation.navigate('PrivateKey', {
                             importWallet: false, words: mnemonic, title: "Recovery Phrase"
                         })
                     }}

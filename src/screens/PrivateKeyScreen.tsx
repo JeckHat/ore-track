@@ -4,9 +4,10 @@ import * as bip39 from "bip39"
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Keypair } from "@solana/web3.js"
 import { useDispatch } from "react-redux"
+import bs58 from 'bs58'
 
 import { Button, CustomText, Input, KeyboardDismissPressable } from "@components"
-import { RecoveryPhraseNavigationProps } from "@navigations/types"
+import { PrivateKeyNavigationProps } from "@navigations/types"
 import { mnemonicToSeedFast } from "@helpers"
 import { Colors } from "@styles"
 import { CustomError } from "@models"
@@ -33,7 +34,7 @@ function WrapPhraseWord(props?: { text?: string, number?: string } ) {
     )
 }
 
-export default function RecoveryPhraseScreen({ navigation, route }: RecoveryPhraseNavigationProps) {
+export default function PrivateKeyScreen({ navigation, route }: PrivateKeyNavigationProps) {
     const [words, setWords] = useState("")
     const [textCopy, setTextCopy] = useState("Copy to clipboard")
 
@@ -60,16 +61,13 @@ export default function RecoveryPhraseScreen({ navigation, route }: RecoveryPhra
     async function onNext() {
         dispatch(uiActions.showLoading(true))
         try {
-            const isValid = bip39.validateMnemonic(words)
-            if(!isValid) {
-                throw new CustomError("Phrase Key is not valid", 500)
+            if(route?.params?.isSeedPhrase) {
+                await onNextSeedPhrase()
+            } else {
+                await onNextPrivateKey()
             }
-            const seed = await mnemonicToSeedFast(words)
-            const keypair = Keypair.fromSeed(seed.subarray(0, 32))
-            await saveCredentials(words, keypair)
-            dispatch(walletActions.setWallet(keypair.publicKey?.toBase58()))
-            dispatch(uiActions.showLoading(false))
 
+            dispatch(uiActions.showLoading(false))
             navigation.replace('BottomTab')
         } catch(error) {
             dispatch(uiActions.showLoading(false))
@@ -78,14 +76,55 @@ export default function RecoveryPhraseScreen({ navigation, route }: RecoveryPhra
             } else if (error instanceof Error) {
                 Alert.alert(error.message)
             } else {
-                console.error("Error umum:", error);
+                console.error("Error:", error);
             }
         } 
     }
 
+    async function onNextSeedPhrase() {
+        const isValid = bip39.validateMnemonic(words)
+        if(!isValid) {
+            throw new CustomError("Phrase Key is not valid", 500)
+        }
+        const seed = await mnemonicToSeedFast(words)
+        const keypair = Keypair.fromSeed(seed.subarray(0, 32))
+        await saveCredentials(keypair, words)
+        dispatch(walletActions.setWallet(keypair.publicKey?.toBase58()))
+    }
+
+    async function onNextPrivateKey() {
+        let secretKey: Uint8Array;
+        const trimmed = words.trim();
+
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+            const arr = JSON.parse(trimmed);
+            if (!Array.isArray(arr) || arr.length !== 64) {
+                return { error: 'Array JSON must 64 size' };
+            }
+            secretKey = Uint8Array.from(arr);
+        } else if (/^[1-9A-HJ-NP-Za-km-z]+$/.test(trimmed)) {
+            const decoded = bs58.decode(trimmed);
+            if (decoded.length !== 64) {
+                return { error: 'Base58 harus decode jadi 64 byte' };
+            }
+            secretKey = decoded;
+        } else {
+            const decoded = Uint8Array.from(Buffer.from(trimmed, 'base64'));
+            if (decoded.length !== 64) {
+                return { error: 'Base64 harus decode jadi 64 byte' };
+            }
+            secretKey = decoded;
+        }
+
+        const keypair = Keypair.fromSecretKey(secretKey)
+        
+        await saveCredentials(keypair)
+        dispatch(walletActions.setWallet(keypair.publicKey?.toBase58()))
+    }
+
     return (
         <KeyboardDismissPressable className="flex-1 bg-baseBg px-2">
-            <View className={`mt-8 flex-row items-center`}>
+            <View className={`mt-10 flex-row items-center`}>
                 <ChevronLeftIcon
                     width={32} height={32} color={Colors.primary}
                     onPress={() => navigation.goBack()}
@@ -109,12 +148,20 @@ export default function RecoveryPhraseScreen({ navigation, route }: RecoveryPhra
                         </CustomText>
                     </View>
                 )}
-                {route?.params?.importWallet && !route?.params?.words && (
+                {route?.params?.importWallet && !route?.params?.words && route?.params?.isSeedPhrase && (
                     <CustomText
                         className="text-lowEmphasis font-PlusJakartaSans text-lg text-center"
                         selectable selectionColor="#ECC771"
                     >
                         Restore an existing wallet with your 12-word or 24-word recovery phrase
+                    </CustomText>
+                )}
+                {route?.params?.importWallet && !route?.params?.words && !route?.params?.isSeedPhrase && (
+                    <CustomText
+                        className="text-lowEmphasis font-PlusJakartaSans text-lg text-center"
+                        selectable selectionColor="#ECC771"
+                    >
+                        Import your private key
                     </CustomText>
                 )}
                 {!route?.params?.importWallet && !route?.params?.words && (
@@ -151,7 +198,7 @@ export default function RecoveryPhraseScreen({ navigation, route }: RecoveryPhra
                     containerClassName="mx-4"
                     className="font-PlusJakartaSans text-primary text-md h-32 align-top placeholder:text-gray-700"
                     cursorColor={Colors.primary}
-                    placeholder="Recovery Phrase"
+                    placeholder={route.params?.title}
                     multiline
                     value={words}
                     onChangeText={setWords}

@@ -28,17 +28,19 @@ const walletSlice = createSlice({
 export const walletActions = walletSlice.actions
 export const walletReducer = walletSlice.reducer
 
-export async function saveCredentials(mnemonic: string, keypair: Keypair) {
-    await Keychain.setGenericPassword(WALLET_STORAGE_MNENOMIC, mnemonic, {
-        service: 'wallet-mnemonic',
-        accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-    })
-
+export async function saveCredentials(keypair: Keypair, mnemonic?: string) {
     const secretKeyArray = Array.from(keypair.secretKey)
     await Keychain.setGenericPassword(WALLET_STORAGE_KEY, JSON.stringify(secretKeyArray), {
         service: 'wallet-keypair',
         accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     })
+
+    if (mnemonic) {
+        await Keychain.setGenericPassword(WALLET_STORAGE_MNENOMIC, mnemonic, {
+            service: 'wallet-mnemonic',
+            accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+        })
+    }
 }
 
 export async function getMnemonic() {
