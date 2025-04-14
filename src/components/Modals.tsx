@@ -203,3 +203,31 @@ export function ModalTransaction(props: ModalTransactionProps) {
         </View>
     )
 }
+
+export function ModalImportOptions(props: { hideModal: () => void, onImportSeedPharse: () => void, onImportPrivateKey: () => void }) {
+    return (
+        <View className="w-full my-6 px-4">
+            <View className="items-center mb-2">
+                <CustomText className="text-primary font-PlusJakartaSansBold text-xl text-center mb-2">Import Options</CustomText>
+                <CustomText className="text-primary font-PlusJakartaSans text-md w-full mb-4 text-center">Balance changes are estimated. Amounts and assets involved are not guaranteed.</CustomText>
+            </View>
+            <View className="my-2 mx-2">
+                <Button
+                    containerClassName="mb-3"
+                    title="Import Seed Phrase"
+                    onPress={() => {
+                        props.onImportSeedPharse()
+                        props.hideModal()
+                    }}
+                />
+                <Button
+                    title="Import Private Key"
+                    onPress={() => {
+                        props.onImportPrivateKey()
+                        props.hideModal()
+                    }}
+                />
+            </View>
+        </View>
+    )
+}
