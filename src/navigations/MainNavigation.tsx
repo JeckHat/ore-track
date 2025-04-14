@@ -16,7 +16,7 @@ export default function MainNavigation() {
     const publicKey = useSelector((state: RootState) => state.wallet.publicKey)
 
     return (
-        <NativeStack.Navigator initialRouteName={publicKey? "Start" : "Start"}>
+        <NativeStack.Navigator initialRouteName={publicKey? "BottomTab" : "Start"}>
             <NativeStack.Screen
                 name="Start"
                 component={StartScreen}
