@@ -16,6 +16,10 @@ export const TREASURY = new Uint8Array([116, 114, 101, 97, 115, 117, 114, 121])
 export const MINT = new Uint8Array([109, 105, 110, 116])
 export const MINT_NOISE = new Uint8Array([89, 157, 88, 232, 243, 249, 197, 132, 199, 49, 19, 234, 91, 94, 150, 41])
 
+export const DEPOSIT_INSTRUCTION_KAMINO_DISCRIMINATOR = Buffer.from([
+    242, 35, 198, 137, 82, 225, 242, 182,
+]);
+
 export const JUP_API_PRICE = "https://api.jup.ag/price/v2?ids="
 export const METEORA_API = "https://app.meteora.ag/amm/pools?address="
 export const KAMINO_API = "https://api.kamino.finance/strategies/"

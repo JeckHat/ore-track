@@ -32,6 +32,7 @@ import { bigIntToNumber } from "@helpers";
 import { store } from "@store/index";
 import { boostActions } from "@store/actions";
 import { depositMeteoraInstruction } from "@services/meteora";
+import { depositKaminoInstruction } from "@services/kamino";
 
 export function calculateClaimableYield(boost: Boost, boostProof: Proof, stake: Stake, boostConfig: BoostConfig) {
     let rewards = BigInt(stake.rewards ?? 0);
@@ -462,7 +463,13 @@ export async function tokenToLPInstruction(boostInfo: BoostInfo, oreBalance: str
     }
     
     if(boostInfo?.defi === 'kamino') {
-
+        const depositInstructions = await depositKaminoInstruction(
+            boostInfo?.lpId,
+            parseFloat(oreBalance),
+            parseFloat(pairBalance),
+            1
+        )
+        instructions.push(depositInstructions)
     }
     
     if(boostInfo?.defi === 'meteora') {

@@ -9,3 +9,8 @@ export {
     AddBalanceLiquidityInstructionData,
     AddBalanceLiquidityInstructionArgs
 } from './Meteora'
+export {
+    getKaminoConfigResult,
+    getKaminoStrategyResult,
+    DepositInstructionArgs
+} from './Kamino'
