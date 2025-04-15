@@ -20,6 +20,7 @@ import { TabStakeScreenProps } from "@navigations/types"
 import { useBottomModal } from "@hooks"
 import { claimStakeOREInstruction, getStakeORE } from "@services/ore"
 import { shortenAddress } from "@helpers"
+import { getPriorityFee } from "@services/solana"
 
 export default function TabStakeScreen(props: TabStakeScreenProps) {
     const [orePrice, setOrePrice] = useState(0.0)
@@ -119,7 +120,10 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
             if (!feeCalculator.value) {
                 throw new CustomError("Fee is empty", 500)
             }
-            const estimatedFee = feeCalculator.value / LAMPORTS_PER_SOL
+            let fee = 0
+            fee += (feeCalculator.value ?? 0)
+            const priorityFee = await getPriorityFee(transaction)
+            fee += (((priorityFee) * COMPUTE_UNIT_LIMIT) / 1_000_000)
             
             let tokenTransfers = [{
                 id: 'ore',
@@ -135,8 +139,8 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                     value: shortenAddress(walletAddress)
                 },
                 {
-                    label: 'Estimate Fee',
-                    value: `${estimatedFee} SOL`
+                    label: 'Network Fee',
+                    value: `${(Math.round((fee / LAMPORTS_PER_SOL) * Math.pow(10, 6)) / Math.pow(10, 6))} SOL`
                 }
             ]
 

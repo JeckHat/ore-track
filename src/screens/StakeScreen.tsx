@@ -325,7 +325,6 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
                 units: COMPUTE_UNIT_LIMIT
             }))
 
-
             const tokenLpInstruction = await tokenToLPInstruction(boostData, forms.tokenOre.value, forms.tokenPair.value)
             instructions = [...instructions, ...tokenLpInstruction.instructions]
 
@@ -433,6 +432,7 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
 
     async function onStake() {
         try{
+            const walletPublicKey = new PublicKey(walletAddress)
             let instructions = []
             
             instructions.push(ComputeBudgetProgram.setComputeUnitLimit({
@@ -445,14 +445,20 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
             const connection = getConnection()
             let latestBlock = await connection.getLatestBlockhash();
             let messageV0 = new TransactionMessage({
-                payerKey: new PublicKey(walletAddress),
+                payerKey: walletPublicKey,
                 recentBlockhash: latestBlock.blockhash,
                 instructions: instructions,
             }).compileToLegacyMessage();
-            let trx = new VersionedTransaction(messageV0);
-            const fee = await connection.getFeeForMessage(trx.message, "confirmed")
-            const dynamicPriorityFee = fee.value ?? 0
-            instructions.splice(1, 0, ComputeBudgetProgram.setComputeUnitPrice({ microLamports: dynamicPriorityFee }))
+            let trx = new VersionedTransaction(messageV0)
+
+            let fee = 0
+            let trxFee = await connection.getFeeForMessage(trx.message, "confirmed")
+            fee += (trxFee.value ?? 0)
+
+            const priorityFee = await getPriorityFee(trx)
+            fee += ((priorityFee * COMPUTE_UNIT_LIMIT) / 1_000_000)
+
+            instructions.splice(1, 0, ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee }))
             latestBlock = await connection.getLatestBlockhash();
             messageV0 = new TransactionMessage({
                 payerKey: new PublicKey(walletAddress),
@@ -477,7 +483,7 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
                 },
                 {
                     label: 'Network Fee',
-                    value: `${dynamicPriorityFee / LAMPORTS_PER_SOL} SOL`
+                    value: `${(Math.round((fee / LAMPORTS_PER_SOL) * Math.pow(10, 6)) / Math.pow(10, 6))} SOL`
                 }
             ]
 
