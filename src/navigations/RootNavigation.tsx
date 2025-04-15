@@ -1,5 +1,6 @@
-import { NavigationContainer } from '@react-navigation/native'
+import { useMemo } from 'react'
 import { StatusBar, View } from 'react-native'
+import { NavigationContainer } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { twMerge } from 'tailwind-merge'
 
@@ -8,23 +9,13 @@ import { LoadingModal } from '@components'
 import { BottomModalProvider } from '@providers'
 import MainNavigation from './MainNavigation'
 import { useSolanaSocket } from '@hooks'
-import { useMemo } from 'react'
-import { Boost, BoostConfig, getBoostConfigResult, getBoostResult, getProofResult, getStakeResult, Proof, Stake } from '@models'
+import { getBoostConfigResult, getBoostResult, getProofResult, getStakeResult } from '@models'
 import { boostActions } from '@store/actions'
-import { calculateClaimableYield } from '@services/ore'
-
-type paramsCalculate = {
-  boost?: Boost,
-  stake?: Stake,
-  boostProof?: Proof,
-  boostConfig?: BoostConfig
-}
 
 export function RootNavigation() {
   const ui = useSelector((state: RootState) => state.ui)
   const url = useSelector((state: RootState) => state.config.rpcUrl)
   const socketAccounts = useSelector((state: RootState) => state.boost.socketAccounts) ?? {}
-  const boostRedux = useSelector((state: RootState) => state.boost) ?? {}
 
   const dispatch = useDispatch()
 
