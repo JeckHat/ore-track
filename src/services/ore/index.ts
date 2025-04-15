@@ -473,8 +473,8 @@ export async function tokenToLPInstruction(boostInfo: BoostInfo, oreBalance: str
     }
     
     if(boostInfo?.defi === 'meteora') {
-        const oreAmount = parseFloat(oreBalance) * Math.pow(10, 11)
-        const pairAmount = parseFloat(pairBalance) * Math.pow(10, TOKENLIST[boostInfo?.pairMint ?? ""].decimals)
+        const oreAmount = Math.floor(parseFloat(oreBalance) * Math.pow(10, 11))
+        const pairAmount = Math.floor(parseFloat(pairBalance) * Math.pow(10, TOKENLIST[boostInfo?.pairMint ?? ""].decimals))
 
         const depositInstructions = await depositMeteoraInstruction(
             boostInfo?.lpId,

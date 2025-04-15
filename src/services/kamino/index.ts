@@ -54,8 +54,6 @@ export async function depositKaminoInstruction(poolAddress: string, oreAmount: n
         args = new DepositInstructionArgs(unitsOre, unitsPair);
     }
 
-    console.log("MASUL")
-
     const schemaArgs = new Map([
         [DepositInstructionArgs, {
             kind: "struct",
@@ -68,14 +66,10 @@ export async function depositKaminoInstruction(poolAddress: string, oreAmount: n
 
     const serializedArgs = Buffer.from(borsh.serialize(schemaArgs, args))
 
-    console.log("MASUL serializedArgs")
-
     let finalData = Buffer.concat([
         DEPOSIT_INSTRUCTION_KAMINO_DISCRIMINATOR,
         serializedArgs
     ])
-
-    console.log("MASUL finalData")
 
     const accounts = [
         { pubkey: walletPubkey, isSigner: true, isWritable: true },

@@ -20,7 +20,7 @@ import { BOOSTLIST, COMPUTE_UNIT_LIMIT, ORE_MINT, SOL_MINT, TOKENLIST } from "@c
 import Images from "@assets/images";
 import { RootState } from "@store/types";
 import { depositStakeInstruction, getLiquidityPair, getStakeORE, tokenToLPInstruction } from "@services/ore";
-import { getBalance } from "@services/solana";
+import { getBalance, getPriorityFee } from "@services/solana";
 import { getConnection } from "@providers";
 import { getKeypair, uiActions } from "@store/actions";
 import { useBottomModal } from "@hooks";
@@ -285,7 +285,7 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
         const mintAta = getAssociatedTokenAddressSync(mintPublicKey, walletPublicKey)
         const accountInfo = await connection.getAccountInfo(mintAta)
 
-        let fee = 5000 + ((10000 * COMPUTE_UNIT_LIMIT) / 1_000_000) + 5000
+        let fee = 5000
         if (!accountInfo) {
             fee += 5000
         }
@@ -355,8 +355,7 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
             const trxFee = await connection.getFeeForMessage(trx.message, "confirmed")
             fee += (trxFee.value ?? 0)
 
-            // const priorityFee = await getPriorityFee(trx)
-            const priorityFee = 100
+            const priorityFee = await getPriorityFee(trx)
             instructions.splice(1, 0, ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee }))
 
             fee += ((priorityFee * COMPUTE_UNIT_LIMIT) / 1_000_000)
@@ -420,7 +419,7 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
                 },
                 {
                     label: 'Network Fee',
-                    value: `${fee / LAMPORTS_PER_SOL} SOL`
+                    value: `${(Math.round((fee / LAMPORTS_PER_SOL) * Math.pow(10, 6)) / Math.pow(10, 6))} SOL`
                 }
             ]
 
@@ -677,7 +676,7 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
                     </View>}
                 </View>
                 <View className="flex-row justify-between mx-4 mt-2 mb-4">
-                    <CustomText className="text-primary font-PlusJakartaSansBold">Estimate fee</CustomText>
+                    <CustomText className="text-primary font-PlusJakartaSansBold">Transaction fee</CustomText>
                     <CustomText className="text-primary font-PlusJakartaSansBold">
                         {forms.fee / LAMPORTS_PER_SOL} SOL
                     </CustomText>
