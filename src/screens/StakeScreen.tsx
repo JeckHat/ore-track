@@ -3,24 +3,28 @@ import { Image, RefreshControl, SafeAreaView, ScrollView, View } from "react-nat
 import { useDispatch, useSelector } from "react-redux";
 import { twMerge } from "tailwind-merge";
 import {
+    AddressLookupTableAccount,
     ComputeBudgetProgram,
     LAMPORTS_PER_SOL,
     PublicKey,
     SendTransactionError,
+    Transaction,
     TransactionMessage,
     VersionedTransaction
 } from "@solana/web3.js";
 
 import { Button, CustomText, Input, ModalTransaction, OptionMenu } from "@components";
 import { StakeNavigationProps } from "@navigations/types";
-import { BOOSTLIST, COMPUTE_UNIT_LIMIT, ORE_MINT, TOKENLIST } from "@constants";
+import { BOOSTLIST, COMPUTE_UNIT_LIMIT, ORE_MINT, SOL_MINT, TOKENLIST } from "@constants";
 import Images from "@assets/images";
 import { RootState } from "@store/types";
-import { depositStakeInstruction, getLiquidityPair, getStakeORE } from "@services/ore";
+import { depositStakeInstruction, getLiquidityPair, getStakeORE, tokenToLPInstruction } from "@services/ore";
 import { getBalance } from "@services/solana";
 import { getConnection } from "@providers";
 import { getKeypair, uiActions } from "@store/actions";
 import { useBottomModal } from "@hooks";
+import { shortenAddress } from "@helpers";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 interface FormState {
     tokenOre: {
@@ -45,6 +49,7 @@ interface FormState {
         lpBalanceOre: number
         lpBalancePair: number
     },
+    fee: number,
     currentEdit: 'tokenOre' | 'tokenPair'
     isValid: boolean
 }
@@ -52,7 +57,7 @@ interface FormState {
 type FormAction =
     | {
         type: 'SET_FIELD'
-        field: keyof Omit<FormState, 'currentEdit' | 'isValid' | 'stakeData'>
+        field: keyof Omit<FormState, 'currentEdit' | 'isValid' | 'stakeData' | 'fee'>
         pairDecimals: number
         value: string
     }
@@ -69,6 +74,10 @@ type FormAction =
         lpBalanceOre?: number
         lpBalancePair?: number
         shares?: number
+    }
+    | {
+        type: 'SET_FEE'
+        fee: number
     }
 
 const initialState: FormState = {
@@ -94,6 +103,7 @@ const initialState: FormState = {
         lpBalanceOre: 0.0,
         lpBalancePair: 0.0
     },
+    fee: 5000,
     currentEdit: 'tokenOre',
     isValid: false
 };
@@ -182,6 +192,12 @@ function formReducer(state: FormState, action: FormAction): FormState {
                 isValid: isValid
             }
         }
+        case 'SET_FEE': {
+            return {
+                ...state,
+                fee: action.fee
+            }
+        }
         default:
             return state
     }
@@ -192,19 +208,14 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
     const boostData = BOOSTLIST[boostAddress]
     const pairDecimals = TOKENLIST[boostData.pairMint?? ""]?.decimals ?? 0
     const walletAddress = useSelector((state: RootState) => state.wallet.publicKey) ?? ""
-
-    const [forms, onChangeForms] = useReducer(formReducer, initialState)
-    const [priorityFee, setPriorityFee] = useState(5000 / LAMPORTS_PER_SOL)
-
     const dispatch = useDispatch()
-
+    const [forms, onChangeForms] = useReducer(formReducer, initialState)
     const { showModal, hideModal } = useBottomModal()
 
     useEffect(() => {
         const interval = setInterval(() => {
             loadData()
         }, 1000)
-
         return () => clearInterval(interval)
     }, [])
 
@@ -218,7 +229,8 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
 
     async function loadDataOre() {
         try {
-            const [balanceOre, stakeOre] = await Promise.all([
+            const [fee, balanceOre, stakeOre] = await Promise.all([
+                getEstimateFee(),
                 getBalance(walletAddress, ORE_MINT).then((res) => res),
                 getStakeORE(ORE_MINT, boostAddress)
             ])
@@ -240,7 +252,8 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
 
     async function loadDataPair() {
         try {
-            const [balanceOre, balancePair, unstakeBalance, liquidityPair] = await Promise.all([
+            const [fee, balanceOre, balancePair, unstakeBalance, liquidityPair] = await Promise.all([
+                getEstimateFee(),
                 getBalance(walletAddress, ORE_MINT).then((res) => res),
                 getBalance(walletAddress, boostData?.pairMint ?? "").then((res) => res),
                 getBalance(walletAddress, boostData?.lpMint ?? "").then((res) => res),
@@ -265,6 +278,160 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
         }
     }
 
+    async function getEstimateFee(){
+        const connection = getConnection()
+        const walletPublicKey = new PublicKey(walletAddress)
+        const mintPublicKey = new PublicKey(boostData?.lpMint)
+        const mintAta = getAssociatedTokenAddressSync(mintPublicKey, walletPublicKey)
+        const accountInfo = await connection.getAccountInfo(mintAta)
+
+        let fee = 5000 + ((10000 * COMPUTE_UNIT_LIMIT) / 1_000_000) + 5000
+        if (!accountInfo) {
+            fee += 5000
+        }
+        onChangeForms({
+            type: 'SET_FEE',
+            fee: fee
+        })
+    }
+
+    async function onDeposit() {
+        try {
+            const connection = getConnection()
+            const walletPublicKey = new PublicKey(walletAddress)
+            dispatch(uiActions.showLoading(true))
+
+            // let Ok(token_a_balance) = token_a_balance.cloned() else {
+            //     if amount_a_f64 > 0f64 {
+            //         err.set(Some(TokenInputError::InsufficientBalance(
+            //             liquidity_pair.token_a.clone(),
+            //         ))); //
+            //     }
+            //     return Err(GatewayError::Unknown);
+            // };
+            // let Ok(token_b_balance) = token_b_balance.cloned() else {
+            //     if amount_b_f64 > 0f64 {
+            //         err.set(Some(TokenInputError::InsufficientBalance(
+            //             liquidity_pair.token_b.clone(),
+            //         )));
+            //     }
+            //     return Err(GatewayError::Unknown);
+            // };
+
+            const transaction = new Transaction()
+    
+            let instructions = []
+            instructions.push(ComputeBudgetProgram.setComputeUnitLimit({
+                units: COMPUTE_UNIT_LIMIT
+            }))
+
+
+            const tokenLpInstruction = await tokenToLPInstruction(boostData, forms.tokenOre.value, forms.tokenPair.value)
+            instructions = [...instructions, ...tokenLpInstruction.instructions]
+
+            const stakeInstruction = await depositStakeInstruction(boostData?.lpMint, boostAddress)
+            instructions.push(stakeInstruction)
+
+            let luts: AddressLookupTableAccount[] = []
+            if (boostData.lut) {
+                const res = await connection.getAddressLookupTable(new PublicKey(boostData.lut));
+                const addressLookupTable = res.value;
+            
+                if (addressLookupTable) {
+                    luts.push(addressLookupTable);
+                }
+            }
+    
+            let latestBlock = await connection.getLatestBlockhash();
+            let messageV0 = new TransactionMessage({
+                payerKey: walletPublicKey,
+                recentBlockhash: latestBlock.blockhash,
+                instructions: instructions,
+            }).compileToV0Message(luts);
+    
+            let trx = new VersionedTransaction(messageV0);
+            
+            let fee = 0
+            const trxFee = await connection.getFeeForMessage(trx.message, "confirmed")
+            fee += (trxFee.value ?? 0)
+
+            // const priorityFee = await getPriorityFee(trx)
+            const priorityFee = 100
+            instructions.splice(1, 0, ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee }))
+
+            fee += ((priorityFee * COMPUTE_UNIT_LIMIT) / 1_000_000)
+        
+            latestBlock = await connection.getLatestBlockhash('finalized')
+
+            messageV0 = new TransactionMessage({
+                payerKey: walletPublicKey,
+                recentBlockhash: latestBlock.blockhash,
+                instructions: instructions,
+            }).compileToV0Message(luts);
+            trx = new VersionedTransaction(messageV0);    
+            transaction.add(...instructions)
+
+            let tokenTransfers = [{
+                id: 'ore',
+                ticker: 'ORE',
+                isLp: false,
+                balance: (Math.round(Number(forms.tokenOre.value) * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
+                tokenImage: 'OreToken',
+                isMinus: true
+            }]
+
+            if(boostData?.pairMint) {
+                if (boostData?.pairMint === SOL_MINT) {
+                    let balance = Number(forms.tokenPair.value) + (tokenLpInstruction.feeAta / LAMPORTS_PER_SOL)
+                    tokenTransfers.push({
+                        id: 'sol',
+                        ticker: 'SOL',
+                        isLp: false,
+                        balance: (Math.round(balance * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
+                        tokenImage: boostData?.pairImage ?? "SolanaToken",
+                        isMinus: true
+                    })
+                } else {
+                    tokenTransfers.push({
+                        id: boostData?.pairTicker?.toLocaleLowerCase() ?? 'id',
+                        ticker: boostData?.pairTicker ?? 'SOL',
+                        isLp: false,
+                        balance: (Math.round(Number(forms.tokenPair.value) * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
+                        tokenImage: boostData?.pairImage ?? "SolanaToken",
+                        isMinus: true
+                    })
+                    if (tokenLpInstruction.feeAta > 0) {
+                        tokenTransfers.push({
+                            id: 'sol',
+                            ticker: 'SOL',
+                            isLp: false,
+                            balance: (Math.round((tokenLpInstruction.feeAta / LAMPORTS_PER_SOL) * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
+                            tokenImage: 'SolanaToken',
+                            isMinus: true
+                        })
+                    }
+                }
+            }
+
+            const transferInfo = [
+                {
+                    label: 'Account',
+                    value: shortenAddress(walletAddress ?? "")
+                },
+                {
+                    label: 'Network Fee',
+                    value: `${fee / LAMPORTS_PER_SOL} SOL`
+                }
+            ]
+
+            dispatch(uiActions.showLoading(false))
+            onShowModal(tokenTransfers, transferInfo, trx)
+        } catch(error: any | SendTransactionError) {
+            console.log("error", error)
+            console.log("logs", error.getLogs())
+        }
+    }
+
     async function onStake() {
         try{
             let instructions = []
@@ -274,51 +441,40 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
             }))
 
             const depositInstruction = await depositStakeInstruction(boostData?.lpMint, boostAddress)
-            const lpBalance = await getBalance(walletAddress, boostData?.lpMint)
-
             instructions.push(depositInstruction)
-    
+
             const connection = getConnection()
-    
             let latestBlock = await connection.getLatestBlockhash();
-    
             let messageV0 = new TransactionMessage({
                 payerKey: new PublicKey(walletAddress),
                 recentBlockhash: latestBlock.blockhash,
                 instructions: instructions,
             }).compileToLegacyMessage();
-    
             let trx = new VersionedTransaction(messageV0);
-    
             const fee = await connection.getFeeForMessage(trx.message, "confirmed")
-    
             const dynamicPriorityFee = fee.value ?? 0
-    
             instructions.splice(1, 0, ComputeBudgetProgram.setComputeUnitPrice({ microLamports: dynamicPriorityFee }))
-    
             latestBlock = await connection.getLatestBlockhash();
-    
             messageV0 = new TransactionMessage({
                 payerKey: new PublicKey(walletAddress),
                 recentBlockhash: latestBlock.blockhash,
                 instructions: instructions,
             }).compileToLegacyMessage();
-    
             trx = new VersionedTransaction(messageV0)
 
+            const lpBalance = await getBalance(walletAddress, boostData?.lpMint)
             const tokenTransfers = [{
                 id: 'ore',
                 ticker: 'ORE',
                 isLp: false,
-                balance: lpBalance,
+                balance: Math.round(lpBalance * Math.pow(10, 5) / Math.pow(10, 5)),
                 tokenImage: 'OreToken',
                 isMinus: true
             }]
-
-            let transferInfo = [
+            const transferInfo = [
                 {
                     label: 'Account',
-                    value: walletAddress ?? ""
+                    value: shortenAddress(walletAddress ?? "")
                 },
                 {
                     label: 'Network Fee',
@@ -327,7 +483,6 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
             ]
 
             onShowModal(tokenTransfers, transferInfo, trx)
-    
         } catch(error: any | SendTransactionError) {
             console.log("error", error)
             console.log("logs", error.getLogs())
@@ -522,13 +677,15 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
                     </View>}
                 </View>
                 <View className="flex-row justify-between mx-4 mt-2 mb-4">
-                    <CustomText className="text-primary font-PlusJakartaSansBold">Transaction fee</CustomText>
-                    <CustomText className="text-primary font-PlusJakartaSansBold">{priorityFee} SOL</CustomText>
+                    <CustomText className="text-primary font-PlusJakartaSansBold">Estimate fee</CustomText>
+                    <CustomText className="text-primary font-PlusJakartaSansBold">
+                        {forms.fee / LAMPORTS_PER_SOL} SOL
+                    </CustomText>
                 </View>
                 <Button
                     disabled={!forms.isValid}
                     title={route.params?.isDeposit? "Deposit" : "Withdraw"}
-                    onPress={() => {}}
+                    onPress={route.params?.isDeposit? onDeposit : () => {}}
                 />
                 <View className="mt-8 mx-3 mb-2">
                     <CustomText className="text-primary font-PlusJakartaSansSemiBold text-xl">Account Info</CustomText>
