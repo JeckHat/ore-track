@@ -125,7 +125,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                 id: 'ore',
                 ticker: 'ORE',
                 isLp: false,
-                balance: (rewards / Math.pow(10, 11)).toFixed(11),
+                balance: (Math.round(rewards / Math.pow(10, 6)) / Math.pow(10, 5)).toString(),
                 tokenImage: 'OreToken'
             }]
 
@@ -164,15 +164,14 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
     
                             await connection.confirmTransaction(signature, "confirmed")
                             setTimeout(() => {
-                                loadData()
                                 dispatch(uiActions.showLoading(false))
-                            }, 5000)
+                            }, 2000)
                         } catch(error) {
                             console.log("error", error)
                             setTimeout(() => {
                                 loadData()
                                 dispatch(uiActions.showLoading(false))
-                            }, 5000)
+                            }, 2000)
                         }
                     }}
                 />
@@ -332,14 +331,14 @@ function StakeRow(props: StakeRowProps) {
                                     id: 'ore',
                                     ticker: 'ORE',
                                     isLp: false,
-                                    balance: (instruction.rewards / Math.pow(10, 11)).toString(),
+                                    balance: (Math.round(instruction.rewards / Math.pow(10, 6)) / Math.pow(10, 5)).toString(),
                                     tokenImage: 'OreToken'
                                 }]
 
                                 let transferInfo = [
                                     {
                                         label: 'Account',
-                                        value: walletAddress ?? ""
+                                        value: shortenAddress(walletAddress ?? "")
                                     },
                                     {
                                         label: 'Network Fee',
@@ -386,13 +385,13 @@ function StakeRow(props: StakeRowProps) {
                             }
                         }
                     }, {
-                        text: 'Stake',
+                        text: 'Deposit',
                         onPress: () => navigationProps.navigation.navigate('Stake', {
                             isDeposit: true,
                             boost: boost
                         })
                     }, {
-                        text: 'Unstake',
+                        text: 'Withdraw',
                         onPress: () => navigationProps.navigation.navigate('Stake', {
                             isDeposit: false,
                             boost: boost

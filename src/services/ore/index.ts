@@ -237,7 +237,8 @@ export async function claimStakeOREInstruction(mintAddress: string, boostAddress
         boostPublicKey,
         stakePublicKey,
         boostProofPublicKey,
-        boostConfig
+        boostConfig,
+        boostConfigPublicKey
     } = await getStakeORE(mintAddress, boostAddress)
 
     const rewards = calculateClaimableYield(boost, boostProof, stake, boostConfig)
@@ -251,7 +252,7 @@ export async function claimStakeOREInstruction(mintAddress: string, boostAddress
 
     const boostRewardsPublicKey = getAssociatedTokenAddressSync(
         new PublicKey(ORE_MINT),
-        boostPublicKey,
+        boostConfigPublicKey,
         true
     );
 
@@ -275,6 +276,7 @@ export async function claimStakeOREInstruction(mintAddress: string, boostAddress
             { pubkey: staker, isSigner: true, isWritable: true },
             { pubkey: beneficiaryPublicKey, isSigner: false, isWritable: true },
             { pubkey: boostPublicKey, isSigner: false, isWritable: true },
+            { pubkey: boostConfigPublicKey, isSigner: false, isWritable: true },
             { pubkey: boostProofPublicKey, isSigner: false, isWritable: true },
             { pubkey: boostRewardsPublicKey, isSigner: false, isWritable: true },
             { pubkey: stakePublicKey, isSigner: false, isWritable: true },
