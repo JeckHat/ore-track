@@ -60,12 +60,12 @@ export async function getMeteoraPoolResult(data?: Buffer) {
         throw new Error("Failed to get miner account");
     }
 
-    const proof = meteoraPoolTryFromBytes(data);
-    if (!proof) {
+    const pool = meteoraPoolTryFromBytes(data);
+    if (!pool) {
         throw new Error("Failed to parse miner account");
     }
 
-    return proof;
+    return pool;
 }
 
 export class MeteoraVault {
@@ -190,12 +190,12 @@ export async function getMeteoraVaultResult(data?: Buffer) {
         throw new Error("Failed to get miner account");
     }
 
-    const proof = meteoraVaultTryFromBytes(data);
-    if (!proof) {
+    const vault = meteoraVaultTryFromBytes(data);
+    if (!vault) {
         throw new Error("Failed to parse miner account");
     }
 
-    return proof;
+    return vault;
 }
 
 class LockedProfitTracker {

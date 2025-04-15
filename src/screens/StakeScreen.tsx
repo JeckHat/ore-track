@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { Image, RefreshControl, SafeAreaView, ScrollView, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { twMerge } from "tailwind-merge";
@@ -12,6 +12,7 @@ import {
     TransactionMessage,
     VersionedTransaction
 } from "@solana/web3.js";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 import { Button, CustomText, Input, ModalTransaction, OptionMenu } from "@components";
 import { StakeNavigationProps } from "@navigations/types";
@@ -24,7 +25,6 @@ import { getConnection } from "@providers";
 import { getKeypair, uiActions } from "@store/actions";
 import { useBottomModal } from "@hooks";
 import { shortenAddress } from "@helpers";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 interface FormState {
     tokenOre: {
@@ -246,7 +246,7 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
                 pairDecimals: pairDecimals
             })
         } catch(error) {
-
+            console.log("error", error)
         }
     }
 
@@ -274,7 +274,7 @@ export default function StakeScreen({ navigation, route }: StakeNavigationProps)
                 pairDecimals: pairDecimals
             })
         } catch(error) {
-
+            console.log("error", error)
         }
     }
 
