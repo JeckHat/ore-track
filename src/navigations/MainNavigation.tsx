@@ -7,8 +7,9 @@ import { RootState } from "@store/types"
 import StartScreen from "@screens/StartScreen"
 import PrivateKeyScreen from "@screens/PrivateKeyScreen"
 import TabNavigation from "./BottomTabNavigation"
-import StakeScreen from "@screens/StakeScreen"
 import RPCScreen from "@screens/RPCScreen"
+import DepositStakeScreen from "@screens/DepositStakeScreen"
+import WithdrawStakeScreen from "@screens/WithdrawStakeScreen"
 
 const NativeStack = createNativeStackNavigator()
 
@@ -33,6 +34,32 @@ export default function MainNavigation() {
                 options={{ headerShown: false}}
             />
             <NativeStack.Screen
+                name="DepositStake"
+                component={DepositStakeScreen}
+                options={{
+                    headerTintColor: Colors.primary,
+                    headerTitleStyle: {
+                        fontFamily: Fonts.PlusJakartaSansSemiBold,
+                        color: Colors.primary,
+                        
+                    },
+                    headerStyle: { backgroundColor: Colors.baseBg }
+                }}
+            />
+            <NativeStack.Screen
+                name="WithdrawStake"
+                component={WithdrawStakeScreen}
+                options={{
+                    headerTintColor: Colors.primary,
+                    headerTitleStyle: {
+                        fontFamily: Fonts.PlusJakartaSansSemiBold,
+                        color: Colors.primary,
+                        
+                    },
+                    headerStyle: { backgroundColor: Colors.baseBg }
+                }}
+            />
+            {/* <NativeStack.Screen
                 name="Stake"
                 component={StakeScreen}
                 options={{
@@ -44,7 +71,7 @@ export default function MainNavigation() {
                     },
                     headerStyle: { backgroundColor: Colors.baseBg }
                 }}
-            />
+            /> */}
             <NativeStack.Screen
                 name="RPC"
                 component={RPCScreen}
