@@ -312,13 +312,13 @@ export async function claimStakeOREInstruction(mintAddress: string, boostAddress
     return { transaction, rewards: bigIntToNumber(rewards), estimatedFee, connection };
 }
 
-export async function depositStakeInstruction(mintAddress: string, boostAddress: string) {
+export async function depositStakeInstruction(mintAddress: string, boostAddress: string, amountStake?: number) {
     const walletAddress = getWalletAddress()
     if (!walletAddress) {
         throw new CustomError("Wallet Address is undefined", 500)
     }
 
-    const amount = BigInt("0xFFFFFFFFFFFFFFFF")
+    const amount = amountStake? BigInt(amountStake * Math.pow(10, 11)) : BigInt("0xFFFFFFFFFFFFFFFF")
     const depositData = Buffer.alloc(8)
     depositData.writeBigUInt64LE(amount, 0)
 
