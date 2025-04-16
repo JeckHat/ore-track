@@ -60,7 +60,19 @@ export const POOL_LIST: Record<string, PoolInfo> = {
     'pool-oreminepool': {
         id: 'pool-oreminepool',
         name: 'OreMinePool',
+        isCoal: true,
+        api: {}
+    },
+    'pool-ec1ipse': {
+        id: 'pool-ec1ipse',
+        name: 'Ec1ipse',
         isCoal: false,
+        api: {}
+    },
+    'pool-twpool': {
+        id: 'pool-twpool',
+        name: 'Tw-Pool',
+        isCoal: true,
         api: {}
     }
 }

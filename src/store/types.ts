@@ -84,6 +84,13 @@ export interface PoolState {
     balanceCoal: number
     runningOre: boolean
     runningCoal: boolean
+    avgRewards: {
+        ore: number
+        coal: number,
+        startOre: number,
+        startCoal: number
+    },
+    startMiningAt?: string | null
     lastUpdateAt: string
     lastClaimAt: string
 }
