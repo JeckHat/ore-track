@@ -330,7 +330,22 @@ function StakeRow(props: StakeRowProps) {
                         onPress: async () => {
                             try {
                                 dispatch(uiActions.showLoading(true))
+                                const transaction = new Transaction()
+                                transaction.add(
+                                    ComputeBudgetProgram.setComputeUnitLimit({
+                                        units: COMPUTE_UNIT_LIMIT
+                                    })
+                                )
+
                                 const instruction = await claimStakeOREInstruction(BOOSTLIST[boost].lpMint, boost)
+
+                                transaction.add(instruction.transaction)
+                                
+                                let fee = 0
+                                fee += instruction.estimatedFee ?? 0
+                                const priorityFee = await getPriorityFee(transaction)
+                                fee += (((priorityFee) * COMPUTE_UNIT_LIMIT) / 1_000_000)
+
                                 let tokenTransfers = [{
                                     id: 'ore',
                                     ticker: 'ORE',
@@ -338,7 +353,7 @@ function StakeRow(props: StakeRowProps) {
                                     balance: (Math.round(instruction.rewards / Math.pow(10, 6)) / Math.pow(10, 5)).toString(),
                                     tokenImage: 'OreToken'
                                 }]
-
+                
                                 let transferInfo = [
                                     {
                                         label: 'Account',
@@ -346,7 +361,7 @@ function StakeRow(props: StakeRowProps) {
                                     },
                                     {
                                         label: 'Network Fee',
-                                        value: `${instruction.estimatedFee} SOL`
+                                        value: `${(Math.round((fee / LAMPORTS_PER_SOL) * Math.pow(10, 6)) / Math.pow(10, 6))} SOL`
                                     }
                                 ]
 
@@ -390,14 +405,12 @@ function StakeRow(props: StakeRowProps) {
                         }
                     }, {
                         text: 'Deposit',
-                        onPress: () => navigationProps.navigation.navigate('Stake', {
-                            isDeposit: true,
+                        onPress: () => navigationProps.navigation.navigate('DepositStake', {
                             boost: boost
                         })
                     }, {
                         text: 'Withdraw',
-                        onPress: () => navigationProps.navigation.navigate('Stake', {
-                            isDeposit: false,
+                        onPress: () => navigationProps.navigation.navigate('WithdrawStake', {
                             boost: boost
                         })
                     }]}
