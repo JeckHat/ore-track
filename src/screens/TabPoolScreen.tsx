@@ -26,6 +26,8 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
     const walletAddress = useSelector((state: RootState) => state.wallet.publicKey) ?? ""
     const pools = useSelector((state: RootState) => state.pool.pools)
     const [total, setTotal] = useState({
+        avgOre: 0,
+        avgCoal: 0,
         balanceOre: 0,
         balanceCoal: 0,
         loading: true
@@ -48,13 +50,15 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
             await loadPoolsBalance()
 
             let newTotal = {
-                ...total,
+                avgOre: 0,
+                avgCoal: 0,
                 balanceOre: 0,
                 balanceCoal: 0
             }
             Object.keys(POOL_LIST).map(poolId => {
                 newTotal = {
-                    ...newTotal,
+                    avgOre: newTotal.avgOre + (pools[poolId]?.avgRewards?.ore ?? 0),
+                    avgCoal: newTotal.avgCoal + (pools[poolId]?.avgRewards?.coal ?? 0),
                     balanceOre: newTotal.balanceOre + (pools[poolId]?.balanceOre ?? 0),
                     balanceCoal: newTotal.balanceCoal + (pools[poolId]?.balanceCoal ?? 0)
                 }
@@ -178,6 +182,44 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                                 <CustomText className="text-primary ml-2 font-PlusJakartaSansSemiBold text-sm">
                                     {shortenAddress(walletAddress)}
                                 </CustomText>
+                            </View>
+                            <View className="flex-row items-center">
+                                <CustomText className="text-primary font-PlusJakartaSansSemiBold text-sm mb-1">
+                                    Daily Average:
+                                </CustomText>
+                            </View>
+                            <View className="flex-row items-center justify-between pb-1 mb-1 border-b border-solid border-gray-500">
+                                <View>
+                                    <View className="flex-row items-center">
+                                        <Image
+                                            className="h-6 w-6 mr-1 rounded-full"
+                                            source={Images.OreToken}
+                                        />
+                                        {!total.loading && <CustomText
+                                            className="text-primary font-PlusJakartaSans text-sm"
+                                        >
+                                            {total.avgOre?.toFixed(4)} ORE
+                                        </CustomText>}
+                                        {total.loading && <SkeletonLoader className="mt-1 bg-gray-700 rounded-lg w-32 h-[14px]" />}
+                                    </View>
+                                    <View className="flex-row items-center">
+                                        <Image
+                                            className="h-6 w-6 mr-1 rounded-full"
+                                            source={Images.CoalToken}
+                                        />
+                                        {!total.loading && <CustomText
+                                            className="text-primary font-PlusJakartaSans text-sm"
+                                        >
+                                            {total.avgCoal?.toFixed(4)} COAL
+                                        </CustomText>}
+                                        {total.loading && <SkeletonLoader className="mt-1 bg-gray-700 rounded-lg w-32 h-[14px]" />}
+                                    </View>
+                                </View>
+                                <View>
+                                    <CustomText className="text-green-400 font-PlusJakartaSans text-[11px] self-end">
+                                        $ {(total.avgOre * price.ore + total.avgCoal * price.coal).toFixed(2)}
+                                    </CustomText>
+                                </View>
                             </View>
                             <View className="flex-row items-center">
                                 <CustomText className="text-primary font-PlusJakartaSansSemiBold text-sm mb-1">
