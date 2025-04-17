@@ -6,6 +6,7 @@ type MainStackParamList = {
     Start: {} | undefined
     PrivateKey: { importWallet?: boolean, words?: string, title?: string, isSeedPhrase?: boolean } | undefined
     BottomTab: {} | undefined
+    Receive: {} | undefined
     DepositStake: { boost?: string } | undefined
     WithdrawStake: { boost?: string } | undefined
     RPC: {} | undefined
@@ -57,6 +58,11 @@ export type TabStakeScreenProps = {
 export type TabSettingScreenProps = {
     navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabSetting'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
     route: RouteProp<NavigationTabsParamList, 'TabSetting'>
+}
+
+export type ReceiveNavigationProps = {
+    navigation: NativeStackNavigationProp<MainStackParamList, 'Receive'>
+    route: RouteProp<MainStackParamList, 'Receive'>
 }
 
 export type DepositStakeNavigationProps = {

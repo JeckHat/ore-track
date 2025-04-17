@@ -5,5 +5,6 @@ module.exports = {
   ],
   plugins: [
     ['@babel/plugin-proposal-private-methods', { loose: true }],
+    'react-native-reanimated/plugin',
   ],
 };
