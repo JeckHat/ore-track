@@ -1,4 +1,12 @@
-import { LAMPORTS_PER_SOL, PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js"
+import {
+    LAMPORTS_PER_SOL,
+    PublicKey,
+    Transaction,
+    TransactionInstruction,
+    VersionedTransaction
+} from "@solana/web3.js"
+import { createAssociatedTokenAccountInstruction, getAssociatedTokenAddress } from "@solana/spl-token"
+
 
 import { CustomError } from "@models"
 import { SOL_MINT } from "@constants"
@@ -86,4 +94,21 @@ export async function getPriorityFee(transaction: Transaction | VersionedTransac
         console.log("error", error)
         return 10000
     }
+}
+
+export async function ensureAtaExists(owner: PublicKey, mint: PublicKey): Promise<TransactionInstruction | null> {
+    const connection = getConnection()
+    const ata = await getAssociatedTokenAddress(mint, owner);
+  
+    const accountInfo = await connection.getAccountInfo(ata);
+    if (accountInfo === null) {
+        return createAssociatedTokenAccountInstruction(
+            owner,
+            ata,
+            owner,
+            mint
+        );
+    }
+  
+    return null;
 }

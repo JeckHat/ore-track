@@ -5,6 +5,8 @@ import * as borsh from 'borsh'
 import {
     AddBalanceLiquidityInstructionArgs,
     AddBalanceLiquidityInstructionData,
+    RemoveBalanceLiquidityInstructionArgs,
+    RemoveBalanceLiquidityInstructionData,
     CustomError,
     getMeteoraPoolResult,
     getMeteoraVaultResult
@@ -25,7 +27,6 @@ export async function getMeteoraVault(vaultAddress: string) {
     const meteoraPool = await getMeteoraVaultResult(poolAccountInfo?.data)
     return meteoraPool
 }
-
 
 export async function depositMeteoraInstruction(poolAddress: string, oreAmount: number, pairAmount: number, slippageRate: number) {
     const connection = getConnection()
@@ -149,7 +150,105 @@ export async function depositMeteoraInstruction(poolAddress: string, oreAmount: 
         keys: accounts,
         data: finalData,
     })        
+}
 
+export async function withdrawMeteoraInstruction(poolAddress: string, sharesAmount: number, pairAmount: number, slippageRate: number) {
+    const connection = getConnection()
+    const walletAddress = getWalletAddress()
+    if (!walletAddress) {
+        throw new CustomError("Wallet Address is undefined", 500)
+    }
+
+    const meteoraPool = await getMeteoraPool(poolAddress)
+    if (!meteoraPool) {
+        throw new CustomError("Meteora Pool is not found", 500)
+    }
+
+    const meteoraVaultA = await getMeteoraVault(meteoraPool.AVault ?? "")
+    if (!meteoraVaultA) {
+        throw new CustomError("Meteora Vault is not found", 500)
+    }
+    const meteoraVaultB = await getMeteoraVault(meteoraPool.BVault ?? "")
+    if (!meteoraVaultB) {
+        throw new CustomError("Meteora Vault is not found", 500)
+    }
+
+    let poolTokenAmount = BigInt(sharesAmount);
+    const precision = 1000n;
+    const slippage = BigInt(slippageRate);
+    const safeRatio = precision - slippage;
+    const amountB = BigInt(pairAmount);
+
+    const minAmountA = (amountB * safeRatio) / precision;
+    const minAmountB = (amountB * safeRatio) / precision;
+
+    const data = new RemoveBalanceLiquidityInstructionData()
+    const schemaData = new Map([
+        [RemoveBalanceLiquidityInstructionData, { 
+            kind: "struct", 
+            fields: [["discriminator", [8]]] 
+        }]
+    ])
+
+    const serializedData = Buffer.from(borsh.serialize(schemaData, data))
+
+    const args = new RemoveBalanceLiquidityInstructionArgs(poolTokenAmount, minAmountA, minAmountB)
+
+    const schemaArgs = new Map([
+        [RemoveBalanceLiquidityInstructionArgs, { 
+            kind: "struct", 
+            fields: [
+                ["pool_token_amount", "u64"],
+                ["minimum_a_token_out", "u64"],
+                ["minimum_b_token_out", "u64"]
+            ] 
+        }]
+    ]);
+    const serializedArgs = Buffer.from(borsh.serialize(schemaArgs, args))
+
+    let finalData = Buffer.concat([serializedData, serializedArgs])
+
+    let userPoolLp = getAssociatedTokenAddressSync(new PublicKey(meteoraPool.lpMint ?? ""), new PublicKey(walletAddress));
+
+    const userAToken = getAssociatedTokenAddressSync(
+        new PublicKey(meteoraPool.tokenAMint ?? ""),
+        new PublicKey(walletAddress)
+    )
+
+    const userBToken = getAssociatedTokenAddressSync(
+        new PublicKey(meteoraPool.tokenBMint ?? ""),
+        new PublicKey(walletAddress)
+    )
+
+    let accounts = [
+        { pubkey: new PublicKey(poolAddress), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(meteoraPool.lpMint ?? ""), isSigner: false, isWritable: true },
+        { pubkey: userPoolLp, isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(meteoraPool.AVaultLP ?? ""), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(meteoraPool.BVaultLP ?? ""), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(meteoraPool.AVault ?? ""), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(meteoraPool.BVault ?? ""), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(meteoraVaultA.lpMint ?? ""), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(meteoraVaultB.lpMint ?? ""), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(meteoraVaultA.tokenVault ?? ""), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(meteoraVaultB.tokenVault ?? ""), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(userAToken), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(userBToken), isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(walletAddress), isSigner: true, isWritable: false },
+        { pubkey: new PublicKey(METEORA_VAULT_ID), isSigner: false, isWritable: false },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        // ...remainingAccounts.map(acc => ({
+        //     pubkey: new PublicKey(acc.pubkey),
+        //     isSigner: acc.isSigner,
+        //     isWritable: acc.isWritable,
+        // })),
+    ]
+    
+    return new TransactionInstruction({
+        programId: new PublicKey(METEORA_AMM_ID),
+        keys: accounts,
+        data: finalData,
+    }) 
 }
 
 function calculatePoolTokenAmount(poolTokenByA: bigint, poolTokenByB: bigint, slippageRate: bigint) {

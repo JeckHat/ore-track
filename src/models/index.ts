@@ -7,11 +7,13 @@ export {
     getMeteoraPoolResult,
     getMeteoraVaultResult,
     AddBalanceLiquidityInstructionData,
-    AddBalanceLiquidityInstructionArgs
+    AddBalanceLiquidityInstructionArgs,
+    RemoveBalanceLiquidityInstructionArgs,
+    RemoveBalanceLiquidityInstructionData
 } from './Meteora'
 export {
     getKaminoConfigResult,
     getKaminoStrategyResult,
     KaminoDepositInstructionArgs,
-    KaminoWithdrawInstructionArgs
+    KaminoWithdrawInstructionArgs,
 } from './Kamino'

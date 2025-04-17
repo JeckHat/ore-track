@@ -17,7 +17,7 @@ import { WithdrawStakeNavigationProps } from "@navigations/types";
 import { BOOSTLIST, COMPUTE_UNIT_LIMIT, ORE_MINT, TOKENLIST } from "@constants";
 import Images from "@assets/images";
 import { RootState } from "@store/types";
-import { getLiquidityPair, getStakeORE, withdrawStakeInstruction } from "@services/ore";
+import { getLiquidityPair, getStakeORE, LPToTokenInstruction, withdrawStakeInstruction } from "@services/ore";
 import { getPriorityFee } from "@services/solana";
 import { getConnection } from "@providers";
 import { getKeypair, uiActions } from "@store/actions";
@@ -170,11 +170,9 @@ export default function WithdrawStakeScreen({ navigation, route }: WithdrawStake
     }
 
     async function loadDataOre() {
-        // const walletPublicKey = new PublicKey(walletAddress)
         try {
-            const [fee, stakeOre] = await Promise.all([
+            const [_, stakeOre] = await Promise.all([
                 getEstimateFee(),
-                // getStake(walletPublicKey, new PublicKey(route.params?.boost ?? "")),
                 getStakeORE(ORE_MINT, boostAddress)
             ])
             onChangeForms({
@@ -192,11 +190,9 @@ export default function WithdrawStakeScreen({ navigation, route }: WithdrawStake
     }
 
     async function loadDataPair() {
-        const walletPublicKey = new PublicKey(walletAddress)
         try {
-            const [fee, liquidityPair] = await Promise.all([
+            const [_, liquidityPair] = await Promise.all([
                 getEstimateFee(),
-                // getStake(walletPublicKey, new PublicKey(route.params?.boost ?? "")),
                 getLiquidityPair(boostData.lpId, boostData.defi, route?.params?.boost ?? "")
             ])
             
@@ -234,7 +230,7 @@ export default function WithdrawStakeScreen({ navigation, route }: WithdrawStake
         })
     }
 
-    async function onUnstake() {
+    async function onWithdraw() {
         try {
             const connection = getConnection()
             const walletPublicKey = new PublicKey(walletAddress)
@@ -245,12 +241,57 @@ export default function WithdrawStakeScreen({ navigation, route }: WithdrawStake
                 units: COMPUTE_UNIT_LIMIT
             }))
 
+            let feeAta = 0
+            let tokenTransfers = []
+
             const stakeInstruction = await withdrawStakeInstruction(boostData?.lpMint, boostAddress, Number(forms.token.value))
             instructions.push(stakeInstruction)
 
-            if (boostData.lpMint !== ORE_MINT) {
-
+            if (boostData.lpMint === ORE_MINT) {
+                tokenTransfers.push({
+                    id: 'ore',
+                    ticker: 'ORE',
+                    isLp: false,
+                    balance: (Math.round(Number(forms.token.value) * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
+                    tokenImage: 'OreToken',
+                    isMinus: false
+                })
+            } else {
+                const oreAmount = (forms.stakeData.lpBalanceOre 
+                    * (parseFloat(forms.token.value) * Math.pow(10, boostData.decimals)) / forms.stakeData.shares)
+                const pairAmount = (forms.stakeData.lpBalancePair 
+                    * (parseFloat(forms.token.value) * Math.pow(10, boostData.decimals)) / forms.stakeData.shares)
+                const lpTokenInstruction = await LPToTokenInstruction(boostData, boostAddress, forms.token.value)
+                instructions = [...instructions, ...lpTokenInstruction.instructions]
+                feeAta += lpTokenInstruction.feeAta
+                tokenTransfers.push({
+                    id: 'ore',
+                    ticker: "ORE",
+                    isLp: false,
+                    balance: (Math.round(oreAmount * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
+                    tokenImage: 'OreToken',
+                    isMinus: false
+                })
+                tokenTransfers.push({
+                    id: 'pair',
+                    ticker: boostData.pairTicker ?? "SOL",
+                    isLp: false,
+                    balance: (Math.round(pairAmount * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
+                    tokenImage: boostData.pairImage ?? 'SolanaToken',
+                    isMinus: false
+                })
+                if (feeAta > 0) {
+                    tokenTransfers.push({
+                        id: 'feeAta',
+                        ticker: "SOL",
+                        isLp: false,
+                        balance: (Math.round((feeAta / LAMPORTS_PER_SOL) * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
+                        tokenImage: 'SolanaToken',
+                        isMinus: true
+                    })
+                }
             }
+            
 
             let luts: AddressLookupTableAccount[] = []
             if (boostData.lut) {
@@ -284,16 +325,7 @@ export default function WithdrawStakeScreen({ navigation, route }: WithdrawStake
                 recentBlockhash: latestBlock.blockhash,
                 instructions: instructions,
             }).compileToV0Message(luts);
-            trx = new VersionedTransaction(messageV0);   
-
-            let tokenTransfers = [{
-                id: 'ore',
-                ticker: 'ORE',
-                isLp: false,
-                balance: (Math.round(Number(forms.token.value) * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
-                tokenImage: 'OreToken',
-                isMinus: false
-            }]
+            trx = new VersionedTransaction(messageV0);
 
             const transferInfo = [
                 {
@@ -451,7 +483,7 @@ export default function WithdrawStakeScreen({ navigation, route }: WithdrawStake
                 <Button
                     disabled={!forms.isValid}
                     title={"Withdraw"}
-                    onPress={onUnstake}
+                    onPress={onWithdraw}
                 />
                 <View className="mt-8 mx-3 mb-2">
                     <CustomText className="text-primary font-PlusJakartaSansSemiBold text-xl">Account Info</CustomText>
@@ -549,7 +581,7 @@ export default function WithdrawStakeScreen({ navigation, route }: WithdrawStake
                             textClassName="text-sm mb-[1px]"
                             disabled={forms.stakeData.unstake <= 0}
                             title={"Withdraw Token"}
-                            onPress={onUnstake}
+                            onPress={onWithdraw}
                         />
                     </View>
                 )}

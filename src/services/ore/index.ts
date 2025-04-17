@@ -26,13 +26,13 @@ import {
     TOKENLIST,
     TREASURY
 } from "@constants";
-import { getBalance } from "@services/solana";
+import { ensureAtaExists, getBalance } from "@services/solana";
 import { getConnection, getWalletAddress } from "@providers";
 import { bigIntToNumber } from "@helpers";
 import { store } from "@store/index";
 import { boostActions } from "@store/actions";
-import { depositMeteoraInstruction } from "@services/meteora";
-import { depositKaminoInstruction } from "@services/kamino";
+import { depositMeteoraInstruction, withdrawMeteoraInstruction } from "@services/meteora";
+import { depositKaminoInstruction, withdrawKaminoInstruction } from "@services/kamino";
 
 export function calculateClaimableYield(boost: Boost, boostProof: Proof, stake: Stake, boostConfig: BoostConfig) {
     let rewards = BigInt(stake.rewards ?? 0);
@@ -431,9 +431,7 @@ export async function withdrawStakeInstruction(mintAddress: string, boostAddress
         boostConfigPublicKey,
         true
     );
-    
-    const senderPublicKey = getAssociatedTokenAddressSync(mintPublicKey, walletPublicKey, true)
-    
+  
     const stakePublicKey = PublicKey.findProgramAddressSync(
         [...[STAKE], ...[walletPublicKey.toBytes()], ...[boostPublicKey.toBytes()]],
         new PublicKey(BOOST_ID)
@@ -542,8 +540,7 @@ export async function tokenToLPInstruction(boostInfo: BoostInfo, oreBalance: str
         const depositInstructions = await depositKaminoInstruction(
             boostInfo?.lpId,
             parseFloat(oreBalance),
-            parseFloat(pairBalance),
-            1
+            parseFloat(pairBalance)
         )
         instructions.push(depositInstructions)
     }
@@ -570,6 +567,96 @@ export async function tokenToLPInstruction(boostInfo: BoostInfo, oreBalance: str
         instructions.push(closeAccountInstructions)
     }
 
+    return {
+        instructions: instructions,
+        feeAta: feeAta
+    }
+}
+
+export async function LPToTokenInstruction(boostInfo: BoostInfo, boostAddress: string, amountBalance: string) {
+    const connection = getConnection()
+    const walletAddress = getWalletAddress()
+    if (!walletAddress) {
+        throw new CustomError("Wallet Address is undefined", 500)
+    }
+    const walletPublicKey = new PublicKey(walletAddress)
+    let feeAta = 0
+
+    let instructions = [] 
+    const solPubKey = new PublicKey(SOL_MINT)
+    const wsolAta = getAssociatedTokenAddressSync(solPubKey, walletPublicKey)
+    if (boostInfo.pairMint === SOL_MINT) {
+        instructions.push(
+            createAssociatedTokenAccountIdempotentInstruction(
+                walletPublicKey,
+                wsolAta,
+                walletPublicKey,
+                solPubKey
+            )
+        )
+
+        instructions.push(createSyncNativeInstruction(
+            wsolAta,
+            TOKEN_PROGRAM_ID
+        ))
+    }
+
+    let instructionAta = await ensureAtaExists(walletPublicKey, new PublicKey(ORE_MINT))
+    if (instructionAta) {
+        instructions.push(instructionAta)
+        const lamports = await connection.getMinimumBalanceForRentExemption(boostInfo.ataSize);
+        feeAta += lamports
+    }
+
+    instructionAta = await ensureAtaExists(walletPublicKey, new PublicKey(boostInfo.pairMint ?? ""))
+    if (instructionAta) {
+        instructions.push(instructionAta)
+        const lamports = await connection.getMinimumBalanceForRentExemption(boostInfo.ataSize);
+        feeAta += lamports
+    }
+
+    instructionAta = await ensureAtaExists(walletPublicKey, new PublicKey(boostInfo.pairMint ?? ""))
+    if (instructionAta) {
+        instructions.push(instructionAta)
+        const lamports = await connection.getMinimumBalanceForRentExemption(boostInfo.ataSize);
+        feeAta += lamports
+    }
+
+    instructionAta = await ensureAtaExists(walletPublicKey, new PublicKey(boostInfo.lpMint ?? ""))
+    if (instructionAta) {
+        instructions.push(instructionAta)
+        const lamports = await connection.getMinimumBalanceForRentExemption(boostInfo.ataSize);
+        feeAta += lamports
+    }
+
+    let amount = Math.floor(parseFloat(amountBalance) * Math.pow(10, BOOSTLIST[boostAddress].decimals))
+
+    if (boostInfo.defi === 'kamino') {
+        const withdrawInstruction = await withdrawKaminoInstruction(boostInfo?.lpId, amount)
+        instructions.push(withdrawInstruction)
+    }
+
+    if (boostInfo.defi === 'meteora') {
+        const liqudityPair = await getLiquidityPair(boostInfo.lpId, 'meteora', boostAddress)
+        const pairAmount = Math.floor(liqudityPair.LPBalancePair * (parseFloat(amountBalance) * Math.pow(10, boostInfo.decimals)) / liqudityPair.shares)
+        const withdrawInstruction = await withdrawMeteoraInstruction(
+            boostInfo.lpId,
+            amount,
+            pairAmount,
+            1
+        )
+        instructions.push(withdrawInstruction)
+    }
+
+    if (boostInfo.pairMint === SOL_MINT) {
+        const closeAccountInstructions = createCloseAccountInstruction(
+            wsolAta,
+            walletPublicKey,
+            walletPublicKey
+        )
+        instructions.push(closeAccountInstructions)
+    }
+    
     return {
         instructions: instructions,
         feeAta: feeAta

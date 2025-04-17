@@ -243,3 +243,21 @@ export class AddBalanceLiquidityInstructionData {
     }
 }
 
+export class RemoveBalanceLiquidityInstructionArgs {
+    pool_token_amount: bigint
+    minimum_a_token_out: bigint
+    minimum_b_token_out: bigint
+
+    constructor(pool_token_amount: bigint, minimum_a_token_out: bigint, minimum_b_token_out: bigint) {
+        this.pool_token_amount = pool_token_amount || 0n;
+        this.minimum_a_token_out = minimum_a_token_out || 0n;
+        this.minimum_b_token_out = minimum_b_token_out || 0n;
+    }
+}
+
+export class RemoveBalanceLiquidityInstructionData {
+    discriminator: Uint8Array
+    constructor() {
+        this.discriminator = new Uint8Array([133, 109, 44, 179, 56, 238, 114, 33]);
+    }
+}
