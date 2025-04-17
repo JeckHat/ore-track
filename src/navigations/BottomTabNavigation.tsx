@@ -6,7 +6,7 @@ import { DataIcon, SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
 
 import TabWalletScreen from "@screens/wallet/TabWalletScreen"
 import TabPoolScreen from "@screens/pool/TabPoolScreen"
-import TabStakeScreen from "@screens/TabStakeScreen"
+import TabStakeScreen from "@screens/stake/TabStakeScreen"
 import TabSettingScreen from "@screens/settings/TabSettingScreen"
 
 const Tab = createBottomTabNavigator()

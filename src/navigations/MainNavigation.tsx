@@ -9,11 +9,12 @@ import TabNavigation from "./BottomTabNavigation"
 // wallet
 import ReceiveScreen from "@screens/wallet/ReceiveScreen"
 // stake
-import DepositStakeScreen from "@screens/DepositStakeScreen"
-import WithdrawStakeScreen from "@screens/WithdrawStakeScreen"
+import DepositStakeScreen from "@screens/stake/DepositStakeScreen"
+import WithdrawStakeScreen from "@screens/stake/WithdrawStakeScreen"
 // settings
 import RPCScreen from "@screens/settings/RPCScreen"
 import PrivateKeyScreen from "@screens/settings/PrivateKeyScreen"
+import TokenScreen from "@screens/wallet/TokenScreen"
 
 const NativeStack = createNativeStackNavigator()
 
@@ -79,6 +80,20 @@ export default function MainNavigation() {
             <NativeStack.Screen
                 name="Receive"
                 component={ReceiveScreen}
+                options={{
+                    headerTintColor: Colors.primary,
+                    headerTitleStyle: {
+                        fontFamily: Fonts.PlusJakartaSansSemiBold,
+                        color: Colors.primary,
+                    },
+                    // headerTitleAlign: 'center',
+                    // headerTitleAlign: 'center',
+                    headerStyle: { backgroundColor: Colors.baseBg }
+                }}
+            />
+            <NativeStack.Screen
+                name="Token"
+                component={TokenScreen}
                 options={{
                     headerTintColor: Colors.primary,
                     headerTitleStyle: {
