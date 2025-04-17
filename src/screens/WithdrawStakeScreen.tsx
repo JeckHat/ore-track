@@ -7,9 +7,6 @@ import {
     ComputeBudgetProgram,
     LAMPORTS_PER_SOL,
     PublicKey,
-    SendTransactionError,
-    SystemProgram,
-    Transaction,
     TransactionMessage,
     VersionedTransaction
 } from "@solana/web3.js";
@@ -17,17 +14,15 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 import { Button, CustomText, Input, ModalTransaction, OptionMenu } from "@components";
 import { WithdrawStakeNavigationProps } from "@navigations/types";
-import { APP_FEE_ACCOUNT, BOOSTLIST, COMPUTE_UNIT_LIMIT, ORE_MINT, SOL_MINT, TOKENLIST } from "@constants";
+import { BOOSTLIST, COMPUTE_UNIT_LIMIT, ORE_MINT, TOKENLIST } from "@constants";
 import Images from "@assets/images";
 import { RootState } from "@store/types";
-import { depositStakeInstruction, getLiquidityPair, getStakeORE, tokenToLPInstruction } from "@services/ore";
-import { getBalance, getPriorityFee } from "@services/solana";
+import { getLiquidityPair, getStakeORE, withdrawStakeInstruction } from "@services/ore";
+import { getPriorityFee } from "@services/solana";
 import { getConnection } from "@providers";
 import { getKeypair, uiActions } from "@store/actions";
 import { useBottomModal } from "@hooks";
 import { shortenAddress } from "@helpers";
-import { getStakeResult } from "@models";
-import { getStake } from "@services/ore/boost";
 
 interface FormState {
     token: {
@@ -240,6 +235,83 @@ export default function WithdrawStakeScreen({ navigation, route }: WithdrawStake
     }
 
     async function onUnstake() {
+        try {
+            const connection = getConnection()
+            const walletPublicKey = new PublicKey(walletAddress)
+            dispatch(uiActions.showLoading(true))
+
+            let instructions = []
+            instructions.push(ComputeBudgetProgram.setComputeUnitLimit({
+                units: COMPUTE_UNIT_LIMIT
+            }))
+
+            const stakeInstruction = await withdrawStakeInstruction(boostData?.lpMint, boostAddress, Number(forms.token.value))
+            instructions.push(stakeInstruction)
+
+            if (boostData.lpMint !== ORE_MINT) {
+
+            }
+
+            let luts: AddressLookupTableAccount[] = []
+            if (boostData.lut) {
+                const res = await connection.getAddressLookupTable(new PublicKey(boostData.lut));
+                const addressLookupTable = res.value;
+            
+                if (addressLookupTable) {
+                    luts.push(addressLookupTable);
+                }
+            }
+
+            let latestBlock = await connection.getLatestBlockhash();
+            let messageV0 = new TransactionMessage({
+                payerKey: walletPublicKey,
+                recentBlockhash: latestBlock.blockhash,
+                instructions: instructions,
+            }).compileToV0Message(luts);
+            let trx = new VersionedTransaction(messageV0);
+
+            let fee = 0
+            const trxFee = await connection.getFeeForMessage(trx.message, "confirmed")
+            fee += (trxFee.value ?? 0)
+
+            const priorityFee = await getPriorityFee(trx)
+            instructions.splice(1, 0, ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee }))
+            fee += ((priorityFee * COMPUTE_UNIT_LIMIT) / 1_000_000)
+
+            latestBlock = await connection.getLatestBlockhash('finalized')
+            messageV0 = new TransactionMessage({
+                payerKey: walletPublicKey,
+                recentBlockhash: latestBlock.blockhash,
+                instructions: instructions,
+            }).compileToV0Message(luts);
+            trx = new VersionedTransaction(messageV0);   
+
+            let tokenTransfers = [{
+                id: 'ore',
+                ticker: 'ORE',
+                isLp: false,
+                balance: (Math.round(Number(forms.token.value) * Math.pow(10, 5)) / Math.pow(10, 5)).toString(),
+                tokenImage: 'OreToken',
+                isMinus: false
+            }]
+
+            const transferInfo = [
+                {
+                    label: 'Account',
+                    value: shortenAddress(walletAddress ?? "")
+                },
+                {
+                    label: 'Network Fee',
+                    value: `${(Math.round((fee / LAMPORTS_PER_SOL) * Math.pow(10, 6)) / Math.pow(10, 6))} SOL`
+                }
+            ]
+
+            dispatch(uiActions.showLoading(false))
+            onShowModal(tokenTransfers, transferInfo, trx)
+        } catch(error) {
+            console.log("error", error)
+            dispatch(uiActions.showLoading(false))
+        }
 
     }
 
@@ -379,7 +451,7 @@ export default function WithdrawStakeScreen({ navigation, route }: WithdrawStake
                 <Button
                     disabled={!forms.isValid}
                     title={"Withdraw"}
-                    onPress={() => {}}
+                    onPress={onUnstake}
                 />
                 <View className="mt-8 mx-3 mb-2">
                     <CustomText className="text-primary font-PlusJakartaSansSemiBold text-xl">Account Info</CustomText>

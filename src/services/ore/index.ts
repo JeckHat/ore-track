@@ -369,14 +369,6 @@ export async function depositStakeInstruction(mintAddress: string, boostAddress:
     const bufferMax = Buffer.alloc(8);
     bufferMax.writeBigUInt64LE(18446744073709551615n);
 
-    // instructions.push(
-    //     SystemProgram.transfer({
-    //         fromPubkey: walletPublicKey,
-    //         toPubkey: new PublicKey("tHCCE3KWKx8i8cDjX2DQ3Z7EMJkScAVwkfxdWz8SqgP"),
-    //         lamports: 5000,
-    //     })
-    // )
-
     const amountBuffer = Buffer.alloc(8);
     amountBuffer.writeBigUInt64LE(amount);
 
@@ -401,6 +393,90 @@ export async function depositStakeInstruction(mintAddress: string, boostAddress:
     })
 
     return depositInstruction
+}
+
+export async function withdrawStakeInstruction(mintAddress: string, boostAddress: string, amountStake: number) {
+    const walletAddress = getWalletAddress()
+    if (!walletAddress) {
+        throw new CustomError("Wallet Address is undefined", 500)
+    }
+
+    const amount = BigInt(Math.floor(amountStake * Math.pow(10, BOOSTLIST[boostAddress].decimals)))
+    const withdrawData = Buffer.alloc(8)
+    withdrawData.writeBigUInt64LE(amount, 0)
+
+    const walletPublicKey = new PublicKey(walletAddress)
+    const mintPublicKey = new PublicKey(mintAddress)
+
+    const beneficiaryPublicKey = getAssociatedTokenAddressSync(mintPublicKey, walletPublicKey)
+
+
+    const boostPublicKey = new PublicKey(boostAddress)
+    const boostConfigPublicKey = PublicKey.findProgramAddressSync(
+        [...[CONFIG]],
+        new PublicKey(BOOST_ID)
+    )?.[0]
+    
+    const boostProofPublicKey = PublicKey.findProgramAddressSync(
+        [...[PROOF], ...[boostConfigPublicKey.toBytes()]],
+        new PublicKey(PROGRAM_ID)
+    )?.[0]
+    
+    const boostDepositPublicKey = getAssociatedTokenAddressSync(
+        mintPublicKey, boostPublicKey, true
+    )
+
+    const boostRewardsPublicKey = getAssociatedTokenAddressSync(
+        new PublicKey(ORE_MINT),
+        boostConfigPublicKey,
+        true
+    );
+    
+    const senderPublicKey = getAssociatedTokenAddressSync(mintPublicKey, walletPublicKey, true)
+    
+    const stakePublicKey = PublicKey.findProgramAddressSync(
+        [...[STAKE], ...[walletPublicKey.toBytes()], ...[boostPublicKey.toBytes()]],
+        new PublicKey(BOOST_ID)
+    )?.[0]
+
+    const treasuryAddress = PublicKey.findProgramAddressSync(
+        [...[TREASURY]],
+        new PublicKey(PROGRAM_ID)
+    )?.[0]
+
+    const treasuryTokenAddress = PublicKey.findProgramAddressSync(
+        [
+            ...[treasuryAddress.toBytes()],
+            ...[new PublicKey(TOKEN_PROGRAM_ID).toBytes()],
+            ...[new PublicKey(ORE_MINT).toBytes()]
+        ],
+        ASSOCIATED_TOKEN_PROGRAM_ID
+    )?.[0]
+
+    const amountBuffer = Buffer.alloc(8);
+    amountBuffer.writeBigUInt64LE(amount);
+
+    const wuthdrawInstruction = new TransactionInstruction({
+        programId: new PublicKey(BOOST_ID),
+        keys: [
+            { pubkey: walletPublicKey, isSigner: true, isWritable: true },
+            { pubkey: beneficiaryPublicKey, isSigner: false, isWritable: true },
+            { pubkey: boostPublicKey, isSigner: false, isWritable: true },
+            { pubkey: boostConfigPublicKey, isSigner: false, isWritable: true },
+            { pubkey: boostDepositPublicKey, isSigner: false, isWritable: true },
+            { pubkey: mintPublicKey, isSigner: false, isWritable: false },
+            { pubkey: boostProofPublicKey, isSigner: false, isWritable: true },
+            { pubkey: boostRewardsPublicKey, isSigner: false, isWritable: true },
+            { pubkey: stakePublicKey, isSigner: false, isWritable: true },
+            { pubkey: treasuryAddress, isSigner: false, isWritable: false },
+            { pubkey: treasuryTokenAddress, isSigner: false, isWritable: true },
+            { pubkey: new PublicKey(PROGRAM_ID), isSigner: false, isWritable: false },
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        ],
+        data: Buffer.concat([Buffer.from([5]), amountBuffer])
+    })
+
+    return wuthdrawInstruction
 }
 
 export async function tokenToLPInstruction(boostInfo: BoostInfo, oreBalance: string, pairBalance: string) {
