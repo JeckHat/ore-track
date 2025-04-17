@@ -12,5 +12,6 @@ export {
 export {
     getKaminoConfigResult,
     getKaminoStrategyResult,
-    DepositInstructionArgs
+    KaminoDepositInstructionArgs,
+    KaminoWithdrawInstructionArgs
 } from './Kamino'

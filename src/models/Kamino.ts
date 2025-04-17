@@ -95,9 +95,12 @@ export class KaminoStrategy {
     globalConfig?: string
     baseVaultAuthority?: string
     pool?: string
+    poolTokenVaultA?: string
+    poolTokenVaultB?: string
     tickArrayLower?: string
     tickArrayUpper?: string
     position?: string
+    positionTokenAccount?: string
     tokenAVault?: string
     tokenBVault?: string
     tokenAMint?: string
@@ -110,18 +113,21 @@ export class KaminoStrategy {
     tokenATokenProgram?: string
     tokenBTokenProgram?: string
 
-    constructor(adminAuthority?: string, globalConfig?: string, baseVaultAuthority?: string, pool?: string, tickArrayLower?: string,
-        tickArrayUpper?: string, position?: string, tokenAVault?: string, tokenBVault?: string, tokenAMint?: string, tokenBMint?: string,
-        tokenADecimals?: number, tokenBDecimals?: number, scopePrices?: string, sharesMint?: string, sharesMintAuthority?: string,
-        tokenATokenProgram?: string, tokenBTokenProgram?: string) {
-
+    constructor(adminAuthority?: string, globalConfig?: string, baseVaultAuthority?: string, pool?: string, poolTokenVaultA?: string,
+        poolTokenVaultB?: string, tickArrayLower?: string, tickArrayUpper?: string, position?: string, positionTokenAccount?: string,
+        tokenAVault?: string, tokenBVault?: string, tokenAMint?: string, tokenBMint?: string, tokenADecimals?: number, tokenBDecimals?: number,
+        scopePrices?: string, sharesMint?: string, sharesMintAuthority?: string, tokenATokenProgram?: string, tokenBTokenProgram?: string
+    ) {
         this.adminAuthority = adminAuthority
         this.globalConfig = globalConfig
         this.baseVaultAuthority = baseVaultAuthority
         this.pool = pool
+        this.poolTokenVaultA = poolTokenVaultA
+        this.poolTokenVaultB = poolTokenVaultB
         this.tickArrayLower = tickArrayLower
         this.tickArrayUpper = tickArrayUpper
         this.position = position
+        this.positionTokenAccount = positionTokenAccount
         this.tokenAVault = tokenAVault
         this.tokenBVault = tokenBVault
         this.tokenAMint = tokenAMint
@@ -151,9 +157,9 @@ function strategyTryFromBytes(buffer: Buffer) {
         offset += 8;
         const pool = new PublicKey(buffer.subarray(offset, offset + 32)).toString();
         offset += 32;
-        // pub pool_token_vault_a: Pubkey,
+        const poolTokenVaultA = new PublicKey(buffer.subarray(offset, offset + 32)).toString();
         offset += 32;
-        // pub pool_token_vault_b: Pubkey,
+        const poolTokenVaultB = new PublicKey(buffer.subarray(offset, offset + 32)).toString();
         offset += 32;
         const tickArrayLower = new PublicKey(buffer.subarray(offset, offset + 32)).toString();
         offset += 32;
@@ -165,6 +171,7 @@ function strategyTryFromBytes(buffer: Buffer) {
         offset += 32;
         // pub position_metadata: Pubkey,
         offset += 32;
+        const positionTokenAccount = new PublicKey(buffer.subarray(offset, offset + 32)).toString();
         // pub position_token_account: Pubkey,
         offset += 32;
         const tokenAVault = new PublicKey(buffer.subarray(offset, offset + 32)).toString();
@@ -342,9 +349,12 @@ function strategyTryFromBytes(buffer: Buffer) {
             globalConfig,
             baseVaultAuthority,
             pool,
+            poolTokenVaultA,
+            poolTokenVaultB,
             tickArrayLower,
             tickArrayUpper,
             position,
+            positionTokenAccount,
             tokenAVault,
             tokenBVault,
             tokenAMint,
@@ -375,12 +385,20 @@ export async function getKaminoStrategyResult(data?: Buffer) {
     return strategy;
 }
 
-export class DepositInstructionArgs {
+export class KaminoDepositInstructionArgs {
     token_max_a: bigint;
     token_max_b: bigint;
 
     constructor(token_max_a: bigint, token_max_b: bigint) {
         this.token_max_a = token_max_a;
         this.token_max_b = token_max_b;
+    }
+}
+
+export class KaminoWithdrawInstructionArgs {
+    shares_amount: bigint;
+
+    constructor(shares_amount: bigint) {
+        this.shares_amount = shares_amount;
     }
 }

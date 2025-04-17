@@ -7,6 +7,8 @@ export const BOOST_ID_LEGACY = "BoosTyJFPPtrqJTdi49nnztoEWDJXfDRhyb2fha6PPy"
 export const BOOST_ID = "BoostzzkNfCA9D1qNuN5xZxB5ErbK4zQuBeTHGDpXT1"
 export const METEORA_VAULT_ID = "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi"
 export const METEORA_AMM_ID = "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"
+export const YVAULTS_ID = "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc"
+export const WHIRLPOOL_PROGRAM_ID = "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
 
 export const PROOF = new Uint8Array([112, 114, 111, 111, 102])
 export const BOOST = new Uint8Array([98, 111, 111, 115, 116])
@@ -18,7 +20,13 @@ export const MINT_NOISE = new Uint8Array([89, 157, 88, 232, 243, 249, 197, 132, 
 
 export const DEPOSIT_INSTRUCTION_KAMINO_DISCRIMINATOR = Buffer.from([
     242, 35, 198, 137, 82, 225, 242, 182,
-]);
+])
+export const WITHDRAW_INSTRUCTION_KAMINO_DISCRIMINATOR = Buffer.from([
+    183, 18, 70, 156, 148, 109, 161, 34
+])
+export const KAMINO_TREASURY_FEE_VAULT = Buffer.from([
+    116, 114, 101, 97, 115, 117, 114, 121, 95, 102, 101, 101, 95, 118, 97, 117, 108, 116
+])
 
 export const JUP_API_PRICE = "https://api.jup.ag/price/v2?ids="
 export const METEORA_API = "https://app.meteora.ag/amm/pools?address="
