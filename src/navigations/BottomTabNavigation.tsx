@@ -4,10 +4,10 @@ import { TabNavigationProps } from "./types"
 import { Colors, Fonts } from "@styles"
 import { DataIcon, SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
 
-import TabWalletScreen from "@screens/TabWalletScreen"
-import TabPoolScreen from "@screens/TabPoolScreen"
+import TabWalletScreen from "@screens/wallet/TabWalletScreen"
+import TabPoolScreen from "@screens/pool/TabPoolScreen"
 import TabStakeScreen from "@screens/TabStakeScreen"
-import TabSettingScreen from "@screens/TabSettingScreen"
+import TabSettingScreen from "@screens/settings/TabSettingScreen"
 
 const Tab = createBottomTabNavigator()
 

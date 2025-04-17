@@ -4,8 +4,7 @@ import { useSelector } from "react-redux"
 import { Colors, Fonts } from "@styles"
 import { RootState } from "@store/types"
 
-import StartScreen from "@screens/StartScreen"
-import PrivateKeyScreen from "@screens/PrivateKeyScreen"
+import StartScreen from "@screens/startup/StartScreen"
 import TabNavigation from "./BottomTabNavigation"
 // wallet
 import ReceiveScreen from "@screens/wallet/ReceiveScreen"
@@ -13,7 +12,8 @@ import ReceiveScreen from "@screens/wallet/ReceiveScreen"
 import DepositStakeScreen from "@screens/DepositStakeScreen"
 import WithdrawStakeScreen from "@screens/WithdrawStakeScreen"
 // settings
-import RPCScreen from "@screens/RPCScreen"
+import RPCScreen from "@screens/settings/RPCScreen"
+import PrivateKeyScreen from "@screens/settings/PrivateKeyScreen"
 
 const NativeStack = createNativeStackNavigator()
 
