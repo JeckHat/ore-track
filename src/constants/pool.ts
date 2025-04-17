@@ -57,16 +57,26 @@ export const POOL_LIST: Record<string, PoolInfo> = {
             },
         }
     },
-    'pool-oreminepool': {
-        id: 'pool-oreminepool',
-        name: 'OreMinePool',
-        isCoal: true,
-        api: {}
-    },
     'pool-ec1ipse': {
         id: 'pool-ec1ipse',
         name: 'Ec1ipse',
         isCoal: false,
+        api: {
+            base: 'https://ec1ipse.me',
+            getBalance: async (pubkey: string) => {
+                const response = await fetch(`https://ec1ipse.me/miner/rewards?pubkey=${pubkey}`)
+                const result = await response.text()
+                return {
+                    balanceOre: (Number(result) * Math.pow(10, 11)) / Math.pow(10, 11),
+                    balanceCoal: 0
+                }
+            },
+        }
+    },
+    'pool-oreminepool': {
+        id: 'pool-oreminepool',
+        name: 'OreMinePool',
+        isCoal: true,
         api: {}
     },
     'pool-twpool': {
