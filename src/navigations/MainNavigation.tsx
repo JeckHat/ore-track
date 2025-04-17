@@ -9,7 +9,6 @@ import PrivateKeyScreen from "@screens/PrivateKeyScreen"
 import TabNavigation from "./BottomTabNavigation"
 // wallet
 import ReceiveScreen from "@screens/wallet/ReceiveScreen"
-import SwapScreen from "@screens/SwapScreen"
 // stake
 import DepositStakeScreen from "@screens/DepositStakeScreen"
 import WithdrawStakeScreen from "@screens/WithdrawStakeScreen"
@@ -90,11 +89,6 @@ export default function MainNavigation() {
                     // headerTitleAlign: 'center',
                     headerStyle: { backgroundColor: Colors.baseBg }
                 }}
-            />
-            <NativeStack.Screen
-                name="Swap"
-                component={SwapScreen}
-                options={{ headerShown: false }}
             />
             <NativeStack.Screen
                 name="RPC"
