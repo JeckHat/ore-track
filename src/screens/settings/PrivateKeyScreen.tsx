@@ -89,7 +89,10 @@ export default function PrivateKeyScreen({ navigation, route }: PrivateKeyNaviga
         const seed = await mnemonicToSeedFast(words)
         const keypair = Keypair.fromSeed(seed.subarray(0, 32))
         await saveCredentials(keypair, words)
-        dispatch(walletActions.setWallet(keypair.publicKey?.toBase58()))
+        dispatch(walletActions.setWallet({
+            address: keypair.publicKey?.toBase58(),
+            useMnemonic: true
+        }))
     }
 
     async function onNextPrivateKey() {
@@ -119,7 +122,10 @@ export default function PrivateKeyScreen({ navigation, route }: PrivateKeyNaviga
         const keypair = Keypair.fromSecretKey(secretKey)
         
         await saveCredentials(keypair)
-        dispatch(walletActions.setWallet(keypair.publicKey?.toBase58()))
+        dispatch(walletActions.setWallet({
+            address: keypair.publicKey?.toBase58(),
+            useMnemonic: false
+        }))
     }
 
     return (

@@ -1,4 +1,5 @@
 import { SafeAreaView, View } from "react-native"
+import { useSelector } from "react-redux"
 
 import { ChevronRightIcon } from "@assets/icons"
 import { Button, CustomText } from "@components"
@@ -6,9 +7,10 @@ import { TabSettingScreenProps } from "@navigations/types"
 import { boostActions, getMnemonic, walletActions } from "@store/actions"
 import { Colors } from "@styles"
 import { store } from "@store/index"
+import { RootState } from "@store/types"
 
 export default function TabSettingScreen(props: TabSettingScreenProps) {
-
+    const wallet = useSelector((state: RootState) => state.wallet)
     return (
         <SafeAreaView className="flex-1 bg-baseBg">
             <View className="flex-1">
@@ -29,7 +31,7 @@ export default function TabSettingScreen(props: TabSettingScreenProps) {
                     }
                     onPress={() => {}}
                 />
-                <Button
+                {wallet.useMnemonic && <Button
                     containerClassName="rounded-2xl mx-4 mb-2"
                     className=" bg-baseComponent rouned-sm py-5 items-start"
                     textClassName="text-primary font-PlusJakartaSansSemiBold text-md"
@@ -50,7 +52,7 @@ export default function TabSettingScreen(props: TabSettingScreenProps) {
                             importWallet: false, words: mnemonic, title: "Recovery Phrase"
                         })
                     }}
-                />
+                />}
                 <Button
                     containerClassName="rounded-2xl mx-4 mb-6"
                     className=" bg-baseComponent rouned-sm py-5 items-start"

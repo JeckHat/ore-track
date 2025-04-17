@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import * as Keychain from 'react-native-keychain'
 import { Keypair } from '@solana/web3.js'
 
@@ -9,15 +9,17 @@ const WALLET_STORAGE_KEY = "solana_private_key"
 const WALLET_STORAGE_MNENOMIC = "solana_mnenomic"
 
 const initialState: WalletState = {
-    publicKey: null
+    publicKey: null,
+    useMnemonic: false,
 }
 
 const walletSlice = createSlice({
     name: 'wallet',
     initialState: initialState,
     reducers: {
-        setWallet: (state, action) => {
-            state.publicKey = action.payload
+        setWallet: (state, action: PayloadAction<{ address: string, useMnemonic: boolean }>) => {
+            state.publicKey = action.payload.address
+            state.useMnemonic = action.payload.useMnemonic
         },
         clearWallet: (state) => {
             state.publicKey = null;
