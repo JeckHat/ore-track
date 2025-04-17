@@ -439,6 +439,7 @@ export default function DepositStakeScreen({ navigation, route }: DepositStakeNa
 
     async function onStake(amount?: number) {
         try{
+            dispatch(uiActions.showLoading(true))
             const walletPublicKey = new PublicKey(walletAddress)
             let instructions = []
             
@@ -475,13 +476,14 @@ export default function DepositStakeScreen({ navigation, route }: DepositStakeNa
 
             const lpBalance = await getBalance(walletAddress, boostData?.lpMint)
             const tokenTransfers = [{
-                id: 'ore',
-                ticker: 'ORE',
-                isLp: false,
+                id: boostData.name,
+                ticker: boostData.name,
+                isLp: boostData.pairImage? true : false,
                 balance: amount
-                    ? Math.round(amount * Math.pow(10, 5) / Math.pow(10, 5))
-                    : Math.round(lpBalance * Math.pow(10, 5) / Math.pow(10, 5)),
+                    ? Math.round(amount * Math.pow(10, 5)) / Math.pow(10, 5)
+                    : Math.round(lpBalance * Math.pow(10, 5)) / Math.pow(10, 5),
                 tokenImage: 'OreToken',
+                pairImage: boostData.pairImage,
                 isMinus: true
             }]
             const transferInfo = [
@@ -495,8 +497,10 @@ export default function DepositStakeScreen({ navigation, route }: DepositStakeNa
                 }
             ]
 
+            dispatch(uiActions.showLoading(false))
             onShowModal(tokenTransfers, transferInfo, trx)
         } catch(error: any | SendTransactionError) {
+            dispatch(uiActions.showLoading(false))
             console.log("error", error)
             console.log("logs", error.getLogs())
         }
@@ -784,7 +788,7 @@ export default function DepositStakeScreen({ navigation, route }: DepositStakeNa
                             textClassName="text-sm mb-[1px]"
                             disabled={forms.stakeData.unstake <= 0}
                             title={"Stake Token"}
-                            onPress={onStake}
+                            onPress={() => onStake()}
                         />
                     </View>
                 )}
