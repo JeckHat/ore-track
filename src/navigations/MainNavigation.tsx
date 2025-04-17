@@ -7,9 +7,14 @@ import { RootState } from "@store/types"
 import StartScreen from "@screens/StartScreen"
 import PrivateKeyScreen from "@screens/PrivateKeyScreen"
 import TabNavigation from "./BottomTabNavigation"
-import RPCScreen from "@screens/RPCScreen"
+// wallet
+import ReceiveScreen from "@screens/wallet/ReceiveScreen"
+import SwapScreen from "@screens/SwapScreen"
+// stake
 import DepositStakeScreen from "@screens/DepositStakeScreen"
 import WithdrawStakeScreen from "@screens/WithdrawStakeScreen"
+// settings
+import RPCScreen from "@screens/RPCScreen"
 
 const NativeStack = createNativeStackNavigator()
 
@@ -72,6 +77,25 @@ export default function MainNavigation() {
                     headerStyle: { backgroundColor: Colors.baseBg }
                 }}
             /> */}
+            <NativeStack.Screen
+                name="Receive"
+                component={ReceiveScreen}
+                options={{
+                    headerTintColor: Colors.primary,
+                    headerTitleStyle: {
+                        fontFamily: Fonts.PlusJakartaSansSemiBold,
+                        color: Colors.primary,
+                    },
+                    // headerTitleAlign: 'center',
+                    // headerTitleAlign: 'center',
+                    headerStyle: { backgroundColor: Colors.baseBg }
+                }}
+            />
+            <NativeStack.Screen
+                name="Swap"
+                component={SwapScreen}
+                options={{ headerShown: false }}
+            />
             <NativeStack.Screen
                 name="RPC"
                 component={RPCScreen}

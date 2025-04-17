@@ -126,7 +126,7 @@ export default function TabWalletScreen({ navigation }: TabWalletScreenProps) {
                         <ButtonIcon
                             title="Receive"
                             icon={<ReceiveIcon width={24} height={24} color={Colors.primary}/>}
-                            onPress={() => {}}
+                            onPress={() => navigation.navigate('Receive')}
                         />
                         <ButtonIcon
                             title="Send"
