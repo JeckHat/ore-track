@@ -2,14 +2,67 @@ import React, { useState } from 'react'
 import { Image, SafeAreaView, View } from 'react-native'
 
 import { StartNavigationProps } from '@navigations/types'
-import { CustomText, CheckBox, Button, ModalImportOptions } from '@components'
+import { CustomText, CheckBox, Button, ModalButtonList, ModalImportAddress } from '@components'
 import Images from '@assets/images'
 import { useBottomModal } from '@hooks'
+import { walletActions } from '@store/actions'
+import { useDispatch } from 'react-redux'
 
 export default function StartScreen({ navigation }: StartNavigationProps) {
   const [checkedTerm, setCheckedTerm] = useState(false)
 
   const { showModal, hideModal } = useBottomModal()
+
+  const dispatch = useDispatch()
+
+  function onCreateWallet() {
+    navigation.navigate('PrivateKey', { importWallet: false, title: "Recovery Phrase" })
+  }
+
+  function onImportWallet() {
+    showModal(
+      <ModalButtonList
+        buttons={[
+          {
+            text: 'Wallet Address',
+            onPress: () => {
+              showModal(
+                <ModalImportAddress
+                  onImport={(text) => {
+                    dispatch(walletActions.setWallet({
+                      address: text,
+                      useMnemonic: false,
+                      usePrivateKey: false
+                    }))
+                    hideModal()
+                    navigation.navigate('BottomTab')
+                  }}
+                />
+              )
+            }
+          },
+          {
+            text: 'Recovery Phrase',
+            onPress: () => {
+              navigation.navigate('PrivateKey', {
+                importWallet: true, title: "Recovery Phrase", isSeedPhrase: true
+              })
+              hideModal()
+            }
+          },
+          {
+            text: 'Private Key',
+            onPress: () => {
+              navigation.navigate('PrivateKey', {
+                importWallet: true, title: "Private Key", isSeedPhrase: false
+              })
+              hideModal()
+            }
+          }
+        ]}
+      />
+    )
+  }
   
   return (
     <SafeAreaView className="flex-1 justify-center items-center bg-baseBg">
@@ -64,25 +117,13 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
           containerClassName='rounded-full my-5'
           disabled={!checkedTerm}
           title="Create a new Wallet"
-          onPress={() => navigation.navigate('PrivateKey', { importWallet: false, title: "Recovery Phrase" })}
+          onPress={onCreateWallet}
         />
         <View className='px-4 items-center'>
           <CustomText
             className={`font-PlusJakartaSansBold text-primary text-lg text-center ${!checkedTerm && "opacity-35"}`}
             disabled={!checkedTerm}
-            onPress={() => {
-              showModal(
-                <ModalImportOptions
-                  hideModal={hideModal}
-                  onImportSeedPharse={() => navigation.navigate('PrivateKey', {
-                    importWallet: true, title: "Recovery Phrase", isSeedPhrase: true
-                  })}
-                  onImportPrivateKey={() => navigation.navigate('PrivateKey', {
-                    importWallet: true, title: "Private Key", isSeedPhrase: false
-                  })}
-                />
-              )
-            }}
+            onPress={onImportWallet}
           >
             I already have a wallet
           </CustomText>
