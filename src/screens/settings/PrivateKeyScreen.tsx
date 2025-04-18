@@ -91,7 +91,8 @@ export default function PrivateKeyScreen({ navigation, route }: PrivateKeyNaviga
         await saveCredentials(keypair, words)
         dispatch(walletActions.setWallet({
             address: keypair.publicKey?.toBase58(),
-            useMnemonic: true
+            useMnemonic: true,
+            usePrivateKey: true
         }))
     }
 
@@ -124,7 +125,8 @@ export default function PrivateKeyScreen({ navigation, route }: PrivateKeyNaviga
         await saveCredentials(keypair)
         dispatch(walletActions.setWallet({
             address: keypair.publicKey?.toBase58(),
-            useMnemonic: false
+            useMnemonic: false,
+            usePrivateKey: true
         }))
     }
 
