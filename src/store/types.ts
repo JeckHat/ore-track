@@ -25,6 +25,7 @@ export interface UiState {
 export interface WalletState {
     publicKey?: string | null
     useMnemonic: boolean
+    usePrivateKey: boolean
 }
 
 export interface ConfigState {

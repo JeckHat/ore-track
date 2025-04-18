@@ -11,15 +11,17 @@ const WALLET_STORAGE_MNENOMIC = "solana_mnenomic"
 const initialState: WalletState = {
     publicKey: null,
     useMnemonic: false,
+    usePrivateKey: false
 }
 
 const walletSlice = createSlice({
     name: 'wallet',
     initialState: initialState,
     reducers: {
-        setWallet: (state, action: PayloadAction<{ address: string, useMnemonic: boolean }>) => {
+        setWallet: (state, action: PayloadAction<{ address: string, useMnemonic: boolean, usePrivateKey: boolean }>) => {
             state.publicKey = action.payload.address
             state.useMnemonic = action.payload.useMnemonic
+            state.usePrivateKey = action.payload.usePrivateKey
         },
         clearWallet: (state) => {
             state.publicKey = null;
