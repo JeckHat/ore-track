@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { Image, ImageSourcePropType, RefreshControl, SafeAreaView, ScrollView, View } from "react-native";
+import { Image, ImageSourcePropType, RefreshControl, SafeAreaView, ScrollView, TouchableWithoutFeedback, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 
@@ -165,9 +165,10 @@ export default function TabWalletScreen({ navigation }: TabWalletScreenProps) {
                                     tokenPrice={tokenData[token]?.price ?? 0.0}
                                     tokenBalance={tokenData[token]?.balance ?? 0}
                                     isLP={tokenData[token]?.isLP}
-                                    isStakable={tokenData[token]?.isStakable}
+                                    mintAddress={token}
                                     loading={tokenData[token]?.loading}
                                     priceLoading={tokenData[token]?.loading}
+                                    navigate={navigation.navigate}
                                 />
                             )
                         }
@@ -185,47 +186,50 @@ interface TokenItemProps {
     tokenPrice: number
     tokenBalance: number
     isLP?: boolean
-    isStakable?: boolean
+    mintAddress: string
     priceLoading?: boolean
     loading?: boolean
+    navigate: any
 } 
 
 function TokenItem(props: TokenItemProps){
     const {
-        tokenLogo, secondTokenLogo, tokenName, tokenBalance, tokenPrice, isStakable, isLP, loading, priceLoading
+        tokenLogo, secondTokenLogo, tokenName, tokenBalance, tokenPrice, mintAddress, isLP, loading, priceLoading, navigate
     } = props
     return (
-        <View className="flex-row items-center justify-between p-4 m-2 rounded-2xl bg-gray-800">
-            <View className="flex-row items-center">
-                {!isLP && <View className="h-12 w-12 mr-3">
-                    <Image
-                        className="h-12 w-12 rounded-full"
-                        source={tokenLogo}
-                    />
-                </View>}
-                {isLP && <View className="h-12 w-12 mr-3 items-center justify-center">
-                    <Image
-                        className="h-10 w-10 rounded-full absolute left-3"
-                        source={secondTokenLogo}
-                    />
-                    <Image
-                        className="h-10 w-10 mr-3 rounded-full"
-                        source={tokenLogo}
-                    />
-                </View>}
-                <View className="mb-1">
-                    <CustomText className="text-primary font-PlusJakartaSansBold text-md">{tokenName}</CustomText>
-                    {priceLoading && <SkeletonLoader className="mt-1 bg-gray-700 rounded-lg w-16 h-[16px]" />}
-                    {!priceLoading && <CustomText className="text-gray-200 font-PlusJakartaSans text-sm">${delimiterFormat(tokenPrice.toFixed(2))}</CustomText>}
+        <TouchableWithoutFeedback onPress={() => navigate('Token', { mintAddress: mintAddress })}>
+            <View className="flex-row items-center justify-between p-4 m-2 rounded-2xl bg-gray-800">
+                <View className="flex-row items-center">
+                    {!isLP && <View className="h-12 w-12 mr-3">
+                        <Image
+                            className="h-12 w-12 rounded-full"
+                            source={tokenLogo}
+                        />
+                    </View>}
+                    {isLP && <View className="h-12 w-12 mr-3 items-center justify-center">
+                        <Image
+                            className="h-10 w-10 rounded-full absolute left-3"
+                            source={secondTokenLogo}
+                        />
+                        <Image
+                            className="h-10 w-10 mr-3 rounded-full"
+                            source={tokenLogo}
+                        />
+                    </View>}
+                    <View className="mb-1">
+                        <CustomText className="text-primary font-PlusJakartaSansBold text-md">{tokenName}</CustomText>
+                        {priceLoading && <SkeletonLoader className="mt-1 bg-gray-700 rounded-lg w-16 h-[16px]" />}
+                        {!priceLoading && <CustomText className="text-gray-200 font-PlusJakartaSans text-sm">${delimiterFormat(tokenPrice.toFixed(2))}</CustomText>}
+                    </View>
+                </View>
+                <View className="items-end mb-1">
+                    {loading && <SkeletonLoader className="mb-1 bg-gray-700 rounded-lg w-20 h-[18px]" width={80} height={18} />}
+                    {!loading && <CustomText className="text-primary font-PlusJakartaSansBold text-md">{tokenBalance}</CustomText>}
+                    {priceLoading && <SkeletonLoader className="w-20 h-4" />}
+                    {!priceLoading && <CustomText className="text-gray-200 font-PlusJakartaSans text-sm">${delimiterFormat((tokenBalance * tokenPrice).toFixed(2))}</CustomText>}
                 </View>
             </View>
-            <View className="items-end mb-1">
-                {loading && <SkeletonLoader className="mb-1 bg-gray-700 rounded-lg w-20 h-[18px]" width={80} height={18} />}
-                {!loading && <CustomText className="text-primary font-PlusJakartaSansBold text-md">{tokenBalance}</CustomText>}
-                {priceLoading && <SkeletonLoader className="w-20 h-4" />}
-                {!priceLoading && <CustomText className="text-gray-200 font-PlusJakartaSans text-sm">${delimiterFormat((tokenBalance * tokenPrice).toFixed(2))}</CustomText>}
-            </View>
-        </View>
+        </TouchableWithoutFeedback>
     )
 }
 

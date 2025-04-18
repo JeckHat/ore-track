@@ -6,7 +6,7 @@ export interface TokenInfo {
     pairImage?: string | null
     decimals: number
     isLP: boolean
-    isStakable: boolean
+    boostAddress?: string
     isAlways: boolean
 }
 
@@ -19,7 +19,7 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         pairImage: null,
         decimals: 9,
         isLP: false,
-        isStakable: false,
+        boostAddress: undefined,
         isAlways: true
     },
     "oreoU2P8bN6jkk3jbaiVxYnG1dCXcYxwhwyK9jSybcp": {
@@ -30,7 +30,7 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         pairImage: null,
         decimals: 11,
         isLP: false,
-        isStakable: true,
+        boostAddress: "D3U1nvrCapUiuCK3T3asBPyeKjYptVA4RTXcDTqNpP14",
         isAlways: true
     },
     "E3yUqBNTZxV8ELvW99oRLC7z4ddbJqqR4NphwrMug9zu": {
@@ -41,7 +41,7 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         pairImage: null,
         decimals: 11,
         isLP: false,
-        isStakable: false,
+        boostAddress: undefined,
         isAlways: true
     },
     "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
@@ -52,7 +52,7 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         pairImage: null,
         decimals: 6,
         isLP: false,
-        isStakable: false,
+        boostAddress: undefined,
         isAlways: true
     },
     "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux": {
@@ -63,7 +63,7 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         pairImage: null,
         decimals: 8,
         isLP: false,
-        isStakable: false,
+        boostAddress: undefined,
         isAlways: false
     },
     "8H8rPiWW4iTFCfEkSnf7jpqeNpFfvdH9gLouAL3Fe2Zx": {
@@ -74,7 +74,7 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         pairImage: 'SolanaToken',
         decimals: 6,
         isLP: true,
-        isStakable: true,
+        boostAddress: "5ksboZUb57ZuwEkRRHCK8s6BpiNABneKndvkowZdvGhy",
         isAlways: false
     },
     "DrSS5RM7zUd9qjUEdDaf31vnDUSbCrMto6mjqTrHFifN": {
@@ -85,7 +85,7 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         pairImage: 'SolanaToken',
         decimals: 11,
         isLP: true,
-        isStakable: true,
+        boostAddress: "5qVQiZXaRffQUqD4NmJ5EXHBAbmfdABZxUb714cJATQp",
         isAlways: false
     },
     "7G3dfZkSk1HpDGnyL37LMBbPEgT4Ca6vZmZPUyi2syWt": {
@@ -96,7 +96,7 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         pairImage: 'HntToken',
         decimals: 6,
         isLP: true,
-        isStakable: true,
+        boostAddress: "h4nsGY9yhdfSW6Fwb6WSJEi9hHCviLdzQjcqzYWeKhd",
         isAlways: false
     },
     "9BAWwtAZiF4XJC6vArPM8JhtgKXfeoeo9FJHeR3PEGac": {
@@ -107,7 +107,7 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         pairImage: 'UsdcToken',
         decimals: 11,
         isLP: true,
-        isStakable: true,
+        boostAddress: "8BEzwBTDsKWnjgjxi8Cca7ZatPZQhxUMgS8qWzBhDhrC",
         isAlways: false
     },
 

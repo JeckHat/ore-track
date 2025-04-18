@@ -6,10 +6,19 @@ type MainStackParamList = {
     Start: {} | undefined
     PrivateKey: { importWallet?: boolean, words?: string, title?: string, isSeedPhrase?: boolean } | undefined
     BottomTab: {} | undefined
+    Token: { mintAddress?: string } | undefined
     Receive: {} | undefined
     DepositStake: { boost?: string } | undefined
     WithdrawStake: { boost?: string } | undefined
     RPC: {} | undefined
+}
+
+type NavigationTabsParamList = {
+    TabWallet: {} | undefined
+    TabPool: {} | undefined
+    TabMine: {} | undefined
+    TabStake: {} | undefined
+    TabSetting: {} | undefined
 }
 
 export type StartNavigationProps = {
@@ -25,14 +34,6 @@ export type PrivateKeyNavigationProps = {
 export type TabNavigationProps = {
     navigation: NativeStackNavigationProp<MainStackParamList, 'BottomTab'>
     route: RouteProp<MainStackParamList, 'BottomTab'>
-}
-
-type NavigationTabsParamList = {
-    TabWallet: {} | undefined
-    TabPool: {} | undefined
-    TabMine: {} | undefined
-    TabStake: {} | undefined
-    TabSetting: {} | undefined
 }
 
 export type TabWalletScreenProps = {
@@ -58,6 +59,11 @@ export type TabStakeScreenProps = {
 export type TabSettingScreenProps = {
     navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabSetting'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
     route: RouteProp<NavigationTabsParamList, 'TabSetting'>
+}
+
+export type TokenNavigationProps = {
+    navigation: NativeStackNavigationProp<MainStackParamList, 'Token'>
+    route: RouteProp<MainStackParamList, 'Token'>
 }
 
 export type ReceiveNavigationProps = {
