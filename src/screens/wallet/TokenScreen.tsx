@@ -23,8 +23,6 @@ export default function TokenScreen({ navigation, route }: TokenNavigationProps)
         balance: 0
     })
 
-    console.log("token", token)
-
     useEffect(() => {
         fetchToken(route.params?.mintAddress ?? "")
     }, [])
