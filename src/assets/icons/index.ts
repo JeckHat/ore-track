@@ -9,6 +9,7 @@ import StakeIcon from './stake.svg'
 import ChevronLeftIcon from './chevron-left.svg'
 import ChevronRightIcon from './chevron-right.svg'
 import VerticalDotsIcon from './vertical-dots.svg'
+import ScanQRIcon from './scan-qr.svg'
 
 export {
     WalletIcon, DataIcon, MineIcon, SettingIcon,
@@ -17,5 +18,6 @@ export {
     SwapIcon,
     StakeIcon,
     ChevronRightIcon, ChevronLeftIcon,
-    VerticalDotsIcon
+    VerticalDotsIcon,
+    ScanQRIcon
 }

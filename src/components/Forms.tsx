@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactElement, Ref } from "react";
+import React, { forwardRef, ReactElement, ReactNode, Ref } from "react";
 import { View, Pressable, Animated, TextInput, TextInputProps } from "react-native";
 import { twMerge } from "tailwind-merge";
 
@@ -9,6 +9,7 @@ interface InputProps extends TextInputProps {
   inputContainerClassName?: string
   isError?: boolean
   messageError?: string
+  suffix?: ReactNode
 }
 
 export const Input = forwardRef<TextInput, InputProps>(function Input(props: InputProps, ref: Ref<TextInput>) {
@@ -17,6 +18,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(props: Inp
     inputContainerClassName,
     isError,
     messageError,
+    suffix,
     ...otherProps
 } = props;
 
@@ -31,6 +33,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(props: Inp
           className={twMerge('w-full', otherProps.className)}
           ref={ref}
         />
+        {suffix}
       </View> 
       {isError && <CustomText
         className="text-red-600 font-PlusJakartaSansSemiBold"

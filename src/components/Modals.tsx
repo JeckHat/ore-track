@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Animated,
@@ -12,10 +12,13 @@ import {
 } from "react-native";
 
 import Images from "@assets/images";
-import { ChevronRightIcon } from "@assets/icons";
+import { ChevronRightIcon, ScanQRIcon } from "@assets/icons";
 import { Colors } from "@styles";
 import { CustomText } from "./Texts"
 import { Button } from "./Buttons";
+import { Input } from "./Forms";
+import { PublicKey } from "@solana/web3.js";
+import Clipboard from "@react-native-clipboard/clipboard";
 
 export function LoadingModal(props: { show?: boolean }) {
     if (props.show) {
@@ -204,7 +207,14 @@ export function ModalTransaction(props: ModalTransactionProps) {
     )
 }
 
-export function ModalImportOptions(props: { hideModal: () => void, onImportSeedPharse: () => void, onImportPrivateKey: () => void }) {
+interface modalButtonListProps {
+    buttons: {
+        text: string
+        onPress: () => void
+    }[]
+}
+
+export function ModalButtonList(props: modalButtonListProps ) {
     return (
         <View className="w-full my-6 px-4">
             <View className="items-center mb-2">
@@ -212,7 +222,15 @@ export function ModalImportOptions(props: { hideModal: () => void, onImportSeedP
                 <CustomText className="text-primary font-PlusJakartaSans text-md w-full mb-4 text-center">Balance changes are estimated. Amounts and assets involved are not guaranteed.</CustomText>
             </View>
             <View className="my-2 mx-2">
-                <Button
+                {props.buttons.map((button, idx) => (
+                    <Button
+                        key={`modal-button-list-${idx}`}
+                        containerClassName="mb-3"
+                        title={button.text}
+                        onPress={button.onPress}
+                    />
+                ))}
+                {/* <Button
                     containerClassName="mb-3"
                     title="Import Seed Phrase"
                     onPress={() => {
@@ -226,6 +244,74 @@ export function ModalImportOptions(props: { hideModal: () => void, onImportSeedP
                         props.onImportPrivateKey()
                         props.hideModal()
                     }}
+                /> */}
+            </View>
+        </View>
+    )
+}
+
+export function ModalImportAddress(props: { onImport: (text: string) => void} ) {
+    const [address, setAddress] = useState({
+        value: '',
+        valid: false,
+        touched: false,
+    })
+
+    function onValidationCheck(text: string) {
+        if (typeof text !== 'string' || text.length < 32 || text.length > 44) {
+            setAddress({
+                value: text,
+                valid: false,
+                touched: true
+            })
+        } else {
+            let validation = PublicKey.isOnCurve(new PublicKey(text))
+            setAddress({
+                value: text,
+                valid: validation,
+                touched: true
+            })
+        }
+    }
+
+    async function onPaste() {
+        const text = await Clipboard.getString()
+        onValidationCheck(text)
+    }
+
+    return (
+        <View className="w-full my-6 px-4">
+            <View className="items-center mb-2">
+                <CustomText className="text-primary font-PlusJakartaSansBold text-xl text-center mb-2">Import Wallet Address</CustomText>
+                <CustomText className="text-primary font-PlusJakartaSans text-md w-full mb-3 text-center">Importing with address only gives view access. You can’t send, claim, stake, withdraw, or mine.</CustomText>
+            </View>
+            <View className="my-2 mx-2">
+                <Input
+                    inputContainerClassName="flex-row"
+                    className="flex-1 text-primary font-PlusJakartaSans"
+                    autoCapitalize="none"
+                    value={address.value}
+                    isError={!address.valid && address.touched}
+                    onChangeText={onValidationCheck}
+                    messageError="Invalid Address"
+                    suffix={(
+                        <View className="flex-row items-center">
+                            <Button
+                                containerClassName='rounded-none overflow-auto mx-2'
+                                className="bg-gold py-1 px-3 rounded-full"
+                                textClassName='text-sm'
+                                title={"Paste"}
+                                onPress={onPaste}
+                            />
+                            <ScanQRIcon width={24} height={24} color={Colors.primary} />
+                        </View>
+                    )}
+                />
+                <Button
+                    disabled={!address.valid}
+                    containerClassName="mb-3 mt-4"
+                    title="Import"
+                    onPress={() => props.onImport(address.value)}
                 />
             </View>
         </View>
