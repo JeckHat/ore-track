@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { SafeAreaView, View } from "react-native"
 import { useSelector } from "react-redux"
 
@@ -12,6 +13,18 @@ import { RootState } from "@store/types"
 
 export default function TabSettingScreen({ navigation }: TabSettingScreenProps) {
     const wallet = useSelector((state: RootState) => state.wallet)
+
+    const [version, setVersion] = useState<string | null>(null);
+
+    useEffect(() => {
+        OreTrackInfo.getVersionName()
+        .then(setVersion)
+        .catch(error => {
+            console.error('Failed to get version:', error);
+            setVersion('Unknown');
+        });
+    }, []);
+    
     return (
         <SafeAreaView className="flex-1 bg-baseBg">
             <View className="flex-1">
@@ -102,7 +115,7 @@ export default function TabSettingScreen({ navigation }: TabSettingScreenProps) 
                 />
                 <View className="absolute bottom-[80px] text-center self-center">
                     <CustomText className="text-primary font-PlusJakartaSansSemiBold">
-                        OreTrack {OreTrackInfo.getVersionName()}
+                        OreTrack {version}
                     </CustomText>
                 </View>
             </View>
