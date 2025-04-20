@@ -14,9 +14,9 @@ export const POOL_LIST: Record<string, PoolInfo> = {
         name: 'Official',
         isCoal: false,
         api: {
-            base: 'https://official.ec1ipse.me',
+            base: 'https://pool.ore.supply',
             getBalance: async (pubkey: string) => {
-                const response = await fetch(`https://official.ec1ipse.me/member/${pubkey}`)
+                const response = await fetch(`https://pool.ore.supply/member/${pubkey}`)
                 const res = await response.json()
                 return {
                     balanceOre: res.total_balance / Math.pow(10, 11),

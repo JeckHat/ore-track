@@ -395,7 +395,7 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                                     <CustomText
                                         className="text-primary font-PlusJakartaSans text-[11px] mb-[1px]"
                                     >
-                                        {(pools[POOL_LIST[item].id]?.balanceOre ?? 0).toFixed(4)} ORE
+                                        {(pools[POOL_LIST[item].id]?.balanceOre ?? 0).toFixed(11)} ORE
                                     </CustomText>
                                 </View>
                                 {POOL_LIST[item].isCoal && <View className={`flex-row items-center ${!POOL_LIST[item].isCoal && "opacity-0"}`}>
