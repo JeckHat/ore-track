@@ -8,6 +8,7 @@ const initState = store.getState()
 let connection: Connection = new Connection(`https://${initState.config!.rpcUrl}`)
 let rpcUrl: string | null = initState.config?.rpcUrl ?? ""
 let walletAddress: string | null = initState.wallet?.publicKey ?? ""
+let useKeypair: boolean = initState.wallet?.usePrivateKey ?? false
 let boost: BoostState = initState.boost ?? { boosts: {}, socketAccounts: {}, rewards: 0, avgRewards: 0 }
 
 function isBoostEqual(a: BoostType, b: BoostType): boolean {
@@ -78,6 +79,7 @@ store.subscribe(() => {
     const newRpcUrl = state.config?.rpcUrl ?? ""
     const newWalletAddress = state.wallet?.publicKey ?? ""
     const newBoosts = state.boost ?? { boosts: {}, socketAccounts: {}, rewards: 0, avgRewards: 0 }
+    const newUseKeypair = state.wallet?.usePrivateKey ?? false
     
     if (newRpcUrl !== rpcUrl) {
         createConnection(newRpcUrl)
@@ -127,6 +129,10 @@ store.subscribe(() => {
         }
     }
 
+    if (useKeypair !== newUseKeypair) {
+        useKeypair = newUseKeypair
+    }
+
 })
 
 export function getConnection() {
@@ -147,4 +153,8 @@ export function getBoostConfigAddress() {
 
 export function getBoostProofAddress() {
     return boost.boostProofAddress
+}
+
+export function isUseKeypair() {
+    return useKeypair
 }

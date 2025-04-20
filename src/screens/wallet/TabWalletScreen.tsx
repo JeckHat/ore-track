@@ -12,6 +12,7 @@ import { JUP_API_PRICE, TokenInfo, TOKENLIST } from "@constants";
 import { RootState } from "@store/types";
 import { getBalance } from "@services/solana";
 import { TabWalletScreenProps } from "@navigations/types";
+import { isUseKeypair } from "@providers";
 
 interface TokenBalance extends TokenInfo {
     mint: string,
@@ -131,12 +132,20 @@ export default function TabWalletScreen({ navigation }: TabWalletScreenProps) {
                         <ButtonIcon
                             title="Send"
                             icon={<SendIcon width={24} height={24} color={Colors.primary}/>}
-                            onPress={() => {}}
+                            onPress={() => {
+                                if(isUseKeypair()) {
+                                    // call function
+                                }
+                            }}
                         />
                         <ButtonIcon
                             title="Swap"
                             icon={<SwapIcon width={24} height={24} color={Colors.primary}/>}
-                            onPress={() => {}}
+                            onPress={() => {
+                                if(isUseKeypair()) {
+                                    // call function
+                                }
+                            }}
                         />
                         <ButtonIcon
                             title="Stake"

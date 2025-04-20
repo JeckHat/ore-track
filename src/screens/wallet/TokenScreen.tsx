@@ -11,6 +11,7 @@ import { TokenNavigationProps } from '@navigations/types'
 import { JUP_API_PRICE, TOKENLIST } from '@constants'
 import { RootState } from '@store/types'
 import { getBalance } from '@services/solana'
+import { isUseKeypair } from '@providers'
 
 export default function TokenScreen({ navigation, route }: TokenNavigationProps) {
 
@@ -73,19 +74,32 @@ export default function TokenScreen({ navigation, route }: TokenNavigationProps)
                     <ButtonIcon
                         title="Send"
                         icon={<SendIcon width={24} height={24} color={Colors.primary}/>}
-                        onPress={() => {}}
+                        onPress={() => {
+                            if(isUseKeypair()) {
+                                // call function
+                            }
+                        }}
                     />
                     <ButtonIcon
                         title="Swap"
                         icon={<SwapIcon width={24} height={24} color={Colors.primary}/>}
-                        onPress={() => {}}
+                        onPress={() => {
+                            if(isUseKeypair()) {
+                                // call function
+                            }
+                        }}
                     />
                     {token.boostAddress && <ButtonIcon
                         title="Stake"
                         icon={<StakeIcon width={24} height={24} color={Colors.primary}/>}
-                        onPress={() => navigation.navigate('DepositStake', {
-                            boost: token.boostAddress
-                        })}
+                        onPress={() => {
+                            if(isUseKeypair()) {
+                                navigation.navigate('DepositStake', {
+                                    boost: token.boostAddress
+                                })
+                            }
+                            
+                        }}
                     />}
                 </View>
                 <CustomText className='text-primary font-PlusJakartaSans mx-2'>
