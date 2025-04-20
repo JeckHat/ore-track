@@ -57,12 +57,11 @@ OreTrack focuses exclusively on the ORE & COAL token ecosystem. The wallet inter
 ## 📱 Download
 
 🔗 [Download the latest APK (Pre-release)](https://github.com/jeckhat/ore-track/releases/download/v0.0.1-beta/OreTrack-v0.0.1-beta.apk)  
-> *(Replace the link with your actual release page)*
 
 ---
 
 ## 🖼️ Screenshots
-> *(Add screenshots of your UI here to help users visualize the app)*
+
 
 ---
 
