@@ -5,11 +5,13 @@ import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 import com.oretrack.modules.CpuUsageModule
+import com.oretrack.modules.OreTrackInfoModule
 import com.oretrack.modules.SolanaWebSocketModule
 
 class OreTrackPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         return listOf(
+            OreTrackInfoModule(reactContext),
             CpuUsageModule(reactContext),
             SolanaWebSocketModule(reactContext)
         )
