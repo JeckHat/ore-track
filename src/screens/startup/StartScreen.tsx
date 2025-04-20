@@ -94,9 +94,12 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
           className="w-48 h-48"
           source={Images.OreTrackText}
         />
-        <CustomText className="text-primary font-PlusJakartaSansBold text-3xl mt-8">
-          PoW Mobile Mining
+        <CustomText className='text-lowEmphasis font-PlusJakartaSansItalic mx-8 mt-4 text-center'>
+          {`Tracking your mining performance. \nAnalyze the flow, optimize the rewards.`}
         </CustomText>
+        {/* <CustomText className="text-primary font-PlusJakartaSansBold text-3xl mt-8">
+          PoW Monitoring
+        </CustomText> */}
         {/* <Image
           className="w-48 h-48"
           source={Images.OreTrackText}
