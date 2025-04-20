@@ -21,6 +21,7 @@ import { useBottomModal } from "@hooks"
 import { claimStakeOREInstruction, getStakeORE } from "@services/ore"
 import { shortenAddress } from "@helpers"
 import { getPriorityFee } from "@services/solana"
+import { isUseKeypair } from "@providers"
 
 export default function TabStakeScreen(props: TabStakeScreenProps) {
     const [orePrice, setOrePrice] = useState(0.0)
@@ -227,7 +228,9 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                         className="py-2 bg-baseBg rounded-full items-center"
                         textClassName="text-gold"
                         title="Claim All"
-                        onPress={onClaimAll}
+                        onPress={() => {
+                            if(isUseKeypair()) onClaimAll()
+                        }}
                     />}
                     <CustomText className="font-PlusJakartaSans text-primary text-sm self-start mb-1">
                         My Daily Avg
@@ -255,7 +258,7 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                 <ScrollView contentContainerClassName="grow" horizontal>
                     <View className="flex-1">
                         <View className="flex-row mx-4 items-center border-l-[0.5px] border-y-[0.5px] border-y-solid border-gray-600">
-                            <View className="w-12 px-1 h-full border-r-[0.5px] border-gray-600" />
+                            {isUseKeypair() && <View className="w-12 px-1 h-full border-r-[0.5px] border-gray-600" />}
                             <View className="w-60 px-1 py-2 pl-2 border-r-[0.5px] border-gray-600">
                                 <CustomText className="text-primary text-md font-PlusJakartaSansBold">Stake</CustomText>
                             </View>
@@ -322,7 +325,7 @@ function StakeRow(props: StakeRowProps) {
                     colors={["#111827", "#1f2937", "#111827"]}
                 />
             </View>}
-            {!loading && <View className="w-12 h-full flex-row items-center justify-center border-r-[0.5px] border-gray-600">
+            {!loading && isUseKeypair() && <View className="w-12 h-full flex-row items-center justify-center border-r-[0.5px] border-gray-600">
                 <OptionMenu
                     containerClassName="w-12 h-12 items-center self-center justify-center"
                     menu={[{
