@@ -1,9 +1,10 @@
+# OreTrack
+
+> "Tracking your mining performance. Analyze the flow, optimize the rewards."
 
 ---
 
 ## 💬 Why OreTrack?
-
-> "Tracking your mining performance. Analyze the flow, optimize the rewards."
 
 OreTrack isn’t just another wallet. It's a dedicated tool for miners, holders, and ecosystem supporters. Designed to streamline your interaction with Solana’s ORE & COAL tokens, it's built with purpose and precision.
 
@@ -75,3 +76,12 @@ OreTrack is an independent project built for educational and ecosystem explorati
 
 Have suggestions or want to contribute?  
 Feel free to open an issue or submit a pull request. We welcome all contributions that help move the ecosystem forward.
+
+---
+
+## ☕️ Donate Us
+
+If you find **OreTrack** helpful and want to support further development, you can donate to our Solana address:
+BBgmvQUqiq2dgGxcqQ39RZ98VrABfFRUGnXC2VYvkKkb
+
+Every contribution helps us keep building, maintaining, and improving the app. Thank you for supporting! 🤝
