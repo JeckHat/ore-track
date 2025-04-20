@@ -9,7 +9,7 @@ import { Colors } from "@styles"
 import { store } from "@store/index"
 import { RootState } from "@store/types"
 
-export default function TabSettingScreen(props: TabSettingScreenProps) {
+export default function TabSettingScreen({ navigation }: TabSettingScreenProps) {
     const wallet = useSelector((state: RootState) => state.wallet)
     return (
         <SafeAreaView className="flex-1 bg-baseBg">
@@ -29,7 +29,7 @@ export default function TabSettingScreen(props: TabSettingScreenProps) {
                             />
                         </View>
                     }
-                    onPress={() => {}}
+                    onPress={() => navigation.navigate('Receive')}
                 />
                 {wallet.useMnemonic && <Button
                     containerClassName="rounded-2xl mx-4 mb-2"
@@ -48,7 +48,7 @@ export default function TabSettingScreen(props: TabSettingScreenProps) {
                     }
                     onPress={async () => {
                         const mnemonic = await getMnemonic()
-                        props.navigation.navigate('PrivateKey', {
+                        navigation.navigate('PrivateKey', {
                             importWallet: false, words: mnemonic, title: "Recovery Phrase"
                         })
                     }}
@@ -68,7 +68,7 @@ export default function TabSettingScreen(props: TabSettingScreenProps) {
                             />
                         </View>
                     }
-                    onPress={() => {}}
+                    onPress={() => navigation.navigate('Receive')}
                 />}
                 <Button
                     containerClassName="rounded-2xl mx-4 mb-6"
@@ -85,7 +85,7 @@ export default function TabSettingScreen(props: TabSettingScreenProps) {
                             />
                         </View>
                     }
-                    onPress={() => props.navigation.navigate("RPC")}
+                    onPress={() => navigation.navigate("RPC")}
                 />
                 <Button
                     containerClassName="rounded-2xl mx-4"
@@ -96,7 +96,7 @@ export default function TabSettingScreen(props: TabSettingScreenProps) {
                         store.dispatch(walletActions.clearWallet())
                         store.dispatch(boostActions.resetBoosts())
                         store.dispatch(poolActions.resetPool())
-                        props.navigation.navigate("Start")
+                        navigation.navigate("Start")
                     }}
                 />
                 <View className="absolute bottom-[80px] text-center self-center">
