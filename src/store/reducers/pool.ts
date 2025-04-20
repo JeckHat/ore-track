@@ -95,7 +95,7 @@ const poolSlice = createSlice({
                 avgRewards: avgRewards
             }
         },
-        initialPool(state) {
+        resetPool(state) {
             Object.assign(state, initialState)
         }
     }
