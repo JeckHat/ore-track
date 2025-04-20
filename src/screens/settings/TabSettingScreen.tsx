@@ -1,6 +1,7 @@
 import { SafeAreaView, View } from "react-native"
 import { useSelector } from "react-redux"
 
+import OreTrackInfo from "@modules/OreTrackInfo"
 import { ChevronRightIcon } from "@assets/icons"
 import { Button, CustomText } from "@components"
 import { TabSettingScreenProps } from "@navigations/types"
@@ -101,7 +102,7 @@ export default function TabSettingScreen({ navigation }: TabSettingScreenProps) 
                 />
                 <View className="absolute bottom-[80px] text-center self-center">
                     <CustomText className="text-primary font-PlusJakartaSansSemiBold">
-                        OreTrack v0.0.1
+                        OreTrack {OreTrackInfo.getVersionName()}
                     </CustomText>
                 </View>
             </View>
