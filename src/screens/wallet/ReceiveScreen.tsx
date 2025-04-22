@@ -9,10 +9,11 @@ import { Button, CustomText } from '@components'
 import { shortenAddress } from '@helpers'
 import { RootState } from '@store/types'
 import { Colors } from '@styles'
+import { ReceiveNavigationProps } from '@navigations/types'
 
 
-export default function ReceiveScreen() {
-    const walletAddress = useSelector((state: RootState) => state.wallet.publicKey)
+export default function ReceiveScreen({ route } : ReceiveNavigationProps) {
+    const walletAddress = route.params?.walletAddress ?? useSelector((state: RootState) => state.wallet.publicKey)
     const [textCopy, setTextCopy] = useState("Copy")
 
     function onCopyWord() {

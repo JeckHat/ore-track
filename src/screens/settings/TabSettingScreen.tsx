@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react"
 import { SafeAreaView, View } from "react-native"
 import { useSelector } from "react-redux"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 
 import OreTrackInfo from "@modules/OreTrackInfo"
 import { ChevronRightIcon } from "@assets/icons"
 import { Button, CustomText } from "@components"
-import { TabSettingScreenProps } from "@navigations/types"
-import { boostActions, getMnemonic, poolActions, walletActions } from "@store/actions"
+import { MainStackParamList, TabSettingScreenProps } from "@navigations/types"
+import { boostActions, deleteCredentials, getMnemonic, poolActions, walletActions } from "@store/actions"
 import { Colors } from "@styles"
 import { store } from "@store/index"
 import { RootState } from "@store/types"
+import { useNavigation } from "@react-navigation/native"
 
 export default function TabSettingScreen({ navigation }: TabSettingScreenProps) {
     const wallet = useSelector((state: RootState) => state.wallet)
 
     const [version, setVersion] = useState<string | null>(null);
+    const stackNav = useNavigation<NativeStackNavigationProp<MainStackParamList>>()
 
     useEffect(() => {
         OreTrackInfo.getVersionName()
@@ -24,6 +27,15 @@ export default function TabSettingScreen({ navigation }: TabSettingScreenProps) 
             setVersion('Unknown');
         });
     }, []);
+
+    useEffect(() => {
+        if (!wallet.publicKey) {
+            stackNav.reset({
+                index: 0,
+                routes: [{ name: 'Start' }]
+            });
+        }
+    }, [wallet.publicKey])
     
     return (
         <SafeAreaView className="flex-1 bg-baseBg">
@@ -106,11 +118,11 @@ export default function TabSettingScreen({ navigation }: TabSettingScreenProps) 
                     className=" bg-baseComponent rouned-sm py-3 items-center"
                     textClassName="text-red-700"
                     title="Disconnect"
-                    onPress={() => {
+                    onPress={async () => {
                         store.dispatch(walletActions.clearWallet())
                         store.dispatch(boostActions.resetBoosts())
                         store.dispatch(poolActions.resetPool())
-                        navigation.navigate("Start")
+                        await deleteCredentials()
                     }}
                 />
                 <View className="absolute bottom-[80px] text-center self-center">

@@ -24,11 +24,11 @@ export default function MainNavigation() {
 
     return (
         <NativeStack.Navigator initialRouteName={publicKey? "BottomTab" : "Start"}>
-            <NativeStack.Screen
+            {!publicKey && <NativeStack.Screen
                 name="Start"
                 component={StartScreen}
                 options={{ headerShown: false }}
-            />
+            />}
             <NativeStack.Screen
                 name="PrivateKey"
                 component={PrivateKeyScreen}

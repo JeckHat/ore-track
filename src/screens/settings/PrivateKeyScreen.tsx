@@ -11,7 +11,7 @@ import { PrivateKeyNavigationProps } from "@navigations/types"
 import { mnemonicToSeedFast } from "@helpers"
 import { Colors } from "@styles"
 import { CustomError } from "@models"
-import { saveCredentials, uiActions, walletActions } from "@store/actions"
+import { uiActions } from "@store/actions"
 import { ChevronLeftIcon } from "@assets/icons"
 
 function WrapPhraseWord(props?: { text?: string, number?: string } ) {
@@ -68,7 +68,7 @@ export default function PrivateKeyScreen({ navigation, route }: PrivateKeyNaviga
             }
 
             dispatch(uiActions.showLoading(false))
-            navigation.replace('BottomTab')
+            route.params?.onNext?.(navigation)
         } catch(error) {
             dispatch(uiActions.showLoading(false))
             if (error instanceof CustomError) {
@@ -88,12 +88,7 @@ export default function PrivateKeyScreen({ navigation, route }: PrivateKeyNaviga
         }
         const seed = await mnemonicToSeedFast(words)
         const keypair = Keypair.fromSeed(seed.subarray(0, 32))
-        await saveCredentials(keypair, words)
-        dispatch(walletActions.setWallet({
-            address: keypair.publicKey?.toBase58(),
-            useMnemonic: true,
-            usePrivateKey: true
-        }))
+        await route.params?.onSubmit?.(keypair, words)
     }
 
     async function onNextPrivateKey() {
@@ -121,13 +116,7 @@ export default function PrivateKeyScreen({ navigation, route }: PrivateKeyNaviga
         }
 
         const keypair = Keypair.fromSecretKey(secretKey)
-        
-        await saveCredentials(keypair)
-        dispatch(walletActions.setWallet({
-            address: keypair.publicKey?.toBase58(),
-            useMnemonic: false,
-            usePrivateKey: true
-        }))
+        await route.params?.onSubmit?.(keypair)
     }
 
     return (

@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { Image, SafeAreaView, View } from 'react-native'
+import { Keypair } from '@solana/web3.js'
+import { useDispatch } from 'react-redux'
 
 import { StartNavigationProps } from '@navigations/types'
 import { CustomText, CheckBox, Button, ModalButtonList, ModalImportAddress } from '@components'
 import Images from '@assets/images'
 import { useBottomModal } from '@hooks'
-import { walletActions } from '@store/actions'
-import { useDispatch } from 'react-redux'
+import { saveCredentials, walletActions } from '@store/actions'
 
 export default function StartScreen({ navigation }: StartNavigationProps) {
   const [checkedTerm, setCheckedTerm] = useState(false)
@@ -35,7 +36,7 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
                       usePrivateKey: false
                     }))
                     hideModal()
-                    navigation.navigate('BottomTab')
+                    navigation.replace('BottomTab')
                   }}
                 />
               )
@@ -45,7 +46,18 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
             text: 'Recovery Phrase',
             onPress: () => {
               navigation.navigate('PrivateKey', {
-                importWallet: true, title: "Recovery Phrase", isSeedPhrase: true
+                importWallet: true, title: "Recovery Phrase", isSeedPhrase: true,
+                onSubmit: async (keypair: Keypair, words?: string) => {
+                  await saveCredentials(keypair, words)
+                  dispatch(walletActions.setWallet({
+                    address: keypair.publicKey?.toBase58(),
+                    useMnemonic: true,
+                    usePrivateKey: true
+                  }))
+                },
+                onNext: (navigation) => {
+                  navigation.replace('BottomTab')
+                }
               })
               hideModal()
             }
@@ -54,7 +66,18 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
             text: 'Private Key',
             onPress: () => {
               navigation.navigate('PrivateKey', {
-                importWallet: true, title: "Private Key", isSeedPhrase: false
+                importWallet: true, title: "Private Key", isSeedPhrase: false,
+                onSubmit: async (keypair: Keypair) => {
+                  await saveCredentials(keypair)
+                  dispatch(walletActions.setWallet({
+                    address: keypair.publicKey?.toBase58(),
+                    useMnemonic: false,
+                    usePrivateKey: true
+                  }))
+                },
+                onNext: (navigation) => {
+                  navigation.replace('BottomTab')
+                }
               })
               hideModal()
             }
