@@ -1,10 +1,17 @@
+import dayjs from 'dayjs'
+
 export interface PoolInfo {
     id: string
     name: string
     isCoal: boolean
     api: {
         base?: string
-        getBalance?: (pubkey: string) => Promise<{ balanceOre: number, balanceCoal: number }>
+        getBalance?: (pubkey: string) => Promise<{
+            balanceOre: number,
+            balanceCoal: number,
+            lastClaimAt?: string | null,
+            earnedOre?: number | null
+        }>
     }
 }
 
@@ -20,7 +27,9 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                 const res = await response.json()
                 return {
                     balanceOre: res.total_balance / Math.pow(10, 11),
-                    balanceCoal: 0
+                    balanceCoal: 0,
+                    earnedOre: null,
+                    lastClaimAt: null
                 }
             },
         }
@@ -36,7 +45,9 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                 const res = await response.json()
                 return {
                     balanceOre: (res.earned - res.claimed) / Math.pow(10, 11),
-                    balanceCoal: 0
+                    balanceCoal: 0,
+                    earnedOre: res.earned,
+                    lastClaimAt: dayjs('1900-01-01').toISOString()
                 }
             },
         }
@@ -46,13 +57,27 @@ export const POOL_LIST: Record<string, PoolInfo> = {
         name: 'Excalivator',
         isCoal: true,
         api: {
-            base: 'https://pool.coal-pool.xyz',
+            base: 'https://pool.excalivator.xyz',
             getBalance: async (pubkey: string) => {
-                const response = await fetch(`https://pool.coal-pool.xyz/miner/rewards?pubkey=${pubkey}`)
-                const res = await response.json()
+                let lastClaimAt = null
+                try {
+                    const response = await fetch(`https://pool.excalivator.xyz/miner/last-claim?pubkey=${pubkey}`, {
+                        method: 'GET'
+                    })
+                    const resData = await response.json()
+                    lastClaimAt = resData.created_at
+                } catch(error) {
+                    lastClaimAt = null
+                }
+                const response = await fetch(`https://pool.excalivator.xyz/miner/rewards?pubkey=${pubkey}`, {
+                    method: 'GET'
+                })
+                const resData = await response.json()
                 return {
-                    balanceOre: res.ore,
-                    balanceCoal: res.coal
+                    balanceOre: resData.ore,
+                    balanceCoal: resData.coal,
+                    earnedOre: null,
+                    lastClaimAt: lastClaimAt
                 }
             },
         }
@@ -68,7 +93,9 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                 const result = await response.text()
                 return {
                     balanceOre: (Number(result) * Math.pow(10, 11)) / Math.pow(10, 11),
-                    balanceCoal: 0
+                    balanceCoal: 0,
+                    earnedOre: null,
+                    lastClaimAt: null
                 }
             },
         }

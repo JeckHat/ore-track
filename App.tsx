@@ -6,6 +6,7 @@ import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { Buffer } from 'buffer'
 import QuickCrypto from 'react-native-quick-crypto'
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { RootNavigation } from '@navigations/RootNavigation'
 import { persistor, store } from '@store/index'
@@ -17,10 +18,12 @@ global.crypto = QuickCrypto
 
 export default function App() {
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <RootNavigation />
-      </PersistGate>
-    </Provider>
+    <GestureHandlerRootView>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <RootNavigation />
+        </PersistGate>
+      </Provider>
+    </GestureHandlerRootView>
   )
 }

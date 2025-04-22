@@ -6,20 +6,18 @@ export interface RootState {
     ui: UiState
     wallet: WalletState
     config: ConfigState
-    pool: { pools: Record<string, PoolState> }
+    pool: PoolState
     boost: BoostState
-}
-
-interface bottomModalState {
-    visible: boolean
-    children?: ReactElement | null
-    cancelable?: boolean
 }
 
 export interface UiState {
     classNameGlobal: string
     loading: boolean
-    bottomModal: bottomModalState
+    bottomModal: {
+        visible: boolean
+        children?: ReactElement | null
+        cancelable?: boolean
+    }
 }
 
 export interface WalletState {
@@ -80,20 +78,25 @@ export interface MinerState {
     pools: Record<string, PoolMinerInfo>
 }
 
-export interface PoolState {
+export interface PoolType {
     walletAddress?: string | null
     balanceOre: number
     balanceCoal: number
-    runningOre: boolean
-    runningCoal: boolean
+    running: boolean
     avgRewards: {
         ore: number
-        coal: number,
-        startOre: number,
+        coal: number
+        startOre: number
         startCoal: number
     },
+    earnedOre?: number
+    show: boolean
     startMiningAt?: string | null
     lastUpdateAt: string
     lastClaimAt: string
 }
 
+export interface PoolState {
+    pools: Record<string, PoolType>,
+    order: string[]
+}

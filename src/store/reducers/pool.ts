@@ -4,31 +4,28 @@ import * as Keychain from 'react-native-keychain'
 import { Keypair } from '@solana/web3.js'
 
 import { POOL_LIST } from '@constants'
-import { PoolState } from '@store/types'
+import { PoolState, PoolType } from '@store/types'
 import { CustomError } from '@models'
 
 const WALLET_STORAGE_KEY = "solana_private_key"
 const WALLET_STORAGE_MNENOMIC = "solana_mnenomic"
 
-const initialState: { pools: Record<string, PoolState> } = {
+const initialState: PoolState = {
     pools: Object.fromEntries(Object.keys(POOL_LIST).map(item => [item, {
         balanceOre: 0,
         balanceCoal: 0,
-        runningOre: false,
-        runningCoal: false,
-        avgRewards: {
-            ore: 0,
-            coal: 0,
-            startOre: 0,
-            startCoal: 0
-        },
+        running: false,
+        avgRewards: { ore: 0, coal: 0, startOre: 0, startCoal: 0 },
+        earnedOre: 0,
         startMiningAt: null,
         lastUpdateAt: dayjs().toISOString(),
-        lastClaimAt: dayjs().toISOString(),
-    }]))
+        show: true,
+        lastClaimAt: dayjs('1900-01-01').toISOString(),
+    }])),
+    order: Object.keys(POOL_LIST),
 }
 
-function calculateAvgRewards(pool: PoolState, updatePool: PoolState) {
+function calculateAvgRewards(pool: PoolType, updatePool: PoolType) {
     if (!pool.startMiningAt) {
         return {
             ore: 0,
@@ -57,7 +54,7 @@ const poolSlice = createSlice({
     name: 'pool',
     initialState: initialState,
     reducers: {
-        updatePool(state, action: PayloadAction<{ id: string, pool: PoolState }>) {
+        updatePool(state, action: PayloadAction<{ id: string, pool: PoolType }>) {
             const { id, pool } = action.payload
             let startMiningAt = state.pools[id].startMiningAt
             let avgRewards = {
@@ -67,7 +64,7 @@ const poolSlice = createSlice({
                 startCoal: pool.balanceCoal ?? 0
             }
 
-            if (!state.pools[id].runningOre && pool.runningOre) {
+            if (!state.pools[id].running && pool.running) {
                 startMiningAt = pool.startMiningAt
                 avgRewards = {
                     ore: 0,
@@ -75,7 +72,7 @@ const poolSlice = createSlice({
                     startOre: pool.balanceOre,
                     startCoal: pool.balanceCoal,
                 }
-            } else if (state.pools[id].runningOre && pool.runningOre) {
+            } else if (state.pools[id].running && pool.running) {
                 startMiningAt = startMiningAt ?? pool.startMiningAt
                 avgRewards = calculateAvgRewards(state.pools[id], pool)
             } else {
@@ -91,8 +88,19 @@ const poolSlice = createSlice({
             state.pools[id] = {
                 ...state.pools[id],
                 ...pool,
+                show: state.pools[id].show,
                 startMiningAt: startMiningAt,
                 avgRewards: avgRewards
+            }
+        },
+        reorderPools: (state, action: PayloadAction<string[]>) => {
+            state.order = action.payload;
+        },
+        visiblePools: (state, action: PayloadAction<{ id: string, show: boolean }>) => {
+            const { id, show } = action.payload
+            state.pools[id] = {
+                ...state.pools[id],
+                show: show
             }
         },
         resetPool(state) {

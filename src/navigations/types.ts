@@ -8,6 +8,7 @@ type MainStackParamList = {
     BottomTab: {} | undefined
     Token: { mintAddress?: string } | undefined
     Receive: {} | undefined
+    ManagePool: {} | undefined
     DepositStake: { boost?: string } | undefined
     WithdrawStake: { boost?: string } | undefined
     RPC: {} | undefined
@@ -69,6 +70,11 @@ export type TokenNavigationProps = {
 export type ReceiveNavigationProps = {
     navigation: NativeStackNavigationProp<MainStackParamList, 'Receive'>
     route: RouteProp<MainStackParamList, 'Receive'>
+}
+
+export type ManagePoolNavigationProps = {
+    navigation: NativeStackNavigationProp<MainStackParamList, 'ManagePool'>
+    route: RouteProp<MainStackParamList, 'ManagePool'>
 }
 
 export type DepositStakeNavigationProps = {

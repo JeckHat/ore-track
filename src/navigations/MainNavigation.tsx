@@ -15,6 +15,7 @@ import WithdrawStakeScreen from "@screens/stake/WithdrawStakeScreen"
 import RPCScreen from "@screens/settings/RPCScreen"
 import PrivateKeyScreen from "@screens/settings/PrivateKeyScreen"
 import TokenScreen from "@screens/wallet/TokenScreen"
+import ManagePoolScreen from "@screens/pool/ManagePoolScreen"
 
 const NativeStack = createNativeStackNavigator()
 
@@ -37,6 +38,19 @@ export default function MainNavigation() {
                 name="BottomTab"
                 component={TabNavigation}
                 options={{ headerShown: false}}
+            />
+            <NativeStack.Screen
+                name="ManagePool"
+                component={ManagePoolScreen}
+                options={{
+                    headerTintColor: Colors.primary,
+                    headerTitleStyle: {
+                        fontFamily: Fonts.PlusJakartaSansSemiBold,
+                        color: Colors.primary,
+                        
+                    },
+                    headerStyle: { backgroundColor: Colors.baseBg }
+                }}
             />
             <NativeStack.Screen
                 name="DepositStake"
@@ -64,19 +78,6 @@ export default function MainNavigation() {
                     headerStyle: { backgroundColor: Colors.baseBg }
                 }}
             />
-            {/* <NativeStack.Screen
-                name="Stake"
-                component={StakeScreen}
-                options={{
-                    headerTintColor: Colors.primary,
-                    headerTitleStyle: {
-                        fontFamily: Fonts.PlusJakartaSansSemiBold,
-                        color: Colors.primary,
-                        
-                    },
-                    headerStyle: { backgroundColor: Colors.baseBg }
-                }}
-            /> */}
             <NativeStack.Screen
                 name="Receive"
                 component={ReceiveScreen}

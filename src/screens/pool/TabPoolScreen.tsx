@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
     Alert,
@@ -16,15 +16,17 @@ import { CustomText, SkeletonLoader } from "@components"
 import Images from "@assets/images"
 import { RootState } from "@store/types"
 import { shortenAddress } from "@helpers"
-import { WalletIcon } from "@assets/icons"
+import { ChevronRightIcon, WalletIcon } from "@assets/icons"
 import { Colors } from "@styles"
 import { TabPoolScreenProps } from "@navigations/types"
 import { COAL_MINT, JUP_API_PRICE, ORE_MINT, POOL_LIST } from "@constants"
 import { poolActions } from "@store/actions"
 
-export default function TabPoolScreen(props: TabPoolScreenProps) {
+export default function TabPoolScreen({ navigation }: TabPoolScreenProps) {
     const walletAddress = useSelector((state: RootState) => state.wallet.publicKey) ?? ""
     const pools = useSelector((state: RootState) => state.pool.pools)
+    const order = useSelector((state: RootState) => state.pool.order)
+    const [isBalanceReady, setIsBalanceReady] = useState(false);
     const [total, setTotal] = useState({
         avgOre: 0,
         avgCoal: 0,
@@ -44,29 +46,35 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
         }, [])
     )
 
+    useEffect(() => {
+        if (!isBalanceReady) return;
+    
+        let newTotal = {
+            avgOre: 0,
+            avgCoal: 0,
+            balanceOre: 0,
+            balanceCoal: 0
+        };
+      
+        Object.keys(POOL_LIST)
+        .filter(filterId => POOL_LIST[filterId].api.getBalance && pools[filterId].show !== false)
+        .forEach(poolId => {
+            const pool = pools[poolId];
+            if (!pool) return;
+            newTotal.avgOre += pool.avgRewards?.ore ?? 0;
+            newTotal.avgCoal += pool.avgRewards?.coal ?? 0;
+            newTotal.balanceOre += pool.balanceOre ?? 0;
+            newTotal.balanceCoal += pool.balanceCoal ?? 0;
+        });
+      
+        setTotal({ ...newTotal, loading: false });
+      }, [isBalanceReady]);
+
     async function loadData() {
         try {
+            setIsBalanceReady(false)
             await loadPrice()
             await loadPoolsBalance()
-
-            let newTotal = {
-                avgOre: 0,
-                avgCoal: 0,
-                balanceOre: 0,
-                balanceCoal: 0
-            }
-            Object.keys(POOL_LIST).map(poolId => {
-                newTotal = {
-                    avgOre: newTotal.avgOre + (pools[poolId]?.avgRewards?.ore ?? 0),
-                    avgCoal: newTotal.avgCoal + (pools[poolId]?.avgRewards?.coal ?? 0),
-                    balanceOre: newTotal.balanceOre + (pools[poolId]?.balanceOre ?? 0),
-                    balanceCoal: newTotal.balanceCoal + (pools[poolId]?.balanceCoal ?? 0)
-                }
-            })
-            setTotal({
-                ...newTotal,
-                loading: false
-            })
         } catch(error) {
             console.log("error", error)
         }
@@ -74,7 +82,7 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
 
     async function loadPoolsBalance() {
         const poolList = Object.keys(POOL_LIST)
-            .filter(filterId => POOL_LIST[filterId].api.getBalance)
+            .filter(filterId => POOL_LIST[filterId].api.getBalance && pools[filterId].show !== false)
             .map(poolId => {
                 let address = pools[poolId]?.walletAddress ?? walletAddress
                 return {
@@ -85,18 +93,20 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
         const results = await Promise.allSettled(poolList.map(pool => {
             return pool.fetch
         }))
-        results.forEach(async (result, idx) => {
+        const updatePromises = results.map(async (result, idx) => {
             if (result.status === 'fulfilled') {
                 let balanceNow = result.value
                 let dateNow = dayjs()
-                let storageData = JSON.parse(JSON.stringify(pools[poolList[idx].id]))
+                let prevData = pools[poolList[idx].id] ?? {}
+                let storageData = { ...prevData }
+                let lastClaimAt = balanceNow?.lastClaimAt ?? storageData.lastClaimAt
+                let earnedOre = balanceNow?.earnedOre ?? 0
 
                 if ((balanceNow?.balanceOre ?? 0) > storageData.balanceOre) {
                     storageData = {
                         ...storageData,
                         ...balanceNow,
-                        runningOre: true,
-                        runningCoal: true,
+                        running: true,
                         lastUpdateAt: dateNow.toISOString(),
                         startMiningAt: dateNow.toISOString(),
                         avgRewards: {
@@ -104,9 +114,11 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                             startOre: balanceNow?.balanceOre ?? 0,
                             startCoal: balanceNow?.balanceCoal ?? 0
                         },
+                        earnedOre: earnedOre,
+                        lastClaimAt: lastClaimAt
                     }
                 } else {
-                    if (storageData.lastClaimAt >= storageData.lastUpdateAt) {
+                    if (lastClaimAt >= storageData.lastUpdateAt || earnedOre > (storageData.earnedOre ?? 0)) {
                         storageData = {
                             ...storageData,
                             ...balanceNow,
@@ -119,14 +131,15 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                                 startOre: balanceNow?.balanceOre ?? 0,
                                 startCoal: balanceNow?.balanceCoal ?? 0
                             },
+                            earnedOre: earnedOre,
+                            lastClaimAt: lastClaimAt
                         }
                     } else {
                         if (dateNow.diff(dayjs(storageData.lastUpdateAt), "minute") >= 2) {
                             storageData = {
                                 ...storageData,
                                 ...balanceNow,
-                                runningCoal: false,
-                                runningOre: false,
+                                running: false,
                                 lastUpdateAt: dateNow.toISOString(),
                                 avgRewards: {
                                     ...storageData.avgRewards,
@@ -135,6 +148,8 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                                     startOre: balanceNow?.balanceOre ?? 0,
                                     startCoal: balanceNow?.balanceCoal ?? 0
                                 },
+                                earnedOre: earnedOre,
+                                lastClaimAt: lastClaimAt
                             }
                         }
                     }
@@ -142,10 +157,16 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
 
                 dispatch(poolActions.updatePool({
                     id: poolList[idx].id,
-                    pool: storageData
+                    pool: {
+                        ...prevData,
+                        ...storageData,
+                        show: prevData?.show ?? true 
+                    }
                 }))
             }
         })
+        await Promise.all(updatePromises);
+        setIsBalanceReady(true)
     }
 
     async function loadPrice() {
@@ -172,7 +193,13 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
         <SafeAreaView className="flex-1 bg-baseBg">
             <FlatList
                 refreshControl={<RefreshControl refreshing={false} onRefresh={loadData}/>}
-                data={Object.keys(POOL_LIST)}
+                data={
+                    (() => {
+                        const ordered = order.filter(key => POOL_LIST[key] && pools[key]?.show !== false)
+                        if (ordered.length % 2 !== 0) ordered.push('BLANK_SLOT')
+                        return ordered
+                    })()
+                }
                 contentContainerClassName="grow py-2 pb-[56px] mx-2"
                 ListHeaderComponent={(
                     <View className="flex gap-2 mx-2">
@@ -254,15 +281,27 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                                 $ {(total.balanceOre * price.ore + total.balanceCoal * price.coal).toFixed(2)}
                             </CustomText>
                         </View>
-                        <CustomText className="text-primary ml-2 font-PlusJakartaSansSemiBold text-xl mt-4">
-                            Pools
-                        </CustomText>
+                        <View className="flex-row w-full justify-between items-center mt-4 px-1">
+                            <CustomText className="text-primary font-PlusJakartaSansSemiBold text-xl">Pools</CustomText>
+                            <ChevronRightIcon
+                                width={24}
+                                height={24}
+                                color={Colors.primary}
+                                onPress={() => navigation.navigate('ManagePool')}
+                            />
+                        </View>
                     </View>
                 )}
                 keyExtractor={(data) => data}
                 numColumns={2}
                 columnWrapperClassName="gap-2 mx-2"
-                renderItem={({ item, index }) => (
+                renderItem={({ item, index }) => {
+                    if(item === "BLANK_SLOT") {
+                        return (
+                            <View className="flex-1 rounded-xl overflow-hidden my-2" />
+                        )
+                    }
+                    return (
                     <TouchableHighlight
                         key={`data-pool-${index}`}
                         className="flex-1 rounded-xl overflow-hidden my-2"
@@ -306,12 +345,12 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                                 >
                                     Workers: 3
                                 </CustomText> */}
-                                {pools[POOL_LIST[item].id]?.runningOre && <CustomText
+                                {pools[POOL_LIST[item].id]?.running && <CustomText
                                     className="text-primary font-PlusJakartaSans text-[11px] mb-1"
                                 >
                                     Status: <CustomText className="text-green-400 font-PlusJakartaSansSemiBold">Running</CustomText>
                                 </CustomText>}
-                                {!pools[POOL_LIST[item].id]?.runningOre && <CustomText
+                                {!pools[POOL_LIST[item].id]?.running && <CustomText
                                     className="text-primary font-PlusJakartaSans text-[11px] mb-1"
                                 >
                                     Status: <CustomText className="text-red-400 font-PlusJakartaSansSemiBold">Stopped</CustomText>
@@ -418,7 +457,7 @@ export default function TabPoolScreen(props: TabPoolScreenProps) {
                             </View>
                         </View>
                     </TouchableHighlight>
-                )}
+                )}}
             />
         </SafeAreaView>
     )
