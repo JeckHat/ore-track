@@ -8,6 +8,7 @@ export interface RootState {
     config: ConfigState
     pool: PoolState
     boost: BoostState
+    miner: MinerState
 }
 
 export interface UiState {
@@ -61,21 +62,20 @@ export interface BoostState {
     avgRewards: number
 }
 
-export interface MinerInfo {
-    publicKey: string
-    privateKey?: string | null
-    mnemonic?: string | null
+export interface MinerType {
+    name: string
+    address: string
+    pools: string[]
 }
 
-export interface PoolMinerInfo extends MinerInfo {
-    rewards?: number | null
-    hashRate?: string | null
-    claimAt?: string | null
-}
+// export interface PoolMinerInfo extends MinerInfo {
+//     rewards?: number | null
+//     hashRate?: string | null
+//     claimAt?: string | null
+// }
 
 export interface MinerState {
-    miners: Record<string, MinerInfo>
-    pools: Record<string, PoolMinerInfo>
+    miners: Record<string, MinerType>
 }
 
 export interface PoolType {

@@ -1,14 +1,25 @@
 import { BottomTabNavigationOptions, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RouteProp, CompositeNavigationProp, ParamListBase, Theme } from '@react-navigation/native';
 import { NativeStackNavigationOptions, NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Keypair } from '@solana/web3.js';
 
-type MainStackParamList = {
+export type MainStackParamList = {
     Start: {} | undefined
-    PrivateKey: { importWallet?: boolean, words?: string, title?: string, isSeedPhrase?: boolean } | undefined
+    PrivateKey: {
+        importWallet?: boolean,
+        words?: string,
+        title?: string,
+        isSeedPhrase?: boolean,
+        onSubmit?: (keypair: Keypair, words?: string ) => Promise<void>
+        onNext?: (navigation: NativeStackNavigationProp<MainStackParamList, "PrivateKey">) => void
+    } | undefined
     BottomTab: {} | undefined
     Token: { mintAddress?: string } | undefined
-    Receive: {} | undefined
+    Receive: { walletAddress?: string } | undefined
     ManagePool: {} | undefined
+    ManageMiner: {} | undefined
+    Pool: {} | undefined
+    UpdateMiner: {} | undefined
     DepositStake: { boost?: string } | undefined
     WithdrawStake: { boost?: string } | undefined
     RPC: {} | undefined
@@ -75,6 +86,21 @@ export type ReceiveNavigationProps = {
 export type ManagePoolNavigationProps = {
     navigation: NativeStackNavigationProp<MainStackParamList, 'ManagePool'>
     route: RouteProp<MainStackParamList, 'ManagePool'>
+}
+
+export type ManageMinerNavigationProps = {
+    navigation: NativeStackNavigationProp<MainStackParamList, 'ManageMiner'>
+    route: RouteProp<MainStackParamList, 'ManageMiner'>
+}
+
+export type PoolNavigationProps = {
+    navigation: NativeStackNavigationProp<MainStackParamList, 'Pool'>
+    route: RouteProp<MainStackParamList, 'Pool'>
+}
+
+export type UpdateMinerNavigationProps = {
+    navigation: NativeStackNavigationProp<MainStackParamList, 'UpdateMiner'>
+    route: RouteProp<MainStackParamList, 'UpdateMiner'>
 }
 
 export type DepositStakeNavigationProps = {

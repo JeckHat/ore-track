@@ -5,6 +5,7 @@ import { walletReducer } from './wallet';
 import { configReducer } from './config';
 import { poolReducer } from './pool';
 import { boostReducer } from './boost';
+import { minerReducer } from './miner';
 
 const rootReducer = combineReducers({
     ui: uiReducer,
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
     config: configReducer,
     pool: poolReducer,
     boost: boostReducer,
+    miner: minerReducer
 })
 
 export default rootReducer;

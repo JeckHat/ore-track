@@ -13,7 +13,8 @@ const persistConfig = {
         "config",
         "wallet",
         "pool",
-        "boost"
+        "boost",
+        "miner"
     ],
 };
 

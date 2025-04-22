@@ -305,7 +305,7 @@ export default function TabPoolScreen({ navigation }: TabPoolScreenProps) {
                     <TouchableHighlight
                         key={`data-pool-${index}`}
                         className="flex-1 rounded-xl overflow-hidden my-2"
-                        onPress={() => Alert.alert(POOL_LIST[item].name)}
+                        onPress={() => navigation.navigate('Pool')}
                     >
                         <View className="flex-1 bg-gray-800 px-3 p-2">
                             <View className="flex-row items-center">
@@ -473,7 +473,7 @@ export const screenOptions: TabScreenOptionsFn = ({ navigation }) => {
             <HeaderButton
                 className="mx-3"
                 icon={<HardHatIcon width={24} height={24} color={Colors.primary}/>}
-                onPress={() => navigation.goBack() }
+                onPress={() => navigation.navigate('ManageMiner') }
             />
         )
     }

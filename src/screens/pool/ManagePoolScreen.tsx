@@ -38,7 +38,7 @@ const Card: React.FC<CardProps & { onActive: (show: boolean) => void }> = memo((
         <Pressable className='p-2 py-4 flex-row justify-between bg-gray-800 m-2 rounded-lg' onLongPress={drag}>
             <View>
                 <CustomText className='text-primary text-lg font-PlusJakartaSansSemiBold'>
-                    Pool {POOL_LIST[id].name}
+                    {POOL_LIST[id].name}
                 </CustomText>
             </View>
             <Switch

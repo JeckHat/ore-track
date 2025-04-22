@@ -16,6 +16,8 @@ import RPCScreen from "@screens/settings/RPCScreen"
 import PrivateKeyScreen from "@screens/settings/PrivateKeyScreen"
 import TokenScreen from "@screens/wallet/TokenScreen"
 import ManagePoolScreen, { screenOptions as managePoolOptions } from "@screens/pool/ManagePoolScreen"
+import ManageMinerScreen, { screenOptions as manageMinerOptions } from "@screens/pool/ManageMinerScreen"
+import UpdateMinerScreen, { screenOptions as updateMinerOptions } from "@screens/pool/UpdateMinerScreen"
 
 const NativeStack = createNativeStackNavigator()
 
@@ -43,6 +45,16 @@ export default function MainNavigation() {
                 name="ManagePool"
                 component={ManagePoolScreen}
                 options={managePoolOptions}
+            />
+            <NativeStack.Screen
+                name="ManageMiner"
+                component={ManageMinerScreen}
+                options={manageMinerOptions}
+            />
+            <NativeStack.Screen
+                name="UpdateMiner"
+                component={UpdateMinerScreen}
+                options={updateMinerOptions}
             />
             <NativeStack.Screen
                 name="DepositStake"
