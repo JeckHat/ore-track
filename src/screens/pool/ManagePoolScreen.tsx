@@ -1,5 +1,5 @@
 import React, { memo, useEffect } from 'react';
-import { Pressable, SafeAreaView, StyleSheet, Switch, View } from 'react-native'
+import { Pressable, SafeAreaView, Switch, View } from 'react-native'
 import ReorderableList, {
     ReorderableListReorderEvent,
     reorderItems,
@@ -7,16 +7,17 @@ import ReorderableList, {
 } from 'react-native-reorderable-list'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { CustomText } from '@components'
+import { CustomText, HeaderButton } from '@components'
 import { POOL_LIST } from '@constants'
 import { PoolType, RootState } from '@store/types'
-import { Colors } from '@styles'
+import { Colors, Fonts } from '@styles'
 import { poolActions } from '@store/actions';
+import { StackOptionsFn } from '@navigations/types';
+import { ChevronLeftIcon } from '@assets/icons';
 
 interface CardProps {
     id: string,
     pool: PoolType
-    // onActive: (show: boolean) => void
 }
 
 const Card: React.FC<CardProps & { onActive: (show: boolean) => void }> = memo(({ id, pool, onActive }) => {
@@ -85,18 +86,25 @@ export default function ManagePoolScreen() {
                 keyExtractor={item => item.id}
             />
         </SafeAreaView>
-    );
-};
+    )
+}
 
-const styles = StyleSheet.create({
-    card: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'white',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    text: {
-        fontSize: 20,
-    },
-});
+export const screenOptions: StackOptionsFn = ({ navigation }) => {
+    return {
+        headerTitle: 'Manage Pool',
+        headerTintColor: Colors.primary,
+        headerTitleStyle: {
+            fontFamily: Fonts.PlusJakartaSansSemiBold,
+            fontSize: 18,
+        },
+        headerTitleAlign: 'left',
+        headerStyle: { backgroundColor: Colors.baseBg },
+        headerLeft: () => (
+            <HeaderButton
+                className='mr-6 mb-1'
+                icon={<ChevronLeftIcon width={24} height={24} color={Colors.primary}/>}
+                onPress={() => navigation.goBack() }
+            />
+        )
+    }
+}

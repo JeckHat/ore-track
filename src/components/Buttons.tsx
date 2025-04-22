@@ -1,5 +1,5 @@
 import { ReactElement } from "react"
-import { TouchableHighlight, View, ViewStyle } from "react-native"
+import { Pressable, TouchableHighlight, View, ViewStyle } from "react-native"
 import { twMerge } from "tailwind-merge"
 
 import { CustomText } from "./Texts"
@@ -63,5 +63,18 @@ export function ButtonIcon(props: ButtonIconProps) {
             </TouchableHighlight>
             <CustomText className="font-PlusJakartaSansSemiBold text-primary text-sm">{title}</CustomText>
         </View>
+    )
+}
+
+interface HeaderButtonProps { className?: string, icon: ReactElement, onPress?: () => void }
+
+export function HeaderButton({ className, icon, onPress }: HeaderButtonProps) {
+    return (
+        <Pressable
+            className={twMerge("mt-2 py-2", className)}
+            onPress={onPress}
+        >
+            {icon}
+        </Pressable>
     )
 }

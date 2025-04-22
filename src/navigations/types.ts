@@ -1,6 +1,6 @@
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { RouteProp, CompositeNavigationProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationOptions, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { RouteProp, CompositeNavigationProp, ParamListBase, Theme } from '@react-navigation/native';
+import { NativeStackNavigationOptions, NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type MainStackParamList = {
     Start: {} | undefined
@@ -87,12 +87,24 @@ export type WithdrawStakeNavigationProps = {
     route: RouteProp<MainStackParamList, 'WithdrawStake'>
 }
 
-// export type StakeNavigationProps = {
-//     navigation: NativeStackNavigationProp<MainStackParamList, 'Stake'>
-//     route: RouteProp<MainStackParamList, 'Stake'>
-// }
-
 export type RPCNavigationProps = {
     navigation: NativeStackNavigationProp<MainStackParamList, 'RPC'>
     route: RouteProp<MainStackParamList, 'RPC'>
 }
+
+export type TabScreenOptionsProps = {
+    navigation: BottomTabNavigationProp<ParamListBase, string>;
+    route: RouteProp<ParamListBase, string>;
+    theme: Theme;
+};
+
+export type TabScreenOptionsFn = (
+    props: TabScreenOptionsProps
+) => BottomTabNavigationOptions;
+
+export type StackOptionsProps = {
+    navigation: NativeStackNavigationProp<ParamListBase, string>;
+    route: RouteProp<ParamListBase, string>;
+}
+  
+export type StackOptionsFn = (props: StackOptionsProps) => NativeStackNavigationOptions

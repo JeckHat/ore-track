@@ -12,13 +12,13 @@ import {
 import { useDispatch, useSelector } from "react-redux"
 import dayjs from 'dayjs'
 
-import { CustomText, SkeletonLoader } from "@components"
+import { CustomText, HeaderButton, SkeletonLoader } from "@components"
 import Images from "@assets/images"
 import { RootState } from "@store/types"
 import { shortenAddress } from "@helpers"
-import { ChevronRightIcon, WalletIcon } from "@assets/icons"
+import { ChevronRightIcon, DataIcon, HardHatIcon, WalletIcon } from "@assets/icons"
 import { Colors } from "@styles"
-import { TabPoolScreenProps } from "@navigations/types"
+import { TabPoolScreenProps, TabScreenOptionsFn } from "@navigations/types"
 import { COAL_MINT, JUP_API_PRICE, ORE_MINT, POOL_LIST } from "@constants"
 import { poolActions } from "@store/actions"
 
@@ -335,7 +335,7 @@ export default function TabPoolScreen({ navigation }: TabPoolScreenProps) {
                             </View>
                             <View className="mt-2">
                                 <View className="flex-row items-center mb-1">
-                                    <WalletIcon height={12} width={12} color={Colors.primary} />
+                                    <HardHatIcon height={12} width={12} color={Colors.primary} />
                                     <CustomText className="text-primary ml-2 font-PlusJakartaSansSemiBold text-[12px]">
                                         {shortenAddress(walletAddress)}
                                     </CustomText>
@@ -461,4 +461,20 @@ export default function TabPoolScreen({ navigation }: TabPoolScreenProps) {
             />
         </SafeAreaView>
     )
+}
+
+export const screenOptions: TabScreenOptionsFn = ({ navigation }) => {
+    return {
+        headerTitle: 'Monitoring',
+        tabBarIcon({ color, size }) {
+            return <DataIcon width={size} height={size} color={color} />
+        },
+        headerRight: () => (
+            <HeaderButton
+                className="mx-3"
+                icon={<HardHatIcon width={24} height={24} color={Colors.primary}/>}
+                onPress={() => navigation.goBack() }
+            />
+        )
+    }
 }
