@@ -1,5 +1,8 @@
 import crypto from 'react-native-quick-crypto'
 import { derivePath } from 'ed25519-hd-key'
+import { PersistPartial } from 'redux-persist/es/persistReducer'
+
+import { RootState } from '@store/types'
 
 export async function mnemonicToSeedFast(mnemonic: string): Promise<Buffer> {
     const salt = "mnemonic";
@@ -48,4 +51,36 @@ export function bigIntToNumber(bn: bigint): number {
         throw new Error(`BigInt value ${bn} is too large to convert safely to a number.`);
     }
     return Number(bn);
+}
+
+export function calculatePoolRewardsFromState(poolId: string, state: Partial<RootState> & PersistPartial) {
+    const pool = state.pools?.byId[poolId];
+    const minerPools = state.minerPools?.byId;
+  
+    let runningCount = 0;
+    let rewardsOre = 0;
+    let rewardsCoal = 0;
+    let avgOre = 0;
+    let avgCoal = 0;
+  
+    if (!pool) return { runningCount, rewardsOre, rewardsCoal, avgOre, avgCoal };
+        
+    pool.minerPoolIds.forEach(minerPoolId => {
+        const minerPool = minerPools?.[minerPoolId]
+        if (!minerPool) return
+    
+        if (minerPool.running) runningCount++
+        rewardsOre += minerPool.rewardsOre || 0
+        rewardsCoal += minerPool.rewardsCoal || 0
+        avgOre += minerPool.avgRewards?.ore || 0
+        avgCoal += minerPool.avgRewards?.coal || 0
+    })
+  
+    return {
+        runningCount,
+        rewardsOre,
+        rewardsCoal,
+        avgOre,
+        avgCoal
+    }
 }

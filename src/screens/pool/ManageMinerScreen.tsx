@@ -10,7 +10,7 @@ import { RootState } from "@store/types"
 import { minerActions } from "@store/actions"
 
 export default function ManageMinerScreen({ navigation } : ManageMinerNavigationProps) {
-    const miners = useSelector((state: RootState) => state.miner.miners)
+    const miners = useSelector((state: RootState) => state.miners.byId)
     const dispatch = useDispatch()
 
     return (
@@ -22,7 +22,6 @@ export default function ManageMinerScreen({ navigation } : ManageMinerNavigation
                     textClassName="text-sm mb-[1px]"
                     title="Add Miner"
                     onPress={() => navigation.navigate('UpdateMiner')}
-                    // onPress={() => dispatch(minerActions.addMiner({ name: "Miner 1", address: "TESTING" }))}
                 />
             </View>
             <FlatList
@@ -41,10 +40,12 @@ export default function ManageMinerScreen({ navigation } : ManageMinerNavigation
                                 {shortenAddress(miners[item].address)}
                             </CustomText>
                         </View>
-                        {/* <View className="flex-1 mx-2">
-                            <CustomText className="text-primary font-PlusJakartaSans text-sm">Used Pools: 4</CustomText>
-                        </View> */}
-                        <OptionMenu
+                        <View className="flex-1 mx-2">
+                            <CustomText className="text-primary font-PlusJakartaSans text-sm">
+                                Used Pools: {miners[item].minerPoolIds.length}
+                            </CustomText>
+                        </View>
+                        {!miners[item].isMain && <OptionMenu
                             iconSize={20}
                             menu={[
                                 {
@@ -82,7 +83,7 @@ export default function ManageMinerScreen({ navigation } : ManageMinerNavigation
                                     }
                                 }
                             ]}
-                        />
+                        />}
                     </View>
                 )}
             />

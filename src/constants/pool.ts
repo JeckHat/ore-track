@@ -7,8 +7,8 @@ export interface PoolInfo {
     api: {
         base?: string
         getBalance?: (pubkey: string) => Promise<{
-            balanceOre: number,
-            balanceCoal: number,
+            rewardsOre: number,
+            rewardsCoal: number,
             lastClaimAt?: string | null,
             earnedOre?: number | null
         }>
@@ -26,8 +26,8 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                 const response = await fetch(`https://pool.ore.supply/member/${pubkey}`)
                 const res = await response.json()
                 return {
-                    balanceOre: res.total_balance / Math.pow(10, 11),
-                    balanceCoal: 0,
+                    rewardsOre: res.total_balance / Math.pow(10, 11),
+                    rewardsCoal: 0,
                     earnedOre: null,
                     lastClaimAt: null
                 }
@@ -44,8 +44,8 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                 const response = await fetch(`https://api.gpool.cloud/member/${pubkey}/balance`)
                 const res = await response.json()
                 return {
-                    balanceOre: (res.earned - res.claimed) / Math.pow(10, 11),
-                    balanceCoal: 0,
+                    rewardsOre: (res.earned - res.claimed) / Math.pow(10, 11),
+                    rewardsCoal: 0,
                     earnedOre: res.earned,
                     lastClaimAt: dayjs('1900-01-01').toISOString()
                 }
@@ -74,8 +74,8 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                 })
                 const resData = await response.json()
                 return {
-                    balanceOre: resData.ore,
-                    balanceCoal: resData.coal,
+                    rewardsOre: resData.ore,
+                    rewardsCoal: resData.coal,
                     earnedOre: null,
                     lastClaimAt: lastClaimAt
                 }
@@ -92,8 +92,8 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                 const response = await fetch(`https://ec1ipse.me/miner/rewards?pubkey=${pubkey}`)
                 const result = await response.text()
                 return {
-                    balanceOre: (Number(result) * Math.pow(10, 11)) / Math.pow(10, 11),
-                    balanceCoal: 0,
+                    rewardsOre: (Number(result) * Math.pow(10, 11)) / Math.pow(10, 11),
+                    rewardsCoal: 0,
                     earnedOre: null,
                     lastClaimAt: null
                 }

@@ -54,11 +54,11 @@ const Card: React.FC<CardProps & { onActive: (show: boolean) => void }> = memo((
 });
 
 export default function ManagePoolScreen() {
-    const { pools, order } = useSelector((state: RootState) => state.pool)
+    const { byId, order } = useSelector((state: RootState) => state.pools)
     const dispatch = useDispatch()
 
     const [data, setData] = React.useState(
-        order.map((id: string) => ({ id: id, pool: pools[id] }))
+        order.map((id: string) => ({ id: id, pool: byId[id] }))
     )
 
     const handleReorder = ({from, to}: ReorderableListReorderEvent) => {
@@ -81,8 +81,6 @@ export default function ManagePoolScreen() {
                         }}
                     />
                 )}
-                // IMPORTANT: Do not use the current index as key.
-                // Always use a stable and unique key for each item.
                 keyExtractor={item => item.id}
             />
         </SafeAreaView>

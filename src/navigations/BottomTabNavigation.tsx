@@ -5,7 +5,7 @@ import { Colors, Fonts } from "@styles"
 import { SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
 
 import TabWalletScreen from "@screens/wallet/TabWalletScreen"
-import TabPoolScreen, { screenOptions as tabPoolOptions } from "@screens/pool/TabPoolScreen"
+import TabMonitoringScreen, { screenOptions as tabMonitoringOptions } from "@screens/pool/TabMonitoringScreen"
 import TabStakeScreen from "@screens/stake/TabStakeScreen"
 import TabSettingScreen from "@screens/settings/TabSettingScreen"
 
@@ -55,9 +55,9 @@ export default function TabNavigation(props: TabNavigationProps) {
                 }}
             />
             <Tab.Screen
-                name="TabPool"
-                component={TabPoolScreen}
-                options={tabPoolOptions}
+                name="TabMonitoring"
+                component={TabMonitoringScreen}
+                options={tabMonitoringOptions}
             />
             <Tab.Screen
                 name="TabStake"

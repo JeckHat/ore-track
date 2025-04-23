@@ -1,16 +1,19 @@
 import React, { useState } from 'react'
 import { Image, SafeAreaView, View } from 'react-native'
 import { Keypair } from '@solana/web3.js'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { StartNavigationProps } from '@navigations/types'
 import { CustomText, CheckBox, Button, ModalButtonList, ModalImportAddress } from '@components'
 import Images from '@assets/images'
 import { useBottomModal } from '@hooks'
-import { saveCredentials, walletActions } from '@store/actions'
+import { minerActions, minerPoolActions, poolActions, saveCredentials, walletActions } from '@store/actions'
+import { nanoid } from 'nanoid'
+import { POOL_LIST } from '@constants'
 
 export default function StartScreen({ navigation }: StartNavigationProps) {
   const [checkedTerm, setCheckedTerm] = useState(false)
+  console.log("useSelector", useSelector(state => state))
 
   const { showModal, hideModal } = useBottomModal()
 
@@ -18,6 +21,32 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
 
   function onCreateWallet() {
     navigation.navigate('PrivateKey', { importWallet: false, title: "Recovery Phrase" })
+  }
+
+  function updateMinerRedux(address: string) {
+    let minerId = nanoid(12)
+    dispatch(minerActions.addMiner({
+      minerId: minerId,
+      name: 'Main Wallet',
+      address: address,
+      isMain: true
+    }))
+    Object.keys(POOL_LIST).forEach(poolId => {
+      let minerPoolId = `${poolId}-${minerId}`
+      dispatch(poolActions.joinMinerToPool({
+        poolId: poolId,
+        minerPoolId: minerPoolId
+      }))
+      dispatch(minerPoolActions.joinMinerToPool({
+        minerPoolId: minerPoolId,
+        minerId: minerId,
+        poolId: poolId
+      }))
+      dispatch(minerActions.joinMinerToPool({
+        minerId: minerId,
+        minerPoolId: minerPoolId
+      }))
+    })
   }
 
   function onImportWallet() {
@@ -29,12 +58,13 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
             onPress: () => {
               showModal(
                 <ModalImportAddress
-                  onImport={(text) => {
+                  onImport={(address) => {
                     dispatch(walletActions.setWallet({
-                      address: text,
+                      address: address,
                       useMnemonic: false,
                       usePrivateKey: false
                     }))
+                    updateMinerRedux(address)
                     hideModal()
                     navigation.replace('BottomTab')
                   }}
@@ -54,6 +84,7 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
                     useMnemonic: true,
                     usePrivateKey: true
                   }))
+                  updateMinerRedux(keypair.publicKey?.toBase58())
                 },
                 onNext: (navigation) => {
                   navigation.replace('BottomTab')
@@ -74,6 +105,7 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
                     useMnemonic: false,
                     usePrivateKey: true
                   }))
+                  updateMinerRedux(keypair.publicKey?.toBase58())
                 },
                 onNext: (navigation) => {
                   navigation.replace('BottomTab')

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Pressable, SafeAreaView, View } from "react-native"
 import { useDispatch } from "react-redux"
 import { Keypair } from "@solana/web3.js"
+import { nanoid } from "nanoid"
 
 import { ChevronLeftIcon } from "@assets/icons"
 import { Button, CustomText, HeaderButton, Input, ModalButtonList, ModalImportAddress } from "@components"
@@ -99,15 +100,18 @@ export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigation
             </View>
             <Button
                 containerClassName="mb-2"
-                title="Add Miner"
+                title={"Add Miner"}
                 disabled={!address || !name}
                 onPress={async () => {
                     if(keypair) {
                         await saveCredentialsMiner(address, keypair, mnemonic)
                     }
+                    let minerId = nanoid(12)
                     dispatch(minerActions.addMiner({
+                        minerId: minerId,
                         name: name,
-                        address: address
+                        address: address,
+                        isMain: false
                     }))
                     navigation.goBack()
                 }}

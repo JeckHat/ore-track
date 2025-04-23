@@ -18,6 +18,7 @@ import TokenScreen from "@screens/wallet/TokenScreen"
 import ManagePoolScreen, { screenOptions as managePoolOptions } from "@screens/pool/ManagePoolScreen"
 import ManageMinerScreen, { screenOptions as manageMinerOptions } from "@screens/pool/ManageMinerScreen"
 import UpdateMinerScreen, { screenOptions as updateMinerOptions } from "@screens/pool/UpdateMinerScreen"
+import PoolDetailScreen, { screenOptions as poolDetailOptions } from "@screens/pool/PoolDetailScreen"
 
 const NativeStack = createNativeStackNavigator()
 
@@ -55,6 +56,11 @@ export default function MainNavigation() {
                 name="UpdateMiner"
                 component={UpdateMinerScreen}
                 options={updateMinerOptions}
+            />
+            <NativeStack.Screen
+                name="PoolDetail"
+                component={PoolDetailScreen}
+                options={poolDetailOptions}
             />
             <NativeStack.Screen
                 name="DepositStake"

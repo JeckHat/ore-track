@@ -18,7 +18,7 @@ export type MainStackParamList = {
     Receive: { walletAddress?: string } | undefined
     ManagePool: {} | undefined
     ManageMiner: {} | undefined
-    Pool: {} | undefined
+    PoolDetail: { poolId?: string } | undefined
     UpdateMiner: {} | undefined
     DepositStake: { boost?: string } | undefined
     WithdrawStake: { boost?: string } | undefined
@@ -27,7 +27,7 @@ export type MainStackParamList = {
 
 type NavigationTabsParamList = {
     TabWallet: {} | undefined
-    TabPool: {} | undefined
+    TabMonitoring: {} | undefined
     TabMine: {} | undefined
     TabStake: {} | undefined
     TabSetting: {} | undefined
@@ -53,9 +53,9 @@ export type TabWalletScreenProps = {
     route: RouteProp<NavigationTabsParamList, 'TabWallet'>
 }
 
-export type TabPoolScreenProps = {
-    navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabPool'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
-    route: RouteProp<NavigationTabsParamList, 'TabPool'>
+export type TabMonitoringScreenProps = {
+    navigation: CompositeNavigationProp<BottomTabNavigationProp<NavigationTabsParamList, 'TabMonitoring'>, NativeStackNavigationProp<MainStackParamList, 'BottomTab'>>
+    route: RouteProp<NavigationTabsParamList, 'TabMonitoring'>
 }
 
 export type TabMineScreenProps = {
@@ -94,8 +94,8 @@ export type ManageMinerNavigationProps = {
 }
 
 export type PoolNavigationProps = {
-    navigation: NativeStackNavigationProp<MainStackParamList, 'Pool'>
-    route: RouteProp<MainStackParamList, 'Pool'>
+    navigation: NativeStackNavigationProp<MainStackParamList, 'PoolDetail'>
+    route: RouteProp<MainStackParamList, 'PoolDetail'>
 }
 
 export type UpdateMinerNavigationProps = {

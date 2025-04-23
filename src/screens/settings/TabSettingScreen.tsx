@@ -7,7 +7,7 @@ import OreTrackInfo from "@modules/OreTrackInfo"
 import { ChevronRightIcon } from "@assets/icons"
 import { Button, CustomText } from "@components"
 import { MainStackParamList, TabSettingScreenProps } from "@navigations/types"
-import { boostActions, deleteCredentials, getMnemonic, poolActions, walletActions } from "@store/actions"
+import { boostActions, deleteCredentials, getMnemonic, minerActions, minerPoolActions, poolActions, walletActions } from "@store/actions"
 import { Colors } from "@styles"
 import { store } from "@store/index"
 import { RootState } from "@store/types"
@@ -122,6 +122,8 @@ export default function TabSettingScreen({ navigation }: TabSettingScreenProps) 
                         store.dispatch(walletActions.clearWallet())
                         store.dispatch(boostActions.resetBoosts())
                         store.dispatch(poolActions.resetPool())
+                        store.dispatch(minerActions.resetMiner())
+                        store.dispatch(minerPoolActions.resetMinerPool())
                         await deleteCredentials()
                     }}
                 />

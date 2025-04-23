@@ -1,14 +1,15 @@
 import { ReactElement } from 'react'
-import dayjs from 'dayjs'
+
 import { Boost, BoostConfig, Proof, Stake } from '@models'
 
 export interface RootState {
     ui: UiState
     wallet: WalletState
     config: ConfigState
-    pool: PoolState
     boost: BoostState
-    miner: MinerState
+    pools: PoolState
+    miners: MinerState
+    minerPools: MinerPoolState
 }
 
 export interface UiState {
@@ -29,16 +30,6 @@ export interface WalletState {
 
 export interface ConfigState {
     rpcUrl?: string | null
-}
-
-export interface StakeInfo {
-    stakeAddress?: string
-    proofAddress?: string
-    lastClaimAt: dayjs.Dayjs
-    lastDepositAt: dayjs.Dayjs
-    lastWithdrawAt: dayjs.Dayjs
-    decimals?: number
-    rewards: number
 }
 
 export interface BoostType {
@@ -63,40 +54,56 @@ export interface BoostState {
 }
 
 export interface MinerType {
+    id: string
     name: string
     address: string
-    pools: string[]
+    isMain: boolean
+    minerPoolIds: string[]
 }
 
-// export interface PoolMinerInfo extends MinerInfo {
-//     rewards?: number | null
-//     hashRate?: string | null
-//     claimAt?: string | null
-// }
-
 export interface MinerState {
-    miners: Record<string, MinerType>
+    byId: Record<string, MinerType>
+    order: string[]
 }
 
 export interface PoolType {
-    walletAddress?: string | null
-    balanceOre: number
-    balanceCoal: number
-    running: boolean
+    id: string
+    name: string
+    isCoal: boolean
+    rewardsOre: number
+    rewardsCoal: number
+    avgOre: number
+    avgCoal: number
+    totalRunning: number
+    show: boolean
+    minerPoolIds: string[]
+}
+
+export interface PoolState {
+    byId: Record<string, PoolType>
+    order: string[]
+}
+
+export interface MinerPoolType {
+    id: string
+    minerId: string
+    poolId: string
+    rewardsOre: number
+    rewardsCoal: number
     avgRewards: {
         ore: number
         coal: number
-        startOre: number
-        startCoal: number
-    },
-    earnedOre?: number
-    show: boolean
+        initOre: number
+        initCoal: number
+    }
+    earnedOre: number
+    running: boolean
     startMiningAt?: string | null
     lastUpdateAt: string
     lastClaimAt: string
 }
 
-export interface PoolState {
-    pools: Record<string, PoolType>,
+export interface MinerPoolState {
+    byId: Record<string, MinerPoolType>
     order: string[]
 }
