@@ -9,13 +9,11 @@ import {
     View
 } from "react-native"
 import { useDispatch, useSelector } from "react-redux"
-import dayjs from 'dayjs'
-import { PersistPartial } from "redux-persist/lib/persistReducer"
 
 import { CustomText, HeaderButton, SkeletonLoader } from "@components"
 import Images from "@assets/images"
 import { RootState } from "@store/types"
-import { calculatePoolRewardsFromState, shortenAddress } from "@helpers"
+import { calculatePoolRewards, calculatePoolRewardsFromState, shortenAddress } from "@helpers"
 import { ChevronRightIcon, DataIcon, HardHatIcon, WalletIcon } from "@assets/icons"
 import { Colors } from "@styles"
 import { TabMonitoringScreenProps, TabScreenOptionsFn } from "@navigations/types"
@@ -110,7 +108,8 @@ export default function TabMonitoringScreen({ navigation }: TabMonitoringScreenP
             if (result.status === 'fulfilled') {
                 const { storageData, prevData } = calculatePoolRewards(
                     minerPoolList[idx].minerPoolId,
-                    result.value
+                    result.value,
+                    minerPools
                 )
 
                 dispatch(minerPoolActions.updateBalanceMiner({
@@ -157,74 +156,6 @@ export default function TabMonitoringScreen({ navigation }: TabMonitoringScreenP
         } catch(error) {
             console.log("error", error)
         }
-    }
-
-    function calculatePoolRewards(minerPoolId: string, result: {
-        rewardsOre: number;
-        rewardsCoal: number;
-        lastClaimAt?: string | null;
-        earnedOre?: number | null;
-    } | undefined) {
-        let balanceNow = result
-        let dateNow = dayjs()
-        let prevData = minerPools[minerPoolId] ?? {}
-        let storageData = { ...prevData }
-        let lastClaimAt = balanceNow?.lastClaimAt ?? storageData.lastClaimAt
-        let earnedOre = balanceNow?.earnedOre ?? 0
-
-        if ((balanceNow?.rewardsOre ?? 0) > storageData.rewardsOre) {
-            storageData = {
-                ...storageData,
-                ...balanceNow,
-                running: true,
-                lastUpdateAt: dateNow.toISOString(),
-                startMiningAt: dateNow.toISOString(),
-                avgRewards: {
-                    ...storageData.avgRewards,
-                    initOre: balanceNow?.rewardsOre ?? 0,
-                    initCoal: balanceNow?.rewardsCoal ?? 0
-                },
-                earnedOre: earnedOre,
-                lastClaimAt: lastClaimAt
-            }
-        } else {
-            if (lastClaimAt >= storageData.lastUpdateAt || earnedOre > (storageData.earnedOre ?? 0)) {
-                storageData = {
-                    ...storageData,
-                    ...balanceNow,
-                    lastUpdateAt: dateNow.toISOString(),
-                    startMiningAt: dateNow.toISOString(),
-                    avgRewards: {
-                        ...storageData.avgRewards,
-                        ore: 0,
-                        coal: 0,
-                        initOre: balanceNow?.rewardsOre ?? 0,
-                        initCoal: balanceNow?.rewardsCoal ?? 0
-                    },
-                    earnedOre: earnedOre,
-                    lastClaimAt: lastClaimAt
-                }
-            } else {
-                if (dateNow.diff(dayjs(storageData.lastUpdateAt), "minute") >= 2) {
-                    storageData = {
-                        ...storageData,
-                        ...balanceNow,
-                        running: false,
-                        lastUpdateAt: dateNow.toISOString(),
-                        avgRewards: {
-                            ...storageData.avgRewards,
-                            ore: 0,
-                            coal: 0,
-                            initOre: balanceNow?.rewardsOre ?? 0,
-                            initCoal: balanceNow?.rewardsCoal ?? 0
-                        },
-                        earnedOre: earnedOre,
-                        lastClaimAt: lastClaimAt
-                    }
-                }
-            }
-        }
-        return { storageData, prevData }
     }
    
     return (

@@ -1,8 +1,9 @@
 import crypto from 'react-native-quick-crypto'
 import { derivePath } from 'ed25519-hd-key'
 import { PersistPartial } from 'redux-persist/es/persistReducer'
+import dayjs from 'dayjs'
 
-import { RootState } from '@store/types'
+import { MinerPoolType, RootState } from '@store/types'
 
 export async function mnemonicToSeedFast(mnemonic: string): Promise<Buffer> {
     const salt = "mnemonic";
@@ -51,6 +52,74 @@ export function bigIntToNumber(bn: bigint): number {
         throw new Error(`BigInt value ${bn} is too large to convert safely to a number.`);
     }
     return Number(bn);
+}
+
+export function calculatePoolRewards(minerPoolId: string, result: {
+    rewardsOre: number;
+    rewardsCoal: number;
+    lastClaimAt?: string | null;
+    earnedOre?: number | null;
+} | undefined, minerPools: Record<string, MinerPoolType>) {
+    let balanceNow = result
+    let dateNow = dayjs()
+    let prevData = minerPools[minerPoolId] ?? {}
+    let storageData = { ...prevData }
+    let lastClaimAt = balanceNow?.lastClaimAt ?? storageData.lastClaimAt
+    let earnedOre = balanceNow?.earnedOre ?? 0
+
+    if ((balanceNow?.rewardsOre ?? 0) > storageData.rewardsOre) {
+        storageData = {
+            ...storageData,
+            ...balanceNow,
+            running: true,
+            lastUpdateAt: dateNow.toISOString(),
+            startMiningAt: dateNow.toISOString(),
+            avgRewards: {
+                ...storageData.avgRewards,
+                initOre: balanceNow?.rewardsOre ?? 0,
+                initCoal: balanceNow?.rewardsCoal ?? 0
+            },
+            earnedOre: earnedOre,
+            lastClaimAt: lastClaimAt
+        }
+    } else {
+        if (lastClaimAt >= storageData.lastUpdateAt || earnedOre > (storageData.earnedOre ?? 0)) {
+            storageData = {
+                ...storageData,
+                ...balanceNow,
+                lastUpdateAt: dateNow.toISOString(),
+                startMiningAt: dateNow.toISOString(),
+                avgRewards: {
+                    ...storageData.avgRewards,
+                    ore: 0,
+                    coal: 0,
+                    initOre: balanceNow?.rewardsOre ?? 0,
+                    initCoal: balanceNow?.rewardsCoal ?? 0
+                },
+                earnedOre: earnedOre,
+                lastClaimAt: lastClaimAt
+            }
+        } else {
+            if (dateNow.diff(dayjs(storageData.lastUpdateAt), "minute") >= 2) {
+                storageData = {
+                    ...storageData,
+                    ...balanceNow,
+                    running: false,
+                    lastUpdateAt: dateNow.toISOString(),
+                    avgRewards: {
+                        ...storageData.avgRewards,
+                        ore: 0,
+                        coal: 0,
+                        initOre: balanceNow?.rewardsOre ?? 0,
+                        initCoal: balanceNow?.rewardsCoal ?? 0
+                    },
+                    earnedOre: earnedOre,
+                    lastClaimAt: lastClaimAt
+                }
+            }
+        }
+    }
+    return { storageData, prevData }
 }
 
 export function calculatePoolRewardsFromState(poolId: string, state: Partial<RootState> & PersistPartial) {
