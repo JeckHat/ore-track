@@ -15,7 +15,7 @@ import { PersistPartial } from "redux-persist/lib/persistReducer"
 import { CustomText, HeaderButton, SkeletonLoader } from "@components"
 import Images from "@assets/images"
 import { RootState } from "@store/types"
-import { shortenAddress } from "@helpers"
+import { calculatePoolRewardsFromState, shortenAddress } from "@helpers"
 import { ChevronRightIcon, DataIcon, HardHatIcon, WalletIcon } from "@assets/icons"
 import { Colors } from "@styles"
 import { TabMonitoringScreenProps, TabScreenOptionsFn } from "@navigations/types"
@@ -23,7 +23,7 @@ import { COAL_MINT, JUP_API_PRICE, ORE_MINT, POOL_LIST } from "@constants"
 import { minerPoolActions, poolActions } from "@store/actions"
 import { store } from "@store/index";
 
-export default function TabPoolScreen({ navigation }: TabMonitoringScreenProps) {
+export default function TabMonitoringScreen({ navigation }: TabMonitoringScreenProps) {
     const walletAddress = useSelector((state: RootState) => state.wallet.publicKey) ?? ""
     const miners = useSelector((state: RootState) => state.miners.byId)
     const pools = useSelector((state: RootState) => state.pools.byId)
@@ -83,38 +83,6 @@ export default function TabPoolScreen({ navigation }: TabMonitoringScreenProps) 
         }
     }
 
-    function calculatePoolStatsFromState(poolId: string, state: Partial<RootState> & PersistPartial) {
-        const pool = state.pools?.byId[poolId];
-        const minerPools = state.minerPools?.byId;
-      
-        let runningCount = 0;
-        let rewardsOre = 0;
-        let rewardsCoal = 0;
-        let avgOre = 0;
-        let avgCoal = 0;
-      
-        if (!pool) return { runningCount, rewardsOre, rewardsCoal, avgOre, avgCoal };
-            
-        pool.minerPoolIds.forEach(minerPoolId => {
-            const minerPool = minerPools?.[minerPoolId]
-            if (!minerPool) return
-        
-            if (minerPool.running) runningCount++
-            rewardsOre += minerPool.rewardsOre || 0
-            rewardsCoal += minerPool.rewardsCoal || 0
-            avgOre += minerPool.avgRewards?.ore || 0
-            avgCoal += minerPool.avgRewards?.coal || 0
-        })
-      
-        return {
-            runningCount,
-            rewardsOre,
-            rewardsCoal,
-            avgOre,
-            avgCoal
-        }
-    }
-
     async function loadPoolsBalance() {
         const poolList = Object.keys(POOL_LIST)
             .filter(filterId => POOL_LIST[filterId].api.getBalance && pools[filterId].show !== false)
@@ -158,7 +126,7 @@ export default function TabPoolScreen({ navigation }: TabMonitoringScreenProps) 
         const finalState = store.getState();
 
         await Promise.all(poolList.map(pool => {
-            const stats = calculatePoolStatsFromState(pool.poolId, finalState);
+            const stats = calculatePoolRewardsFromState(pool.poolId, finalState);
             dispatch(poolActions.updateBalance({
                 poolId: pool.poolId,
                 totalRunning: stats.runningCount,
