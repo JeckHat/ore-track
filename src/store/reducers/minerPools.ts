@@ -24,7 +24,6 @@ function calculateAvgRewards(miner: MinerPoolType, updateMiner: MinerPoolType) {
     let rewardsCoal = updateMiner.rewardsCoal - miner.avgRewards.initCoal
     rewardsOre = (rewardsOre / divided) * 60 * 24
     rewardsCoal = (rewardsCoal / divided) * 60 * 24
-    console.log("rewardsOre", rewardsOre)
     return {
         ...miner.avgRewards,
         ore: rewardsOre,
@@ -56,6 +55,11 @@ const minerPoolSlice = createSlice({
                 lastClaimAt: dayjs('1900-01-01').toISOString(),
             }
             state.order = order
+        },
+        removeMinerPool(state, action: PayloadAction<{ minerPoolId: string }>) {
+            const { minerPoolId } = action.payload
+            delete state.byId[minerPoolId]
+            state.order = state.order.filter(id => id != minerPoolId)
         },
         updateBalanceMiner(state, action: PayloadAction<{ minerPoolId: string, minerPool: MinerPoolType }>) {
             const { minerPoolId, minerPool } = action.payload

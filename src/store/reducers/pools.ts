@@ -32,6 +32,10 @@ const poolSlice = createSlice({
                 minerPoolIds: minerPoolIds
             }
         },
+        removeMinerFromPool(state, action: PayloadAction<{ poolId: string, minerPoolId: string }>) {
+            const { minerPoolId, poolId } = action.payload
+            state.byId[poolId].minerPoolIds = state.byId[poolId].minerPoolIds.filter(id => id !== minerPoolId)
+        },
         updateBalance(state, action: PayloadAction<{
             poolId: string, totalRunning: number, avgOre: number, avgCoal: number, rewardsOre: number, rewardsCoal: number
         }>) {
@@ -45,45 +49,6 @@ const poolSlice = createSlice({
                 rewardsCoal: rewardsCoal
             }
         },
-        // updatePool(state, action: PayloadAction<{ id: string, pool: PoolType }>) {
-        //     const { id, pool } = action.payload
-        //     let startMiningAt = state.pools[id].startMiningAt
-        //     let avgRewards = {
-        //         ore: 0,
-        //         coal: 0,
-        //         startOre: pool.balanceOre ?? 0,
-        //         startCoal: pool.balanceCoal ?? 0
-        //     }
-
-        //     if (!state.pools[id].running && pool.running) {
-        //         startMiningAt = pool.startMiningAt
-        //         avgRewards = {
-        //             ore: 0,
-        //             coal: 0,
-        //             startOre: pool.balanceOre,
-        //             startCoal: pool.balanceCoal,
-        //         }
-        //     } else if (state.pools[id].running && pool.running) {
-        //         startMiningAt = startMiningAt ?? pool.startMiningAt
-        //         avgRewards = calculateAvgRewards(state.pools[id], pool)
-        //     } else {
-        //         startMiningAt = startMiningAt ?? pool.startMiningAt
-        //         avgRewards = {
-        //             ore: 0,
-        //             coal: 0,
-        //             startOre: pool.balanceOre,
-        //             startCoal: pool.balanceCoal,
-        //         }
-        //     }
-
-        //     state.pools[id] = {
-        //         ...state.pools[id],
-        //         ...pool,
-        //         show: state.pools[id].show,
-        //         startMiningAt: startMiningAt,
-        //         avgRewards: avgRewards
-        //     }
-        // },
         reorderPools: (state, action: PayloadAction<string[]>) => {
             state.order = action.payload;
         },
