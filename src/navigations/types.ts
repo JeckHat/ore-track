@@ -1,6 +1,6 @@
 import { BottomTabNavigationOptions, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RouteProp, CompositeNavigationProp, ParamListBase, Theme } from '@react-navigation/native';
-import { NativeStackNavigationOptions, NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NativeStackNavigationOptions, NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Keypair } from '@solana/web3.js';
 
 export type MainStackParamList = {
@@ -93,7 +93,7 @@ export type ManageMinerNavigationProps = {
     route: RouteProp<MainStackParamList, 'ManageMiner'>
 }
 
-export type PoolNavigationProps = {
+export type PoolDetailNavigationProps = {
     navigation: NativeStackNavigationProp<MainStackParamList, 'PoolDetail'>
     route: RouteProp<MainStackParamList, 'PoolDetail'>
 }
@@ -134,3 +134,21 @@ export type StackOptionsProps = {
 }
   
 export type StackOptionsFn = (props: StackOptionsProps) => NativeStackNavigationOptions
+
+export function createStackOptions<
+    RouteName extends keyof MainStackParamList
+>(
+    fn: (
+        props: NativeStackScreenProps<MainStackParamList, RouteName> & { theme: Theme }
+    ) => NativeStackNavigationOptions
+) {
+    return fn as unknown as ({
+        route,
+        navigation,
+        theme,
+    }: {
+        route: RouteProp<ParamListBase, string>;
+        navigation: NativeStackNavigationProp<ParamListBase, string>;
+        theme: Theme;
+    }) => NativeStackNavigationOptions;
+}

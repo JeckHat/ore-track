@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
-    Dimensions,
     FlatList,
     Image,
     RefreshControl,
@@ -10,7 +9,6 @@ import {
 } from "react-native"
 import { useDispatch, useSelector } from "react-redux"
 import dayjs from 'dayjs'
-import { NativeStackNavigationOptions } from "@react-navigation/native-stack"
 
 import { Button, CustomText, HeaderButton, ModalSelectMiner, OptionMenu, SkeletonLoader } from "@components"
 import Images from "@assets/images"
@@ -18,7 +16,7 @@ import { RootState } from "@store/types"
 import { calculatePoolRewardsFromState, shortenAddress } from "@helpers"
 import { ChevronLeftIcon, ChevronRightIcon, HardHatIcon, WalletIcon } from "@assets/icons"
 import { Colors, Fonts } from "@styles"
-import { PoolNavigationProps } from "@navigations/types"
+import { createStackOptions, PoolDetailNavigationProps } from "@navigations/types"
 import { COAL_MINT, JUP_API_PRICE, ORE_MINT, POOL_LIST } from "@constants"
 import { minerPoolActions, poolActions, uiActions } from "@store/actions"
 import { store } from "@store/index"
@@ -27,7 +25,7 @@ import { useBottomModal } from "@hooks"
 
 const useAppDispatch = () => useDispatch<typeof store.dispatch>()
 
-export default function PoolDetailScreen({ route }: PoolNavigationProps) {
+export default function PoolDetailScreen({ route }: PoolDetailNavigationProps) {
     const walletAddress = useSelector((state: RootState) => state.wallet.publicKey) ?? ""
     const pool = useSelector((state: RootState) => state.pools.byId[route.params?.poolId ?? ""])
     const miners = useSelector((state: RootState) => state.miners.byId)
@@ -445,8 +443,8 @@ export default function PoolDetailScreen({ route }: PoolNavigationProps) {
     )
 }
 
-type StackOptionsFn = (props: PoolNavigationProps) => NativeStackNavigationOptions
-export const screenOptions: StackOptionsFn = ({ navigation, route }) => {
+
+export const screenOptions = createStackOptions<'PoolDetail'>(({ navigation, route }) => {
     const pool = store.getState().pools?.byId[route?.params?.poolId ?? ""]
     return {
         headerTitle: `Pool ${pool?.name}`,
@@ -465,4 +463,4 @@ export const screenOptions: StackOptionsFn = ({ navigation, route }) => {
             />
         )
     }
-}
+})
