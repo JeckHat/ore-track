@@ -42,6 +42,11 @@ const MinerSlice = createSlice({
                 }
             }
         },
+        deleteMiner(state, action: PayloadAction<{ minerId: string }>) {
+            const { minerId } = action.payload
+            delete state.byId[minerId]
+            state.order = state.order.filter(id => id != minerId)
+        },
         joinMinerToPool(state, action: PayloadAction<{ minerId: string, minerPoolId: string}>) {
             const { minerId, minerPoolId } = action.payload
             let minerPoolIds = state.byId[minerId].minerPoolIds

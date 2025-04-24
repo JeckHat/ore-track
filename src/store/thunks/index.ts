@@ -40,3 +40,17 @@ export function removeMinerFromPool({ minerId, poolId }: { minerId: string, pool
         }))
     }
 }
+
+export function removeMiner({ minerId }: { minerId: string }) {
+    return async (dispatch: AppDispatch, getState: () => RootState) => {
+        const miner = getState().miners?.byId[minerId]
+        const minerPools = getState().minerPools?.byId
+        miner?.minerPoolIds.forEach(minerPoolId => {
+            dispatch(removeMinerFromPool({
+                minerId: minerPools?.[minerPoolId].minerId ?? "",
+                poolId: minerPools?.[minerPoolId].poolId ?? "",
+            }))
+        })
+        dispatch(minerActions.deleteMiner({ minerId: minerId }))
+    }
+}

@@ -7,11 +7,14 @@ import { ManageMinerNavigationProps, StackOptionsFn } from "@navigations/types"
 import { Colors, Fonts } from "@styles"
 import { shortenAddress } from "@helpers"
 import { RootState } from "@store/types"
-import { minerActions } from "@store/actions"
+import { removeMiner } from "@store/thunks"
+import { store } from "@store/index"
+
+const useAppDispatch = () => useDispatch<typeof store.dispatch>()
 
 export default function ManageMinerScreen({ navigation } : ManageMinerNavigationProps) {
     const miners = useSelector((state: RootState) => state.miners.byId)
-    const dispatch = useDispatch()
+    const dispatch = useAppDispatch()
 
     return (
         <SafeAreaView className='flex-1 bg-baseBg'>
@@ -80,7 +83,7 @@ export default function ManageMinerScreen({ navigation } : ManageMinerNavigation
                                 {
                                     text: 'Delete',
                                     onPress: () => {
-                                        dispatch(minerActions.resetMiner())
+                                        dispatch(removeMiner({ minerId: miners[item].id }))
                                     }
                                 }
                             ]}

@@ -9,7 +9,7 @@ import Images from '@assets/images'
 import { useBottomModal } from '@hooks'
 import { minerActions, minerPoolActions, poolActions, saveCredentials, walletActions } from '@store/actions'
 import { nanoid } from 'nanoid'
-import { POOL_LIST } from '@constants'
+import { GENERATE_ID_NUMBER, POOL_LIST } from '@constants'
 
 export default function StartScreen({ navigation }: StartNavigationProps) {
   const [checkedTerm, setCheckedTerm] = useState(false)
@@ -24,7 +24,7 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
   }
 
   function updateMinerRedux(address: string) {
-    let minerId = nanoid(12)
+    let minerId = nanoid(GENERATE_ID_NUMBER)
     dispatch(minerActions.addMiner({
       minerId: minerId,
       name: 'Main Wallet',

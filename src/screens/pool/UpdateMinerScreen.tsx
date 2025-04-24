@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { Pressable, SafeAreaView, View } from "react-native"
-import { useDispatch } from "react-redux"
+import { Alert, Pressable, SafeAreaView, View } from "react-native"
+import { useDispatch, useSelector } from "react-redux"
 import { Keypair } from "@solana/web3.js"
 import { nanoid } from "nanoid"
 
@@ -10,6 +10,8 @@ import { StackOptionsFn, UpdateMinerNavigationProps } from "@navigations/types"
 import { Colors, Fonts } from "@styles"
 import { minerActions, saveCredentialsMiner } from "@store/actions"
 import { useBottomModal } from "@hooks"
+import { RootState } from "@store/types"
+import { GENERATE_ID_NUMBER } from "@constants"
 
 export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigationProps) {
     const [name, setName] = useState("")
@@ -17,6 +19,7 @@ export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigation
     const [keypair, setKeypair] = useState<Keypair | null>()
     const [mnemonic, setMnenomic] = useState<string | undefined>()
     const dispatch = useDispatch()
+    const minersById = useSelector((state: RootState) => state.miners.byId)
 
     const { showModal, hideModal } = useBottomModal()
 
@@ -103,10 +106,15 @@ export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigation
                 title={"Add Miner"}
                 disabled={!address || !name}
                 onPress={async () => {
+                    const miners = Object.keys(minersById).map(key => minersById[key].address)
+                    if (miners.includes(address)) {
+                        Alert.alert("This address is already in the data miner")
+                        return;
+                    }
                     if(keypair) {
                         await saveCredentialsMiner(address, keypair, mnemonic)
                     }
-                    let minerId = nanoid(12)
+                    let minerId = nanoid(GENERATE_ID_NUMBER)
                     dispatch(minerActions.addMiner({
                         minerId: minerId,
                         name: name,

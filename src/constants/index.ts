@@ -34,6 +34,7 @@ export const KAMINO_API = "https://api.kamino.finance/strategies/"
 
 export const BOOST_DENOMINATOR = 1000
 export const COMPUTE_UNIT_LIMIT = 500000
+export const GENERATE_ID_NUMBER = 12
 
 export * from './token'
 export * from './pool'
