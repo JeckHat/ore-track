@@ -36,7 +36,7 @@ export default function ManageMinerScreen({ navigation } : ManageMinerNavigation
                             <CustomText className="text-primary font-PlusJakartaSansSemiBold leading-none mb-1">
                                 {miners[item].name}
                             </CustomText>
-                            <CustomText className="text-primary font-PlusJakartaSans leading-none">
+                            <CustomText className="text-primary font-PlusJakartaSans">
                                 {shortenAddress(miners[item].address)}
                             </CustomText>
                         </View>
@@ -45,6 +45,7 @@ export default function ManageMinerScreen({ navigation } : ManageMinerNavigation
                                 Used Pools: {miners[item].minerPoolIds.length}
                             </CustomText>
                         </View>
+                        {miners[item].isMain && <View className="w-5"/>}
                         {!miners[item].isMain && <OptionMenu
                             iconSize={20}
                             menu={[
