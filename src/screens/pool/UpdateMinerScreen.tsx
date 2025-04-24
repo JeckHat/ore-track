@@ -1,11 +1,11 @@
-import { useState } from "react"
-import { Alert, Pressable, SafeAreaView, View } from "react-native"
+import { useRef, useState } from "react"
+import { Alert, Pressable, TextInput, View } from "react-native"
 import { useDispatch, useSelector } from "react-redux"
 import { Keypair } from "@solana/web3.js"
 import { nanoid } from "nanoid"
 
 import { ChevronLeftIcon } from "@assets/icons"
-import { Button, CustomText, HeaderButton, Input, ModalButtonList, ModalImportAddress } from "@components"
+import { Button, CustomText, HeaderButton, Input, KeyboardDismissPressable, ModalButtonList, ModalImportAddress } from "@components"
 import { StackOptionsFn, UpdateMinerNavigationProps } from "@navigations/types"
 import { Colors, Fonts } from "@styles"
 import { minerActions, saveCredentialsMiner } from "@store/actions"
@@ -21,14 +21,76 @@ export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigation
     const dispatch = useDispatch()
     const minersById = useSelector((state: RootState) => state.miners.byId)
 
+    const inputRef = useRef<TextInput | null>(null);
+
     const { showModal, hideModal } = useBottomModal()
 
+    function onSelectAddress() {
+        inputRef.current?.blur()
+        showModal(
+            <ModalButtonList
+                buttons={[
+                    {
+                        text: 'Wallet Address',
+                        onPress: () => {
+                            showModal(
+                                <ModalImportAddress
+                                    onImport={(text) => {
+                                        setAddress(text)
+                                        setMnenomic(undefined)
+                                        setKeypair(null)
+                                        hideModal()
+                                    }}
+                                />
+                            )
+                        }
+                    },
+                    {
+                        text: 'Recovery Phrase',
+                        onPress: () => {
+                            navigation.navigate('PrivateKey', {
+                                importWallet: true, title: "Recovery Phrase", isSeedPhrase: true,
+                                onSubmit: async (keypair: Keypair, words?: string) => {
+                                    setKeypair(keypair)
+                                    setMnenomic(words)
+                                    setAddress(keypair.publicKey.toBase58()) 
+                                },
+                                onNext: (navData) => {
+                                    navData.goBack()
+                                }
+                            })
+                            hideModal()
+                        }
+                    },
+                    {
+                        text: 'Private Key',
+                        onPress: () => {
+                            navigation.navigate('PrivateKey', {
+                                importWallet: true, title: "Private Key", isSeedPhrase: false,
+                                onSubmit: async (keypair: Keypair) => {
+                                    setKeypair(keypair)
+                                    setMnenomic(undefined)
+                                    setAddress(keypair.publicKey.toBase58()) 
+                                },
+                                onNext: (navData) => {
+                                    navData.goBack()
+                                }
+                            })
+                            hideModal()
+                        }
+                    }
+                ]}
+            />
+        )
+    }
+
     return (
-        <SafeAreaView className='flex-1 bg-baseBg'>
+        <KeyboardDismissPressable className='flex-1 bg-baseBg'>
             <View className="flex-1">
                 <View className="my-2 mx-4">
                     <CustomText className="text-primary">Name</CustomText>
                     <Input
+                        ref={inputRef}
                         className="text-primary"
                         value={name}
                         onChangeText={setName}
@@ -37,63 +99,7 @@ export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigation
                 <View className="my-2 mx-4">
                     <CustomText className="text-primary">Wallet Address</CustomText>
                     <Pressable
-                        onPress={() => {
-                            showModal(
-                                <ModalButtonList
-                                    buttons={[
-                                        {
-                                            text: 'Wallet Address',
-                                            onPress: () => {
-                                                showModal(
-                                                    <ModalImportAddress
-                                                        onImport={(text) => {
-                                                            setAddress(text)
-                                                            setMnenomic(undefined)
-                                                            setKeypair(null)
-                                                            hideModal()
-                                                        }}
-                                                    />
-                                                )
-                                            }
-                                        },
-                                        {
-                                            text: 'Recovery Phrase',
-                                            onPress: () => {
-                                                navigation.navigate('PrivateKey', {
-                                                    importWallet: true, title: "Recovery Phrase", isSeedPhrase: true,
-                                                    onSubmit: async (keypair: Keypair, words?: string) => {
-                                                        setKeypair(keypair)
-                                                        setMnenomic(words)
-                                                        setAddress(keypair.publicKey.toBase58()) 
-                                                    },
-                                                    onNext: (navData) => {
-                                                        navData.goBack()
-                                                    }
-                                                })
-                                                hideModal()
-                                            }
-                                        },
-                                        {
-                                            text: 'Private Key',
-                                            onPress: () => {
-                                                navigation.navigate('PrivateKey', {
-                                                    importWallet: true, title: "Private Key", isSeedPhrase: false,
-                                                    onSubmit: async (keypair: Keypair) => {
-                                                        setKeypair(keypair)
-                                                        setMnenomic(undefined)
-                                                        setAddress(keypair.publicKey.toBase58()) 
-                                                    },
-                                                    onNext: (navData) => {
-                                                        navData.goBack()
-                                                    }
-                                                })
-                                                hideModal()
-                                            }
-                                        }
-                                    ]}
-                                />
-                            )
-                        }}
+                        onPress={onSelectAddress}
                     >
                         <View className="bg-baseComponent px-2 py-2 rounded-xl border border-solid border-gray-800">
                             <CustomText ellipsizeMode="tail" className="text-primary mb-2 mb-1 font-PlusJakartaSans" numberOfLines={1}>{address}</CustomText>
@@ -102,7 +108,7 @@ export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigation
                 </View>
             </View>
             <Button
-                containerClassName="mb-2"
+                containerClassName="my-4 mx-6"
                 title={"Add Miner"}
                 disabled={!address || !name}
                 onPress={async () => {
@@ -124,7 +130,7 @@ export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigation
                     navigation.goBack()
                 }}
             />
-        </SafeAreaView>
+        </KeyboardDismissPressable>
     )
 }
 
