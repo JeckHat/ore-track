@@ -314,15 +314,13 @@ export default function TabMonitoringScreen({ navigation }: TabMonitoringScreenP
                                 </View>}
                                 {pools[item]?.minerPoolIds.length > 1 && <View className="flex-row items-center mb-1">
                                     <HardHatIcon height={12} width={12} color={Colors.primary} />
-                                    <CustomText className="text-primary ml-2 font-PlusJakartaSansSemiBold text-[12px]">
-                                        {pools[item]?.minerPoolIds.length} Miners
+                                    <CustomText
+                                        className="text-primary mx-1 font-PlusJakartaSansSemiBold text-[12px] flex-1"
+                                        numberOfLines={1}
+                                    >
+                                        {`${pools[item]?.totalRunning}/${pools[item]?.minerPoolIds.length} Active Miners`}
                                     </CustomText>
                                 </View>}
-                                {/* <CustomText
-                                    className="text-primary font-PlusJakartaSans text-[12px] mb-1"
-                                >
-                                    Workers: 3
-                                </CustomText> */}
                                 {pools[item]?.totalRunning > 0 && <CustomText
                                     className="text-primary font-PlusJakartaSans text-[11px] mb-1"
                                 >
