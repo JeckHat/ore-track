@@ -34,7 +34,8 @@ const poolSlice = createSlice({
         },
         removeMinerFromPool(state, action: PayloadAction<{ poolId: string, minerPoolId: string }>) {
             const { minerPoolId, poolId } = action.payload
-            state.byId[poolId].minerPoolIds = state.byId[poolId].minerPoolIds.filter(id => id !== minerPoolId)
+            let minerPoolIds = state.byId[poolId].minerPoolIds.filter(id => id !== minerPoolId)
+            state.byId[poolId].minerPoolIds = minerPoolIds
         },
         updateBalance(state, action: PayloadAction<{
             poolId: string, totalRunning: number, avgOre: number, avgCoal: number, rewardsOre: number, rewardsCoal: number

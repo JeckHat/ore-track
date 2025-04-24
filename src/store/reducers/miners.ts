@@ -53,7 +53,8 @@ const MinerSlice = createSlice({
         },
         removeMinerPool(state, action: PayloadAction<{ minerPoolId: string, minerId: string }>) {
             const { minerPoolId, minerId } = action.payload
-            state.byId[minerId].minerPoolIds = state.byId[minerId].minerPoolIds.filter(id => id != minerPoolId)
+            let minerPools = state.byId[minerId].minerPoolIds
+            state.byId[minerId].minerPoolIds = minerPools.filter(id => id !== minerPoolId)
         },
         resetMiner(state) {
             Object.assign(state, initialState);
