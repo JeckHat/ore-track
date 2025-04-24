@@ -26,10 +26,10 @@ function calculateAvgRewards(miner: MinerPoolType, updateMiner: MinerPoolType) {
     rewardsCoal = (rewardsCoal / divided) * 60 * 24
     return {
         ...miner.avgRewards,
-        ore: rewardsOre,
-        coal: rewardsCoal,
-        initOre: miner.avgRewards.initOre,
-        initCoal: miner.avgRewards.initCoal
+        ore: rewardsOre <= 0? 0 : rewardsOre,
+        coal: rewardsCoal <= 0? 0 : rewardsCoal,
+        initOre: rewardsOre <= 0? updateMiner.avgRewards.initOre : miner.avgRewards.initOre,
+        initCoal: rewardsCoal <= 0? updateMiner.avgRewards.initCoal : miner.avgRewards.initCoal
     }
 }
 
