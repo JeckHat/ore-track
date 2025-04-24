@@ -3,22 +3,28 @@ import {
     ActivityIndicator,
     Animated,
     BackHandler,
+    Dimensions,
+    FlatList,
     Image,
     Modal,
     NativeEventSubscription,
+    TouchableHighlight,
     TouchableWithoutFeedback,
     View,
     ViewStyle,
 } from "react-native";
+import { twMerge } from "tailwind-merge";
 
 import Images from "@assets/images";
-import { ChevronRightIcon, ScanQRIcon } from "@assets/icons";
+import { ChevronRightIcon, HardHatIcon, ScanQRIcon } from "@assets/icons";
 import { Colors } from "@styles";
 import { CustomText } from "./Texts"
 import { Button } from "./Buttons";
 import { Input } from "./Forms";
 import { PublicKey } from "@solana/web3.js";
 import Clipboard from "@react-native-clipboard/clipboard";
+import { MinerType } from "@store/types";
+import { shortenAddress } from "@helpers";
 
 export function LoadingModal(props: { show?: boolean }) {
     if (props.show) {
@@ -230,21 +236,6 @@ export function ModalButtonList(props: modalButtonListProps ) {
                         onPress={button.onPress}
                     />
                 ))}
-                {/* <Button
-                    containerClassName="mb-3"
-                    title="Import Seed Phrase"
-                    onPress={() => {
-                        props.onImportSeedPharse()
-                        props.hideModal()
-                    }}
-                />
-                <Button
-                    title="Import Private Key"
-                    onPress={() => {
-                        props.onImportPrivateKey()
-                        props.hideModal()
-                    }}
-                /> */}
             </View>
         </View>
     )
@@ -314,6 +305,78 @@ export function ModalImportAddress(props: { onImport: (text: string) => void} ) 
                     onPress={() => props.onImport(address.value)}
                 />
             </View>
+        </View>
+    )
+}
+
+interface ModalSelectMinerProps {
+    poolId: string
+    miners: MinerType[]
+    onSelect: (minerPoolId: string) => void
+}
+
+export function ModalSelectMiner(props: ModalSelectMinerProps) {
+    const { poolId, miners, onSelect } = props
+    const [selectMiner, setSelectMiner] = useState("")
+
+    return (
+        <View
+            className={`w-full bottom-0 bg-baseComponent rounded-t-full`}
+            style={{ height: Dimensions.get('window').height * 0.8 }}
+        >
+            <View className="py-4">
+                <CustomText className="text-primary text-lg font-PlusJakartaSansSemiBold text-center">
+                    Choose a miner to add this pool
+                </CustomText>
+            </View>
+            <FlatList
+                data={miners}
+                renderItem={({ item }) => (
+                    <TouchableHighlight
+                        className="flex-1 mx-3 my-1"
+                        onPress={() => {
+                            if(selectMiner === item.id)
+                                setSelectMiner(``)
+                            else
+                                setSelectMiner(item.id)
+                        }}
+                    >
+                        <View
+                            className={twMerge(
+                                "flex-row justify-between items-center bg-gray-800 p-2 rounded-lg border border-gray-800",
+                                selectMiner === item.id && "border border-gold"
+                            )}>
+                            <View
+                                className={`flex-row items-center`}
+                            >
+                                <HardHatIcon
+                                    width={23}
+                                    height={23}
+                                    color={Colors.primary}
+                                />
+                                <View className="px-2">
+                                    <CustomText className="text-primary font-PlusJakartaSans text-lg">
+                                        {item.name}
+                                    </CustomText>
+                                    <CustomText className="text-primary font-PlusJakartaSans">
+                                        {shortenAddress(item.address)}
+                                    </CustomText>
+                                </View>
+                            </View>
+                            <View className="bg-gold px-3 pb-2 pt-1 rounded-xl">
+                                <CustomText className="text-black font-PlusJakartaSansSemiBold">Select</CustomText>
+                            </View>
+                        </View>
+                    </TouchableHighlight>
+                )}
+            />
+            <Button
+                disabled={!selectMiner}
+                containerClassName="my-4 rounded-none self-center"
+                className="py-2 px-20 rounded-full"
+                title="Add"
+                onPress={() => onSelect(selectMiner)}
+            />
         </View>
     )
 }
