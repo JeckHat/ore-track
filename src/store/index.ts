@@ -6,22 +6,30 @@ import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE } from "redux-persist
 import rootReducer from "./reducers";
 import { RootState } from "./types";
 
-const persistConfig = {
-    key: "PoWMiningSolana_app_v1",
-    storage: AsyncStorage,
-    whitelist: [
-        "config",
-        "wallet",
-        "boost",
-        "pools",
-        "miners",
-        "minerPools"
-    ],
-};
+const STATE_VERSION = 1
 
 const persistedReducer = persistReducer<Partial<RootState>>(
-    persistConfig,
-    rootReducer as Reducer<Partial<RootState>>
+    {
+        key: "PoWMiningSolana_app_v1",
+        storage: AsyncStorage,
+        version: 1,
+        whitelist: [
+            "config",
+            "wallet",
+            "boost",
+            "pools",
+            "miners",
+            "minerPools"
+        ],
+        migrate: (prevState) => {
+            const prevVersion = prevState?._persist?.version ?? 0;
+            if (prevVersion < STATE_VERSION) {
+                return Promise.resolve(undefined)
+            }
+            return Promise.resolve(prevState);
+        }
+    },
+    rootReducer as Reducer<Partial<RootState>>,
 );
 
 const store = configureStore({
