@@ -5,14 +5,15 @@ import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE } from "redux-persist
 
 import rootReducer from "./reducers";
 import { RootState } from "./types";
+import migrations from "./migrations";
 
-const STATE_VERSION = 1
+const STATE_VERSION = 2
 
 const persistedReducer = persistReducer<Partial<RootState>>(
     {
         key: "PoWMiningSolana_app_v1",
         storage: AsyncStorage,
-        version: 1,
+        version: STATE_VERSION,
         whitelist: [
             "config",
             "wallet",
@@ -21,13 +22,7 @@ const persistedReducer = persistReducer<Partial<RootState>>(
             "miners",
             "minerPools"
         ],
-        migrate: (prevState) => {
-            const prevVersion = prevState?._persist?.version ?? 0;
-            if (prevVersion < STATE_VERSION) {
-                return Promise.resolve(undefined)
-            }
-            return Promise.resolve(prevState);
-        }
+        migrate: migrations
     },
     rootReducer as Reducer<Partial<RootState>>,
 );

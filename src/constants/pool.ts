@@ -1,8 +1,12 @@
+import { PublicKey } from '@solana/web3.js'
 import dayjs from 'dayjs'
+
+import { getMember } from '@services/ore/pool'
 
 export interface PoolInfo {
     id: string
     name: string
+    mint?: string
     isCoal: boolean
     api: {
         base?: string
@@ -19,14 +23,50 @@ export const POOL_LIST: Record<string, PoolInfo> = {
     'pool-official': {
         id: 'pool-official',
         name: 'Official',
+        mint: 'D44JYBNTy2PovNM5wxfYjCUbN7bmnqrPDz3jdUEHtRuL',
         isCoal: false,
         api: {
             base: 'https://pool.ore.supply',
             getBalance: async (pubkey: string) => {
-                const response = await fetch(`https://pool.ore.supply/member/${pubkey}`)
-                const res = await response.json()
+                const { member } = await getMember(new PublicKey(pubkey), new PublicKey("D44JYBNTy2PovNM5wxfYjCUbN7bmnqrPDz3jdUEHtRuL"))
                 return {
-                    rewardsOre: res.total_balance / Math.pow(10, 11),
+                    rewardsOre: (member?.balance ?? 0) / Math.pow(10, 11),
+                    rewardsCoal: 0,
+                    earnedOre: member?.totalBalance ?? null,
+                    lastClaimAt: dayjs('1900-01-01').toISOString()
+                }
+            },
+        }
+    },
+    'pool-ec1ipse-official': {
+        id: 'pool-ec1ipse-official',
+        name: 'Ec1ipse Official',
+        mint: '9RrEyMNFhFcrqVikWby5rVn1eXeKHr2SwGRbPhZ7wDCK',
+        isCoal: false,
+        api: {
+            base: 'https://official.ec1ipse.me',
+            getBalance: async (pubkey: string) => {
+                const { member } = await getMember(new PublicKey(pubkey), new PublicKey("9RrEyMNFhFcrqVikWby5rVn1eXeKHr2SwGRbPhZ7wDCK"))
+                return {
+                    rewardsOre: (member?.balance ?? 0) / Math.pow(10, 11),
+                    rewardsCoal: 0,
+                    earnedOre: member?.totalBalance ?? null,
+                    lastClaimAt: dayjs('1900-01-01').toISOString()
+                }
+            },
+        }
+    },
+    'pool-ec1ipse': {
+        id: 'pool-ec1ipse Unofficial',
+        name: 'Ec1ipse',
+        isCoal: false,
+        api: {
+            base: 'https://ec1ipse.me',
+            getBalance: async (pubkey: string) => {
+                const response = await fetch(`https://ec1ipse.me/miner/rewards?pubkey=${pubkey}`)
+                const result = await response.text()
+                return {
+                    rewardsOre: (Number(result) * Math.pow(10, 11)) / Math.pow(10, 11),
                     rewardsCoal: 0,
                     earnedOre: null,
                     lastClaimAt: null
@@ -78,24 +118,6 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                     rewardsCoal: resData.coal,
                     earnedOre: null,
                     lastClaimAt: lastClaimAt
-                }
-            },
-        }
-    },
-    'pool-ec1ipse': {
-        id: 'pool-ec1ipse',
-        name: 'Ec1ipse',
-        isCoal: false,
-        api: {
-            base: 'https://ec1ipse.me',
-            getBalance: async (pubkey: string) => {
-                const response = await fetch(`https://ec1ipse.me/miner/rewards?pubkey=${pubkey}`)
-                const result = await response.text()
-                return {
-                    rewardsOre: (Number(result) * Math.pow(10, 11)) / Math.pow(10, 11),
-                    rewardsCoal: 0,
-                    earnedOre: null,
-                    lastClaimAt: null
                 }
             },
         }
