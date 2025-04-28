@@ -12,13 +12,13 @@ import { useDispatch, useSelector } from "react-redux"
 
 import { Button, CustomText, SkeletonLoader, OptionMenu, ModalTransaction } from "@components"
 import Images from "@assets/images"
-import { BOOSTLIST, COMPUTE_UNIT_LIMIT, JUP_API_PRICE, ORE_MINT } from "@constants"
+import { BOOSTLIST, COMPUTE_UNIT_LIMIT, JUP_API_PRICE, ORE_MINT, TOKENLIST } from "@constants"
 import { boostActions, getKeypair, uiActions } from "@store/actions"
 import { CustomError } from "@models"
 import { RootState } from "@store/types"
 import { TabStakeScreenProps } from "@navigations/types"
 import { useBottomModal } from "@hooks"
-import { claimStakeOREInstruction, getStakeORE } from "@services/ore"
+import { claimStakeOREInstruction, getLiquidityPair, getStakeORE } from "@services/ore"
 import { shortenAddress } from "@helpers"
 import { getPriorityFee } from "@services/solana"
 import { isUseKeypair } from "@providers"
@@ -26,6 +26,7 @@ import { isUseKeypair } from "@providers"
 export default function TabStakeScreen(props: TabStakeScreenProps) {
     const [orePrice, setOrePrice] = useState(0.0)
     const [loading, setLoading] = useState(true)
+
     const dispatch = useDispatch()
     const { showModal, hideModal } = useBottomModal()
 
@@ -52,13 +53,26 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
     }
 
     async function loadStakes() {
+        let promisesNetDeposits: Promise<{
+            stakeBalance: number;
+            stakeAmountORE: number;
+            stakeAmountPair: number;
+            LPBalanceORE: number;
+            LPBalancePair: number;
+            totalValueUsd: any;
+            shares: number;
+        }>[] = []
         const promises = Object.keys(BOOSTLIST).map((boost) => {
+            promisesNetDeposits.push(getLiquidityPair(BOOSTLIST[boost].lpId, BOOSTLIST[boost].defi, boost, true))
             return getStakeORE(BOOSTLIST[boost].lpMint, boost)
         })
 
         await Promise.all(promises)
         await dispatch(boostActions.updateAllRewards())
         setLoading(false)
+        Promise.all(promisesNetDeposits)
+
+        dispatch(boostActions.updateAllNetDeposits())
     }
 
     async function loadPrice() {
@@ -197,20 +211,64 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                 refreshControl={<RefreshControl refreshing={false} onRefresh={loadData}/>}
                 contentContainerClassName="grow-1 pb-[52px]" stickyHeaderIndices={[0]}
             >
-                <View className="pt-2 mb-1 items-center px-10 bg-baseBg">
+                <View className="mb-1 items-center px-10 bg-baseBg">
                     <CustomText className="font-PlusJakartaSans text-primary text-sm self-start mb-1">
+                        Net Deposits
+                    </CustomText>
+                    {loading && <SkeletonLoader
+                        className="rounded-xl bg-gray-900 mb-3 mt-1 w-full h-10"
+                        colors={["#111827", "#1f2937", "#111827"]}
+                        width={"100%"} height={32}
+                    />}
+                    {!loading && <View className="flex-row items-center justify-end self-end mb-3">
+                        <Image
+                            className="w-10 h-10 mr-2"
+                            source={Images.OreToken}
+                        />
+                        <CustomText className="font-LatoBold text-primary text-xl">
+                            {(boostData.netDeposits / Math.pow(10, 11)).toFixed(11)} ORE
+                        </CustomText>
+                        <View className="self-end absolute top-9">
+                            <CustomText className="font-PlusJakartaSansSemiBold text-green-400 text-sm">
+                                (${(boostData.netDeposits / Math.pow(10, 11) * orePrice).toFixed(2)})
+                            </CustomText>
+                        </View>
+                    </View>}
+                    <CustomText className="font-PlusJakartaSans text-primary text-sm self-start mb-1">
+                        My Daily Avg
+                    </CustomText>
+                    {loading && <SkeletonLoader
+                        className="rounded-xl bg-gray-900 mb-3 mt-1 w-full h-10"
+                        colors={["#111827", "#1f2937", "#111827"]}
+                        width={"100%"} height={32}
+                    />}
+                    {!loading && <View className="flex-row items-center justify-end self-end mb-3">
+                        <Image
+                            className="w-10 h-10 mr-2"
+                            source={Images.OreToken}
+                        />
+                        <CustomText className="font-LatoBold text-primary text-xl">
+                            {(boostData.avgRewards / Math.pow(10, 11)).toFixed(11)} ORE
+                        </CustomText>
+                        <View className="self-end absolute top-9">
+                            <CustomText className="font-PlusJakartaSansSemiBold text-green-400 text-sm">
+                                (${(boostData.avgRewards / Math.pow(10, 11) * orePrice).toFixed(2)})
+                            </CustomText>
+                        </View>
+                    </View>}
+                    <CustomText className="font-PlusJakartaSans text-gold text-sm self-start mb-1">
                         My Total Yield
                     </CustomText>
                     {loading && <SkeletonLoader
-                        className="rounded-xl bg-gray-900 mb-6 mt-1 w-full h-10"
+                        className="rounded-xl bg-gray-900 mb-3 mt-1 w-full h-10"
                         colors={["#111827", "#1f2937", "#111827"]}
                     />}
                     {!loading && <View className="flex-row items-center justify-end self-end mb-6">
                         <Image
-                            className="w-12 h-12 mr-2"
-                            source={Images.OreToken}
+                            className="w-10 h-10 mr-2"
+                            source={Images.OreGold}
                         />
-                        <CustomText className="font-LatoBold text-primary text-2xl">
+                        <CustomText className="font-LatoBold text-gold text-[20px]">
                             {(boostData.rewards / Math.pow(10, 11)).toFixed(11)} ORE
                         </CustomText>
                         <View className="self-end absolute top-9">
@@ -220,40 +278,18 @@ export default function TabStakeScreen(props: TabStakeScreenProps) {
                         </View>
                     </View>}
                     {loading && <SkeletonLoader
-                        className="rounded-full bg-gray-900 w-full h-14 overflow-hidden mb-6"
+                        className="rounded-full bg-gray-900 w-full h-14 overflow-hidden mb-3 mt-1"
                         colors={["#111827", "#1f2937", "#111827"]}
                     />}
                     {!loading && <Button
-                        containerClassName="rounded-full w-full mb-6 border-2 border-solid border-gold"
-                        className="py-2 bg-baseBg rounded-full items-center"
+                        containerClassName="rounded-full w-5/6 mb-3 border-2 border-solid border-gold mt-1"
+                        className="py-1 bg-baseBg rounded-full items-center"
                         textClassName="text-gold"
                         title="Claim All"
                         onPress={() => {
                             if(isUseKeypair()) onClaimAll()
                         }}
                     />}
-                    <CustomText className="font-PlusJakartaSans text-primary text-sm self-start mb-1">
-                        My Daily Avg
-                    </CustomText>
-                    {loading && <SkeletonLoader
-                        className="rounded-xl bg-gray-900 mb-6 mt-1 w-full h-10"
-                        colors={["#111827", "#1f2937", "#111827"]}
-                        width={"100%"} height={32}
-                    />}
-                    {!loading && <View className="flex-row items-center justify-end self-end mb-6">
-                        <Image
-                            className="w-12 h-12 mr-2"
-                            source={Images.OreToken}
-                        />
-                        <CustomText className="font-LatoBold text-primary text-2xl">
-                            {(boostData.avgRewards / Math.pow(10, 11)).toFixed(11)} ORE
-                        </CustomText>
-                        <View className="self-end absolute top-9">
-                            <CustomText className="font-PlusJakartaSansSemiBold text-green-400 text-sm">
-                                (${(boostData.avgRewards / Math.pow(10, 11) * orePrice).toFixed(2)})
-                            </CustomText>
-                        </View>
-                    </View>}
                 </View>
                 <ScrollView contentContainerClassName="grow" horizontal>
                     <View className="flex-1">
@@ -343,7 +379,7 @@ function StakeRow(props: StakeRowProps) {
                                 const instruction = await claimStakeOREInstruction(BOOSTLIST[boost].lpMint, boost)
 
                                 transaction.add(instruction.transaction)
-                                
+
                                 let fee = 0
                                 fee += instruction.estimatedFee ?? 0
                                 const priorityFee = await getPriorityFee(transaction)
@@ -419,31 +455,47 @@ function StakeRow(props: StakeRowProps) {
                     }]}
                 />
             </View>}
-            <View className="flex-row py-2 pl-2 w-60 items-center px-1 border-r-[0.5px] border-gray-600">
-                <View className="w-12 self-center mr-3 items-center justify-center">
-                    {typeof BOOSTLIST[boost].pairImage === 'string' && <Image
-                        className="w-10 h-10 absolute left-3"
-                        source={Images?.[BOOSTLIST[boost].pairImage as keyof typeof Images]}
-                    />}
-                    {typeof BOOSTLIST[boost].pairImage === 'string' && (
-                        <Image
-                            className="w-10 h-10 mr-4"
-                            source={Images[BOOSTLIST[boost].tokenImage as keyof typeof Images]}
-                        />
-                    )}
-                    {typeof BOOSTLIST[boost].pairImage !== 'string' && (
-                        <Image
-                            className="w-10 h-10"
-                            source={Images[BOOSTLIST[boost].tokenImage as keyof typeof Images]}
-                        />
-                    )}
+            <View className="pl-2 py-[6px] w-60 px-1 border-r-[0.5px] border-gray-600">
+                <View className="flex-row items-center">
+                    <View className="w-12 self-center mr-3 items-center justify-center">
+                        {typeof BOOSTLIST[boost].pairImage === 'string' && <Image
+                            className="w-8 h-8 absolute left-3"
+                            source={Images?.[BOOSTLIST[boost].pairImage as keyof typeof Images]}
+                        />}
+                        {typeof BOOSTLIST[boost].pairImage === 'string' && (
+                            <Image
+                                className="w-8 h-8 mr-4"
+                                source={Images[BOOSTLIST[boost].tokenImage as keyof typeof Images]}
+                            />
+                        )}
+                        {typeof BOOSTLIST[boost].pairImage !== 'string' && (
+                            <Image
+                                className="w-8 h-8"
+                                source={Images[BOOSTLIST[boost].tokenImage as keyof typeof Images]}
+                            />
+                        )}
+                        
+                    </View>
+                    <View className="w-40 flex-row">
+                        <CustomText className="text-primary text-md font-PlusJakartaSansBold mr-1">{BOOSTLIST[boost].name}</CustomText>
+                        {typeof BOOSTLIST[boost].defiImage === 'string' && <Image
+                            className="w-4 h-4 rounded-full"
+                            source={Images[BOOSTLIST[boost].defiImage as keyof typeof Images]}
+                        />}
+                    </View>
                 </View>
-                <View className="w-40 flex-row">
-                    <CustomText className="text-primary text-md font-PlusJakartaSansBold mr-1">{BOOSTLIST[boost].name}</CustomText>
-                    {typeof BOOSTLIST[boost].defiImage === 'string' && <Image
-                        className="w-4 h-4 rounded-full"
-                        source={Images[BOOSTLIST[boost].defiImage as keyof typeof Images]}
-                    />}
+                <View className="flex-row mt-1">
+                    <View className="flex-row">
+                        <CustomText className="text-gray-400 text-sm font-PlusJakartaSansBold">
+                            {`${((boosts[boost].liquidityPair?.depositsOre ?? 0) / Math.pow(10, 11)).toFixed(3)} ORE`}
+                        </CustomText>
+                    </View>
+                    {BOOSTLIST[boost].pairMint && <CustomText className="text-gray-400 text-sm font-PlusJakartaSansBold">
+                        {` / `}
+                    </CustomText>}
+                    {BOOSTLIST[boost].pairMint && <CustomText className="text-gray-400 text-sm font-PlusJakartaSansBold">
+                        {`${((boosts[boost].liquidityPair?.depositsPair ?? 0) / Math.pow(10, TOKENLIST[BOOSTLIST[boost].pairMint].decimals)).toFixed(3)} ${TOKENLIST[BOOSTLIST[boost].pairMint].ticker}`}
+                    </CustomText>}
                 </View>
             </View>
             <View className="w-24 h-full flex-row justify-center items-center px-1 border-r-[0.5px] border-gray-600">
@@ -453,7 +505,7 @@ function StakeRow(props: StakeRowProps) {
             </View>
             <View className="w-[90px] h-full flex-row justify-center items-center px-1 border-r-[0.5px] border-gray-600">
                 {boosts[boost] && <CustomText className="text-primary text-md font-PlusJakartaSansBold">
-                    {`${boosts[boost].boost?.weight}`}
+                    {`${(boosts[boost].boost?.weight ?? 0) / 100}%`}
                 </CustomText>}
             </View>
             <View className="w-56 h-full flex-row justify-end items-center px-1 border-r-[0.5px] border-gray-600">

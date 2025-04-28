@@ -40,6 +40,14 @@ export interface BoostType {
     decimals?: number
     rewards: number
     avgRewards: number
+    liquidityPair?: liqudityPairType
+}
+
+export interface liqudityPairType {
+    depositsOre: number
+    depositsPair: number
+    totalValueUsd: number
+    shares: number
 }
 
 export interface BoostState {
@@ -51,6 +59,7 @@ export interface BoostState {
     socketAccounts: Record<string, { id: string, account: string }>
     rewards: number
     avgRewards: number
+    netDeposits: number
 }
 
 export interface MinerType {

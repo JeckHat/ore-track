@@ -2,7 +2,7 @@ import { Boost, BoostConfig, Proof, Stake } from '@models'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import dayjs from 'dayjs'
 
-import { BoostState } from '@store/types'
+import { BoostState, liqudityPairType } from '@store/types'
 import { calculateClaimableYield } from '@services/ore'
 
 const initialState: BoostState = {
@@ -12,6 +12,7 @@ const initialState: BoostState = {
     boostProof: undefined,
     boostProofAddress: undefined,
     socketAccounts: {},
+    netDeposits: 0,
     rewards: 0,
     avgRewards: 0
 }
@@ -117,6 +118,16 @@ const boostSlice = createSlice({
             })
             state.socketAccounts = generateSockets(state.socketAccounts, 'boostProof', boostProofAddress)
         },
+        updateLiquidityPair(state, action: PayloadAction<{ boostAddress: string, liquidityPair: liqudityPairType  }>) {
+            const { boostAddress, liquidityPair } = action.payload
+            state.boosts = {
+                ...state.boosts,
+                [boostAddress]: {
+                    ...state.boosts[boostAddress],
+                    liquidityPair: liquidityPair,
+                }
+            }
+        },
         updateAllRewards(state){
             let globalRewards = 0
             let globalAvg = 0
@@ -145,6 +156,15 @@ const boostSlice = createSlice({
             })
             state.rewards = globalRewards
             state.avgRewards = globalAvg
+        },
+        updateAllNetDeposits(state){
+            let netDeposits = 0
+            Object.keys(state.boosts).map((key) => {
+                if(state.boosts[key].boost && state.boosts[key].liquidityPair) {
+                    netDeposits += state.boosts[key].liquidityPair.depositsOre
+                }
+            })
+            state.netDeposits = netDeposits
         },
         resetBoosts(state) {
             Object.assign(state, initialState);

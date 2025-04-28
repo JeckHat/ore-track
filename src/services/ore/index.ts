@@ -125,7 +125,7 @@ export async function getStakeORE(mintAddress: string, boostAddress?: string) {
     }
 }
 
-export async function getLiquidityPair(lpId: string, defi: string, boostAddress: string) {
+export async function getLiquidityPair(lpId: string, defi: string, boostAddress: string, updatedRedux = false) {
     const connection = getConnection()
     const walletAddress = getWalletAddress()
 
@@ -134,8 +134,9 @@ export async function getLiquidityPair(lpId: string, defi: string, boostAddress:
     }
 
     const mintAddress = BOOSTLIST[boostAddress].lpMint
+    const pairDecimals = TOKENLIST?.[BOOSTLIST[boostAddress]?.pairMint ?? ""]?.decimals ?? 11
     
-    if(defi === 'kamino') {
+    if (defi === 'kamino') {
         const response = await fetch(`${KAMINO_API}${lpId}/metrics/?env=mainnet-beta&status=LIVE`, {
             method: 'GET'
         })
@@ -156,6 +157,18 @@ export async function getLiquidityPair(lpId: string, defi: string, boostAddress:
 
         const stakeAmountA = parseFloat(balanceA) * stakeShare
         const stakeAmountB = parseFloat(balanceB) * stakeShare
+
+        if (updatedRedux) {
+            store.dispatch(boostActions.updateLiquidityPair({
+                boostAddress: boostAddress,
+                liquidityPair: {
+                    depositsOre: (tokenA === ORE_MINT? stakeAmountA : stakeAmountB) * Math.pow(10, 11),
+                    depositsPair: (tokenB === ORE_MINT? stakeAmountA : stakeAmountB) * Math.pow(10, pairDecimals),
+                    totalValueUsd: totalValueUsd,
+                    shares: shares
+                }
+            }))
+        }
         return {
             stakeBalance: (stake.balance ?? 0) / Math.pow(10, decimals),
             stakeAmountORE: tokenA === ORE_MINT? stakeAmountA : stakeAmountB,
@@ -166,7 +179,7 @@ export async function getLiquidityPair(lpId: string, defi: string, boostAddress:
             shares: shares,
         }
 
-    } else {
+    } else if (defi === 'meteora'){
         const response = await fetch(`${METEORA_API}${lpId}`, {
             method: 'GET'
         })
@@ -186,6 +199,17 @@ export async function getLiquidityPair(lpId: string, defi: string, boostAddress:
 
         const stakeAmountA = parseFloat(balanceA) * stakeShare
         const stakeAmountB = parseFloat(balanceB) * stakeShare
+        if (updatedRedux) {
+            store.dispatch(boostActions.updateLiquidityPair({
+                boostAddress: boostAddress,
+                liquidityPair: {
+                    depositsOre: (tokenA === ORE_MINT? stakeAmountA : stakeAmountB) * Math.pow(10, 11),
+                    depositsPair: (tokenB === ORE_MINT? stakeAmountA : stakeAmountB) * Math.pow(10, pairDecimals),
+                    totalValueUsd: totalValueUsd,
+                    shares: shares
+                }
+            }))
+        }
         return {
             stakeBalance: (stake.balance ?? 0) / Math.pow(10, decimals),
             stakeAmountORE: tokenA === ORE_MINT? stakeAmountA : stakeAmountB,
@@ -194,6 +218,29 @@ export async function getLiquidityPair(lpId: string, defi: string, boostAddress:
             LPBalancePair: tokenB === ORE_MINT? parseFloat(balanceA) : parseFloat(balanceB),
             totalValueUsd: totalValueUsd,
             shares: shares,
+        }
+    } else {
+        const { boost } = await getBoost(new PublicKey(mintAddress), new PublicKey(boostAddress))
+        const { stake } = await getStake(new PublicKey(walletAddress), new PublicKey(boostAddress))
+        if (updatedRedux) {
+            store.dispatch(boostActions.updateLiquidityPair({
+                boostAddress: boostAddress,
+                liquidityPair: {
+                    depositsOre: (stake.balance ?? 0),
+                    depositsPair: 0,
+                    totalValueUsd: 0,
+                    shares: 0
+                }
+            }))
+        }
+        return {
+            stakeBalance: (stake.balance ?? 0) / Math.pow(10, 11),
+            stakeAmountORE: (stake.balance ?? 0) / Math.pow(10, 11),
+            stakeAmountPair: 0,
+            LPBalanceORE: boost?.totalDeposits ?? 0,
+            LPBalancePair: 0,
+            totalValueUsd: 0,
+            shares: 0,
         }
     }
 }

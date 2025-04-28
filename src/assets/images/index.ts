@@ -9,7 +9,8 @@ const Images = {
     UsdcToken: require('./usdc-token.png'),
     HntToken: require('./hnt-token.png'),
     MeteoraLogo: require('./meteora-logo.jpg'),
-    KaminoLogo: require('./kamino-logo.jpg')
+    KaminoLogo: require('./kamino-logo.jpg'),
+    OreGold: require('./ore-gold.png')
 }
 
 export default Images
