@@ -75,18 +75,6 @@ export default function ManageMinerScreen({ navigation } : ManageMinerNavigation
                         })
                     }
                     
-                    if (miners[item].useKeypair) {
-                        menu.push({
-                            text: 'Private Key',
-                            onPress: () => {
-                                navigation.navigate('PrivateKey', {
-                                    isSeedPhrase: true,
-                                    importWallet: false,
-                                    words: 'asdasdasd asd as da sd'
-                                })
-                            }
-                        })
-                    }
                     menu.push(...[{
                         text: 'Edit',
                         onPress: () => {

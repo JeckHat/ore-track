@@ -26,6 +26,7 @@ export interface WalletState {
     publicKey?: string | null
     useMnemonic: boolean
     usePrivateKey: boolean
+    allowTrx: boolean
 }
 
 export interface ConfigState {
@@ -70,6 +71,7 @@ export interface MinerType {
     minerPoolIds: string[]
     useKeypair: boolean
     useMnemonic: boolean
+    allowTrx: boolean
 }
 
 export interface MinerState {

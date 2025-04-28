@@ -167,7 +167,8 @@ export default function UpdateMinerScreen({ navigation, route } : UpdateMinerNav
                         name: name,
                         address: address,
                         useKeypair: keypair ? true : false,
-                        useMnemonic: mnemonic ? true : false
+                        useMnemonic: mnemonic ? true : false,
+                        allowTrx: keypair || mnemonic? true : false
                     }))
                     navigation.goBack()
                 }}
@@ -193,7 +194,8 @@ export default function UpdateMinerScreen({ navigation, route } : UpdateMinerNav
                         address: address,
                         isMain: false,
                         useKeypair: keypair ? true : false,
-                        useMnemonic: mnemonic ? true : false
+                        useMnemonic: mnemonic ? true : false,
+                        allowTrx: keypair || mnemonic? true : false
                     }))
                     navigation.goBack()
                 }}

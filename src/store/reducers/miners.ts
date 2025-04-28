@@ -16,7 +16,8 @@ interface updateMinerAction {
     address: string,
     isMain?: boolean,
     useKeypair: boolean,
-    useMnemonic: boolean
+    useMnemonic: boolean,
+    allowTrx: boolean
 }
 
 const MinerSlice = createSlice({
@@ -24,7 +25,7 @@ const MinerSlice = createSlice({
     initialState: initialState,
     reducers: {
         addMiner(state, action: PayloadAction<updateMinerAction>) {
-            const { minerId, name, address, isMain, useKeypair, useMnemonic } = action.payload
+            const { minerId, name, address, isMain, useKeypair, useMnemonic, allowTrx } = action.payload
             let order = state.order
             order.push(minerId)
             state.byId = {
@@ -37,13 +38,14 @@ const MinerSlice = createSlice({
                     isMain: isMain ?? false,
                     minerPoolIds: [],
                     useKeypair: useKeypair,
-                    useMnemonic: useMnemonic
+                    useMnemonic: useMnemonic,
+                    allowTrx: allowTrx
                 }
             }
             state.order = order
         },
         editMiner(state, action: PayloadAction<updateMinerAction>) {
-            const { minerId, name, address, useKeypair, useMnemonic } = action.payload
+            const { minerId, name, address, useKeypair, useMnemonic, allowTrx } = action.payload
             state.byId = {
                 ...state.byId,
                 [minerId]: {
@@ -51,7 +53,8 @@ const MinerSlice = createSlice({
                     name: name,
                     address: address,
                     useKeypair: useKeypair,
-                    useMnemonic: useMnemonic
+                    useMnemonic: useMnemonic,
+                    allowTrx: allowTrx
                 }
             }
         },

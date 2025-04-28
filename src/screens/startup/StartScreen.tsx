@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Image, SafeAreaView, View } from 'react-native'
 import { Keypair } from '@solana/web3.js'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { StartNavigationProps } from '@navigations/types'
 import { CustomText, CheckBox, Button, ModalButtonList, ModalImportAddress } from '@components'
@@ -13,7 +13,6 @@ import { GENERATE_ID_NUMBER, POOL_LIST } from '@constants'
 
 export default function StartScreen({ navigation }: StartNavigationProps) {
   const [checkedTerm, setCheckedTerm] = useState(false)
-  console.log("useSelector", useSelector(state => state))
 
   const { showModal, hideModal } = useBottomModal()
 
@@ -23,13 +22,16 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
     navigation.navigate('PrivateKey', { importWallet: false, title: "Recovery Phrase" })
   }
 
-  function updateMinerRedux(address: string) {
+  function updateMinerRedux(address: string, useKeypair: boolean, useMnemonic: boolean) {
     let minerId = nanoid(GENERATE_ID_NUMBER)
     dispatch(minerActions.addMiner({
       minerId: minerId,
       name: 'Main Wallet',
       address: address,
-      isMain: true
+      isMain: true,
+      useKeypair: useKeypair,
+      useMnemonic: useMnemonic,
+      allowTrx: useKeypair ?? false
     }))
     Object.keys(POOL_LIST).forEach(poolId => {
       let minerPoolId = `${poolId}-${minerId}`
@@ -62,9 +64,10 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
                     dispatch(walletActions.setWallet({
                       address: address,
                       useMnemonic: false,
-                      usePrivateKey: false
+                      usePrivateKey: false,
+                      allowTrx: false
                     }))
-                    updateMinerRedux(address)
+                    updateMinerRedux(address, false, false)
                     hideModal()
                     navigation.replace('BottomTab')
                   }}
@@ -82,9 +85,10 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
                   dispatch(walletActions.setWallet({
                     address: keypair.publicKey?.toBase58(),
                     useMnemonic: true,
-                    usePrivateKey: true
+                    usePrivateKey: true,
+                    allowTrx: true
                   }))
-                  updateMinerRedux(keypair.publicKey?.toBase58())
+                  updateMinerRedux(keypair.publicKey?.toBase58(), true, true)
                 },
                 onNext: (navigation) => {
                   navigation.replace('BottomTab')
@@ -103,9 +107,10 @@ export default function StartScreen({ navigation }: StartNavigationProps) {
                   dispatch(walletActions.setWallet({
                     address: keypair.publicKey?.toBase58(),
                     useMnemonic: false,
-                    usePrivateKey: true
+                    usePrivateKey: true,
+                    allowTrx: true
                   }))
-                  updateMinerRedux(keypair.publicKey?.toBase58())
+                  updateMinerRedux(keypair.publicKey?.toBase58(), true, false)
                 },
                 onNext: (navigation) => {
                   navigation.replace('BottomTab')

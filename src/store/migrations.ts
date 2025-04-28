@@ -66,9 +66,14 @@ const migrations : Record<number, (state: any) => any> = {
                     return [minerId, {
                         ...state.miners.byId[minerId],
                         useKeypair: false,
-                        useMnemonic: false
+                        useMnemonic: false,
+                        allowTrx: state.miners.byId[minerId].useKeypair? true : false
                     }]
                 }))
+            },
+            wallet: {
+                ...state.wallet,
+                allowTrx: state.wallet.usePrivateKey? true : false
             }
         })
     },
