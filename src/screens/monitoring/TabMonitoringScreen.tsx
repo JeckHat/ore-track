@@ -14,7 +14,7 @@ import { CustomText, HeaderButton, SkeletonLoader } from "@components"
 import Images from "@assets/images"
 import { RootState } from "@store/types"
 import { calculatePoolRewards, calculatePoolRewardsFromState, shortenAddress } from "@helpers"
-import { ChevronRightIcon, DataIcon, HardHatIcon, WalletIcon } from "@assets/icons"
+import { ChevronRightIcon, DataIcon, HardHatIcon, MachineIcon, WalletIcon } from "@assets/icons"
 import { Colors } from "@styles"
 import { TabMonitoringScreenProps, TabScreenOptionsFn } from "@navigations/types"
 import { COAL_MINT, JUP_API_PRICE, ORE_MINT, POOL_LIST } from "@constants"
@@ -267,146 +267,226 @@ export default function TabMonitoringScreen({ navigation }: TabMonitoringScreenP
                 keyExtractor={(data) => data}
                 numColumns={2}
                 columnWrapperClassName="gap-2 mx-2"
-                renderItem={({ item, index }) => {
+                renderItem={({ item }) => {
                     if(item === "BLANK_SLOT") {
                         return (
                             <View className="flex-1 rounded-xl overflow-hidden my-2" />
                         )
                     }
                     return (
-                    <TouchableHighlight
-                        key={`data-pool-${index}`}
-                        className="flex-1 rounded-xl overflow-hidden my-2"
-                        onPress={() => navigation.navigate('PoolDetail', { poolId: item })}
-                    >
-                        <View className="flex-1 bg-gray-800 px-3 p-2">
-                            <View className="flex-row items-center">
-                                {!pools[item].isCoal && 
-                                    <Image
-                                        className="h-8 w-8 mr-1"
-                                        source={Images.OreLogo}
-                                    />
+                        <MinerPoolItem
+                            id={item}
+                            shouldUpdate={!total.loading && pools[item]?.totalRunning > 0}
+                            name={pools[item].name}
+                            isCoal={pools[item].isCoal}
+                            miners={pools[item]?.minerPoolIds.map(minerPoolId => {
+                                return {
+                                    address: miners[minerPools[minerPoolId].minerId].address,
+                                    running: minerPools[minerPoolId].running
                                 }
-                                {pools[item].isCoal && <View className="w-11 flex-row items-center mr-1">
-                                    <View className="bg-black absolute right-0 h-8 w-8 rounded-full justify-center items-center">
-                                        <Image
-                                            className="h-6 w-6"
-                                            source={Images.CoalLogo}
-                                        />
-                                    </View>
-                                    <Image
-                                        className="h-8 w-8"
-                                        source={Images.OreLogo}
-                                    />
-                                </View>}
-                                <CustomText
-                                    className="text-primary text-[13px] font-PlusJakartaSansSemiBold text-md"
-                                >
-                                    {pools[item].name}
-                                </CustomText>
-                            </View>
-                            <View className="mt-2">
-                                {pools[item]?.minerPoolIds.length === 1 && <View className="flex-row items-center mb-1">
-                                    <WalletIcon height={12} width={12} color={Colors.primary} />
-                                    <CustomText className="text-primary ml-2 font-PlusJakartaSansSemiBold text-[12px]">
-                                        {shortenAddress(miners[minerPools[pools[item].minerPoolIds[0]].minerId].address)}
-                                    </CustomText>
-                                </View>}
-                                {pools[item]?.minerPoolIds.length > 1 && <View className="flex-row items-center mb-1">
-                                    <HardHatIcon height={12} width={12} color={Colors.primary} />
-                                    <CustomText
-                                        className="text-primary mx-1 font-PlusJakartaSansSemiBold text-[12px] flex-1"
-                                        numberOfLines={1}
-                                    >
-                                        {`${pools[item]?.totalRunning}/${pools[item]?.minerPoolIds.length} Active Miners`}
-                                    </CustomText>
-                                </View>}
-                                {pools[item]?.totalRunning > 0 && <CustomText
-                                    className="text-primary font-PlusJakartaSans text-[11px] mb-1"
-                                >
-                                    Status: <CustomText className="text-green-400 font-PlusJakartaSansSemiBold">Running</CustomText>
-                                </CustomText>}
-                                {pools[item]?.totalRunning <= 0 && <CustomText
-                                    className="text-primary font-PlusJakartaSans text-[11px] mb-1"
-                                >
-                                    Status: <CustomText className="text-red-400 font-PlusJakartaSansSemiBold">Stopped</CustomText>
-                                </CustomText>}
-                                <CustomText
-                                    className="text-primary font-PlusJakartaSans text-[12px]"
-                                >
-                                    Daily Average:
-                                </CustomText>
-                                <View className="flex-row items-center justify-between pb-1 border-b border-solid border-gray-500">
-                                    <View>
-                                        <View className="flex-row items-center">
-                                            <Image
-                                                className="h-4 w-4 mr-1"
-                                                source={Images.OreToken}
-                                            />
-                                            <CustomText
-                                                className="text-primary font-PlusJakartaSans text-[10px]"
-                                            >
-                                                {(pools[item]?.avgOre ?? 0).toFixed(3)}
-                                            </CustomText>
-                                        </View>
-                                        {POOL_LIST[item].isCoal && <View className={`flex-row items-center`}>
-                                            <Image
-                                                className="h-4 w-4 mr-1 rounded-full"
-                                                source={Images.CoalToken}
-                                            />
-                                            <CustomText
-                                                className="text-primary font-PlusJakartaSans text-[11px]"
-                                            >
-                                                {(pools[item]?.avgCoal ?? 0).toFixed(3)}
-                                            </CustomText>
-                                        </View>}
-                                    </View>
-                                    <CustomText
-                                        className="text-green-400 font-PlusJakartaSans text-[11px]"
-                                    >
-                                        $ {(price.ore * (pools[POOL_LIST[item].id]?.avgOre ?? 0) + price.coal 
-                                            * (pools[item]?.avgCoal ?? 0)).toFixed(2)}
-                                    </CustomText>
-                                </View>
-                                <CustomText
-                                    className="text-primary font-PlusJakartaSans text-[12px] mb-[1px]"
-                                >
-                                    Your Rewards:
-                                </CustomText>
-                                <View className="flex-row items-center">
-                                    <Image
-                                        className="h-4 w-4 mr-1"
-                                        source={Images.OreToken}
-                                    />
-                                    <CustomText
-                                        className="text-primary font-PlusJakartaSans text-[11px] mb-[1px]"
-                                    >
-                                        {(pools[item]?.rewardsOre ?? 0).toFixed(11)} ORE
-                                    </CustomText>
-                                </View>
-                                {pools[item].isCoal && <View className={`flex-row items-center ${!pools[item].isCoal && "opacity-0"}`}>
-                                    <Image
-                                        className="h-4 w-4 mr-1 rounded-full"
-                                        source={Images.CoalToken}
-                                    />
-                                    <CustomText
-                                        className="text-primary font-PlusJakartaSans text-[11px] mb-[1px]"
-                                    >
-                                        {(pools[item]?.rewardsCoal ?? 0).toFixed(4)} COAL
-                                    </CustomText>
-                                </View>}
-                                <CustomText
-                                    className="text-green-400 font-PlusJakartaSans text-[11px] mb-[1px] self-end"
-                                >
-                                    $ {(price.ore * (pools[item]?.rewardsOre ?? 0) + price.coal 
-                                        * (pools[item]?.rewardsCoal ?? 0)).toFixed(2)}
-                                </CustomText>
-                            </View>
-                        </View>
-                    </TouchableHighlight>
-                )}}
+                            })}
+                            totalRunning={pools[item]?.totalRunning}
+                            avg={{ ore: pools[item]?.avgOre ?? 0, coal: pools[item]?.avgCoal ?? 0 }}
+                            rewards={{ ore: pools[item].rewardsOre ?? 0, coal: pools[item].rewardsCoal ?? 0}}
+                            price={price}
+                            onPress={() => navigation.navigate('PoolDetail', { poolId: item })}
+                        />
+                    )
+                }}
             />
         </SafeAreaView>
+    )
+}
+
+interface minerPoolItemProps {
+    shouldUpdate: boolean
+    id: string
+    name: string
+    isCoal: boolean
+    miners: { address: string, running: boolean }[]
+    totalRunning: number
+    avg: {
+        ore: number
+        coal: number
+    }
+    rewards: {
+        ore: number
+        coal: number
+    }
+    price: {
+        ore: number
+        coal: number
+    }
+    onPress: () => void
+}
+
+function MinerPoolItem(props: minerPoolItemProps) {
+    const { shouldUpdate, id, name, isCoal, miners, totalRunning, avg, rewards, price, onPress } = props
+    const [loading, setLoading] = useState(false)
+
+    const [activeMachines, setActiveMachines] = useState(0)
+
+    useEffect(() => {
+        if (shouldUpdate) getTotalMachines()
+    }, [shouldUpdate])
+
+    async function getTotalMachines() {
+        setLoading(true)
+        if (POOL_LIST[id].api?.getMachines && totalRunning > 0) {
+            let totalMachines = 0
+            const machinesApi = miners.filter(miner => miner.running)
+                .map((miner) => POOL_LIST[id]?.api?.getMachines?.(miner.address))
+            const workers = await Promise.all(machinesApi)
+            workers.forEach(worker => {
+                totalMachines += (worker?.activeCount ?? 0)
+            })
+            setActiveMachines(totalMachines)
+        } else {
+            setActiveMachines(totalRunning)
+        }
+        setLoading(false)
+    }
+    
+    return (
+        <TouchableHighlight
+            className="flex-1 rounded-xl overflow-hidden my-2"
+            onPress={onPress}
+        >
+            <View className="flex-1 bg-gray-800 px-3 p-2">
+                <View className="flex-row items-center">
+                    {!isCoal && 
+                        <Image
+                            className="h-8 w-8 mr-1"
+                            source={Images.OreLogo}
+                        />
+                    }
+                    {isCoal && <View className="w-11 flex-row items-center mr-1">
+                        <View className="bg-black absolute right-0 h-8 w-8 rounded-full justify-center items-center">
+                            <Image
+                                className="h-6 w-6"
+                                source={Images.CoalLogo}
+                            />
+                        </View>
+                        <Image
+                            className="h-8 w-8"
+                            source={Images.OreLogo}
+                        />
+                    </View>}
+                    <CustomText
+                        className="text-primary text-[13px] font-PlusJakartaSansSemiBold text-md"
+                    >
+                        {name}
+                    </CustomText>
+                </View>
+                <View className="mt-2">
+                    {miners.length === 1 && <View className="flex-row items-center mb-1">
+                        <WalletIcon height={12} width={15} color={Colors.primary} />
+                        <CustomText className="text-primary mx-1 font-PlusJakartaSansSemiBold text-[12px]">
+                            {shortenAddress(miners[0].address)}
+                        </CustomText>
+                    </View>}
+                    {miners.length > 1 && <View className="flex-row items-center mb-1">
+                        <HardHatIcon height={12} width={15} color={Colors.primary} />
+                        <CustomText
+                            className="text-primary mx-1 font-PlusJakartaSansSemiBold text-[12px] flex-1"
+                            numberOfLines={1}
+                        >
+                            {`${totalRunning}/${miners.length} Active Miners`}
+                        </CustomText>
+                    </View>}
+                    <View className="flex-row items-center">
+                        <MachineIcon height={15} width={15} color={Colors.gold} />
+                        {loading && <SkeletonLoader
+                            className=" bg-gray-700 rounded-lg w-16 h-[12px]"
+                        />}
+                        {!loading && <CustomText
+                            className="text-gold mx-1 font-LatoBold text-[12px] flex-1"
+                            numberOfLines={1}
+                        >
+                            {`${activeMachines} Machines`}
+                        </CustomText>}
+                    </View>
+                    {totalRunning > 0 && <CustomText
+                        className="text-primary font-PlusJakartaSans text-[11px] mb-1"
+                    >
+                        Status: <CustomText className="text-green-400 font-PlusJakartaSansSemiBold">Running</CustomText>
+                    </CustomText>}
+                    {totalRunning <= 0 && <CustomText
+                        className="text-primary font-PlusJakartaSans text-[11px] mb-1"
+                    >
+                        Status: <CustomText className="text-red-400 font-PlusJakartaSansSemiBold">Stopped</CustomText>
+                    </CustomText>}
+                    <CustomText
+                        className="text-primary font-PlusJakartaSans text-[12px]"
+                    >
+                        Daily Average:
+                    </CustomText>
+                    <View className="flex-row items-center justify-between pb-1 border-b border-solid border-gray-500">
+                        <View>
+                            <View className="flex-row items-center">
+                                <Image
+                                    className="h-4 w-4 mr-1"
+                                    source={Images.OreToken}
+                                />
+                                <CustomText
+                                    className="text-primary font-PlusJakartaSans text-[10px]"
+                                >
+                                    {avg.ore.toFixed(3)}
+                                </CustomText>
+                            </View>
+                            {isCoal && <View className={`flex-row items-center`}>
+                                <Image
+                                    className="h-4 w-4 mr-1 rounded-full"
+                                    source={Images.CoalToken}
+                                />
+                                <CustomText
+                                    className="text-primary font-PlusJakartaSans text-[11px]"
+                                >
+                                    {avg.coal.toFixed(3)}
+                                </CustomText>
+                            </View>}
+                        </View>
+                        <CustomText
+                            className="text-green-400 font-PlusJakartaSans text-[11px]"
+                        >
+                            $ {(price.ore * avg.ore + price.coal * avg.coal).toFixed(2)}
+                        </CustomText>
+                    </View>
+                    <CustomText
+                        className="text-primary font-PlusJakartaSans text-[12px] mb-[1px]"
+                    >
+                        Your Rewards:
+                    </CustomText>
+                    <View className="flex-row items-center">
+                        <Image
+                            className="h-4 w-4 mr-1"
+                            source={Images.OreToken}
+                        />
+                        <CustomText
+                            className="text-primary font-PlusJakartaSans text-[11px] mb-[1px]"
+                        >
+                            {rewards.ore.toFixed(11)} ORE
+                        </CustomText>
+                    </View>
+                    {isCoal && <View className={`flex-row items-center ${!isCoal && "opacity-0"}`}>
+                        <Image
+                            className="h-4 w-4 mr-1 rounded-full"
+                            source={Images.CoalToken}
+                        />
+                        <CustomText
+                            className="text-primary font-PlusJakartaSans text-[11px] mb-[1px]"
+                        >
+                            {rewards.coal.toFixed(4)} COAL
+                        </CustomText>
+                    </View>}
+                    <CustomText
+                        className="text-green-400 font-PlusJakartaSans text-[11px] mb-[1px] self-end"
+                    >
+                        $ {(price.ore * rewards.ore + price.coal * rewards.coal).toFixed(2)}
+                    </CustomText>
+                </View>
+            </View>
+        </TouchableHighlight>
     )
 }
 

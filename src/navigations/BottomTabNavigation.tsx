@@ -5,7 +5,7 @@ import { Colors, Fonts } from "@styles"
 import { SettingIcon, StakeIcon, WalletIcon } from "@assets/icons"
 
 import TabWalletScreen from "@screens/wallet/TabWalletScreen"
-import TabMonitoringScreen, { screenOptions as tabMonitoringOptions } from "@screens/pool/TabMonitoringScreen"
+import TabMonitoringScreen, { screenOptions as tabMonitoringOptions } from "@screens/monitoring/TabMonitoringScreen"
 import TabStakeScreen from "@screens/stake/TabStakeScreen"
 import TabSettingScreen from "@screens/settings/TabSettingScreen"
 

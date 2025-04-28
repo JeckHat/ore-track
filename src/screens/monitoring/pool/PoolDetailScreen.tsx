@@ -287,7 +287,7 @@ export default function PoolDetailScreen({ navigation, route }: PoolDetailNaviga
                                 className="text-primary font-PlusJakartaSans text-md mb-1"
                                 // onPress={() => navigation.navigate('Statistic')}
                             >
-                                View Statistics
+                                View Pool Statistics
                             </CustomText>
                             <ChevronRightIcon
                                 width={23}
@@ -374,6 +374,9 @@ export default function PoolDetailScreen({ navigation, route }: PoolDetailNaviga
                                         }
                                     }]}
                                 />
+                            </View>
+                            <View>
+                                <CustomText className="text-primary font-PlusJakartaSans text-sm mb-[1px]">Total Machines: 123</CustomText>
                             </View>
                             <CustomText className="text-primary font-PlusJakartaSans text-sm mb-[1px]">Daily Average: </CustomText>
                             <View className="flex-row justify-between items-center">

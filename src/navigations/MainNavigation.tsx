@@ -15,10 +15,10 @@ import WithdrawStakeScreen from "@screens/stake/WithdrawStakeScreen"
 import RPCScreen from "@screens/settings/RPCScreen"
 import PrivateKeyScreen from "@screens/settings/PrivateKeyScreen"
 import TokenScreen from "@screens/wallet/TokenScreen"
-import ManagePoolScreen, { screenOptions as managePoolOptions } from "@screens/pool/ManagePoolScreen"
-import ManageMinerScreen, { screenOptions as manageMinerOptions } from "@screens/pool/ManageMinerScreen"
-import UpdateMinerScreen, { screenOptions as updateMinerOptions } from "@screens/pool/UpdateMinerScreen"
-import PoolDetailScreen, { screenOptions as poolDetailOptions } from "@screens/pool/PoolDetailScreen"
+import ManagePoolScreen, { screenOptions as managePoolOptions } from "@screens/monitoring/pool/ManagePoolScreen"
+import ManageMinerScreen, { screenOptions as manageMinerOptions } from "@screens/monitoring/miner/ManageMinerScreen"
+import UpdateMinerScreen, { screenOptions as updateMinerOptions } from "@screens/monitoring/miner/UpdateMinerScreen"
+import PoolDetailScreen, { screenOptions as poolDetailOptions } from "@screens/monitoring/pool/PoolDetailScreen"
 
 const NativeStack = createNativeStackNavigator()
 
