@@ -104,7 +104,7 @@ export default function ManageMinerScreen({ navigation } : ManageMinerNavigation
                             </View>
                             <View className="flex-1 mx-2">
                                 <CustomText className="text-primary font-PlusJakartaSans text-sm">
-                                    Used Pools: {miners[item].minerPoolIds.length}
+                                    Pools Joined: {miners[item].minerPoolIds.length}
                                 </CustomText>
                             </View>
                             <OptionMenu

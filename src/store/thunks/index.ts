@@ -1,4 +1,4 @@
-import { minerActions, minerPoolActions, poolActions } from "@store/actions"
+import { deleteCredentialsMiner, minerActions, minerPoolActions, poolActions } from "@store/actions"
 import { store } from "../index"
 
 type RootState = ReturnType<typeof store.getState>
@@ -45,6 +45,7 @@ export function removeMiner({ minerId }: { minerId: string }) {
     return async (dispatch: AppDispatch, getState: () => RootState) => {
         const miner = getState().miners?.byId[minerId]
         const minerPools = getState().minerPools?.byId
+        await deleteCredentialsMiner(miner?.id ?? "")
         miner?.minerPoolIds.forEach(minerPoolId => {
             dispatch(removeMinerFromPool({
                 minerId: minerPools?.[minerPoolId].minerId ?? "",
