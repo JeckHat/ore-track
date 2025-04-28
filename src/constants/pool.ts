@@ -15,7 +15,8 @@ export interface PoolInfo {
             rewardsCoal: number,
             lastClaimAt?: string | null,
             earnedOre?: number | null
-        }>
+        }>,
+        getMachines?: (pubkey: string) => Promise<{ activeCount: number }>
     }
 }
 
@@ -90,6 +91,49 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                     lastClaimAt: dayjs('1900-01-01').toISOString()
                 }
             },
+            getMachines: async (pubkey: string) => {
+                const response = await fetch(`https://api.gpool.cloud/member/${pubkey}/workers`, {
+                    method: 'GET'
+                })
+                const rawWorkers = await response.json()
+        
+                function toUtcDate(dateString: string) {
+                    if (!dateString.endsWith('Z')) {
+                        return new Date(dateString + 'Z');
+                    }
+                    return new Date(dateString);
+                }
+        
+                const latestMap = new Map();
+                rawWorkers.forEach((item: any) => {
+                    const existing = latestMap.get(item.name);
+                    if (!existing || toUtcDate(item.minute) > toUtcDate(existing.minute)) {
+                        latestMap.set(item.name, item);
+                    }
+                })
+        
+                const nowUtcMs = Date.now();
+                const twoMinutesMs = 2 * 60 * 1000;
+                let totalHashrate = 0
+                let activeCount = 0
+        
+                const workers = Array.from(latestMap.values()).map(worker => {
+                    const workerTimeMs = toUtcDate(worker.minute).getTime();
+                    const isActive = nowUtcMs - workerTimeMs <= twoMinutesMs;
+                    if(isActive) {
+                        activeCount++
+                        totalHashrate += worker.khs
+                    }
+                
+                    return {
+                        ...worker,
+                        isActive: isActive,
+                        offlineHours: isActive? 0 : (nowUtcMs - workerTimeMs) / 1000 / 60 / 60
+                    };
+                })
+
+                return { activeCount: activeCount }
+            }
         }
     },
     'pool-excalivator': {
@@ -120,6 +164,26 @@ export const POOL_LIST: Record<string, PoolInfo> = {
                     lastClaimAt: lastClaimAt
                 }
             },
+            getMachines: async (pubkey: string) => {
+                const day = dayjs()
+                const response = await fetch(`https://pool.excalivator.xyz/miner/earnings-submissions?pubkey=${pubkey}&start_time=${day.subtract(2, 'minute').unix()}&end_time=${day.unix()}`, {
+                    method: 'GET'
+                })
+                const resData = await response.json()
+
+                let challengeId = resData[0].challenge_id
+                let activeCount = 0
+                
+                if (resData.length > 0)
+                    for(let i=0; i<resData.length; i++) {
+                        if (challengeId !== resData[i].challenge_id) {
+                            break;
+                        } else {
+                            activeCount++
+                        }
+                    }
+                return { activeCount: activeCount }
+            }
         }
     },
     'pool-oreminepool': {
