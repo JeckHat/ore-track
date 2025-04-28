@@ -487,14 +487,14 @@ function StakeRow(props: StakeRowProps) {
                 <View className="flex-row mt-1">
                     <View className="flex-row">
                         <CustomText className="text-gray-400 text-sm font-PlusJakartaSansBold">
-                            {`${((boosts[boost].liquidityPair?.depositsOre ?? 0) / Math.pow(10, 11)).toFixed(3)} ORE`}
+                            {`${((boosts[boost]?.liquidityPair?.depositsOre ?? 0) / Math.pow(10, 11)).toFixed(3)} ORE`}
                         </CustomText>
                     </View>
                     {BOOSTLIST[boost].pairMint && <CustomText className="text-gray-400 text-sm font-PlusJakartaSansBold">
                         {` / `}
                     </CustomText>}
                     {BOOSTLIST[boost].pairMint && <CustomText className="text-gray-400 text-sm font-PlusJakartaSansBold">
-                        {`${((boosts[boost].liquidityPair?.depositsPair ?? 0) / Math.pow(10, TOKENLIST[BOOSTLIST[boost].pairMint].decimals)).toFixed(3)} ${TOKENLIST[BOOSTLIST[boost].pairMint].ticker}`}
+                        {`${((boosts[boost]?.liquidityPair?.depositsPair ?? 0) / Math.pow(10, TOKENLIST[BOOSTLIST[boost].pairMint].decimals)).toFixed(3)} ${TOKENLIST[BOOSTLIST[boost].pairMint].ticker}`}
                     </CustomText>}
                 </View>
             </View>
