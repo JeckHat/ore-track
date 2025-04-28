@@ -12,7 +12,7 @@ import { POOL_LIST } from '@constants'
 import { PoolType, RootState } from '@store/types'
 import { Colors, Fonts } from '@styles'
 import { poolActions } from '@store/actions';
-import { StackOptionsFn } from '@navigations/types';
+import { createStackOptions } from '@navigations/types';
 import { ChevronLeftIcon } from '@assets/icons';
 
 interface CardProps {
@@ -87,7 +87,7 @@ export default function ManagePoolScreen() {
     )
 }
 
-export const screenOptions: StackOptionsFn = ({ navigation }) => {
+export const screenOptions = createStackOptions<'ManagePool'>(({ navigation }) => {
     return {
         headerTitle: 'Manage Pool',
         headerTintColor: Colors.primary,
@@ -105,4 +105,4 @@ export const screenOptions: StackOptionsFn = ({ navigation }) => {
             />
         )
     }
-}
+})
