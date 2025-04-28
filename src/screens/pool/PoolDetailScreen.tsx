@@ -14,7 +14,7 @@ import { Button, CustomText, HeaderButton, ModalSelectMiner, OptionMenu, Skeleto
 import Images from "@assets/images"
 import { RootState } from "@store/types"
 import { calculatePoolRewardsFromState, shortenAddress } from "@helpers"
-import { ChevronLeftIcon, ChevronRightIcon, HardHatIcon, WalletIcon } from "@assets/icons"
+import { ChevronLeftIcon, ChevronRightIcon, HardHatIcon } from "@assets/icons"
 import { Colors, Fonts } from "@styles"
 import { createStackOptions, PoolDetailNavigationProps } from "@navigations/types"
 import { COAL_MINT, JUP_API_PRICE, ORE_MINT, POOL_LIST } from "@constants"
@@ -25,7 +25,7 @@ import { useBottomModal } from "@hooks"
 
 const useAppDispatch = () => useDispatch<typeof store.dispatch>()
 
-export default function PoolDetailScreen({ route }: PoolDetailNavigationProps) {
+export default function PoolDetailScreen({ navigation, route }: PoolDetailNavigationProps) {
     const walletAddress = useSelector((state: RootState) => state.wallet.publicKey) ?? ""
     const pool = useSelector((state: RootState) => state.pools.byId[route.params?.poolId ?? ""])
     const miners = useSelector((state: RootState) => state.miners.byId)
@@ -205,12 +205,6 @@ export default function PoolDetailScreen({ route }: PoolDetailNavigationProps) {
                 ListHeaderComponent={(
                     <View className="flex gap-2 mx-2">
                         <View className="bg-gray-800 p-4 rounded-lg">
-                            <View className="flex-row items-center mb-2">
-                                <WalletIcon height={20} width={20} color={Colors.primary} />
-                                <CustomText className="text-primary ml-2 font-PlusJakartaSansSemiBold text-sm">
-                                    {shortenAddress(walletAddress)}
-                                </CustomText>
-                            </View>
                             <View className="flex-row items-center">
                                 <CustomText className="text-primary font-PlusJakartaSansSemiBold text-sm mb-1">
                                     Daily Average:
@@ -289,7 +283,12 @@ export default function PoolDetailScreen({ route }: PoolDetailNavigationProps) {
                             </View>
                         </View>
                         <View className="flex-row items-center self-end">
-                            <CustomText className="text-primary font-PlusJakartaSans text-md mb-1">View Statistics</CustomText>
+                            <CustomText
+                                className="text-primary font-PlusJakartaSans text-md mb-1"
+                                // onPress={() => navigation.navigate('Statistic')}
+                            >
+                                View Statistics
+                            </CustomText>
                             <ChevronRightIcon
                                 width={23}
                                 height={23}
@@ -328,33 +327,6 @@ export default function PoolDetailScreen({ route }: PoolDetailNavigationProps) {
                     </View>
                 )}
                 renderItem={({ item }) => {
-                    const menu = [{
-                        text: 'Statistic',
-                        onPress: () => {
-                            // navigation.navigate('Receive', {
-                            //     walletAddress: miners[item].address
-                            // })
-                        }
-                    },
-                    {
-                        text: 'Claim',
-                        onPress: () => {
-                            // navigation.navigate('Receive', {
-                            //     walletAddress: miners[item].address
-                            // })
-                        }
-                    }]
-                    if(pool.minerPoolIds.length > 1) {
-                        menu.push({
-                            text: 'Remove',
-                            onPress: () => {
-                                dispatch(removeMinerFromPool({
-                                    poolId: pool.id,
-                                    minerId: minerPools[item].minerId
-                                }))
-                            }
-                        })
-                    }
                     return (
                         <View className="mx-2 mb-2 p-4 rounded-lg bg-gray-800">
                             <View className="flex-row">
@@ -376,7 +348,31 @@ export default function PoolDetailScreen({ route }: PoolDetailNavigationProps) {
                                 </CustomText>
                                 <OptionMenu
                                     iconSize={20}
-                                    menu={menu}
+                                    menu={[{
+                                        text: 'Statistic',
+                                        onPress: () => {
+                                            // navigation.navigate('Receive', {
+                                            //     walletAddress: miners[item].address
+                                            // })
+                                        }
+                                    },
+                                    {
+                                        text: 'Claim',
+                                        onPress: () => {
+                                            // navigation.navigate('Receive', {
+                                            //     walletAddress: miners[item].address
+                                            // })
+                                        }
+                                    },
+                                    {
+                                        text: 'Remove',
+                                        onPress: () => {
+                                            dispatch(removeMinerFromPool({
+                                                poolId: pool.id,
+                                                minerId: minerPools[item].minerId
+                                            }))
+                                        }
+                                    }]}
                                 />
                             </View>
                             <CustomText className="text-primary font-PlusJakartaSans text-sm mb-[1px]">Daily Average: </CustomText>
