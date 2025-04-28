@@ -1,29 +1,48 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Alert, Pressable, TextInput, View } from "react-native"
 import { useDispatch, useSelector } from "react-redux"
 import { Keypair } from "@solana/web3.js"
 import { nanoid } from "nanoid"
+import dayjs from 'dayjs'
 
 import { ChevronLeftIcon } from "@assets/icons"
 import { Button, CustomText, HeaderButton, Input, KeyboardDismissPressable, ModalButtonList, ModalImportAddress } from "@components"
-import { StackOptionsFn, UpdateMinerNavigationProps } from "@navigations/types"
+import { createStackOptions, UpdateMinerNavigationProps } from "@navigations/types"
 import { Colors, Fonts } from "@styles"
-import { minerActions, saveCredentialsMiner } from "@store/actions"
+import { getKeypairMiner, getMnemonicMiner, minerActions, minerPoolActions, saveCredentialsMiner } from "@store/actions"
 import { useBottomModal } from "@hooks"
 import { RootState } from "@store/types"
 import { GENERATE_ID_NUMBER } from "@constants"
 
-export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigationProps) {
+export default function UpdateMinerScreen({ navigation, route } : UpdateMinerNavigationProps) {
+    const minerId = route?.params?.minerId
     const [name, setName] = useState("")
     const [address, setAddress] = useState("")
     const [keypair, setKeypair] = useState<Keypair | null>()
     const [mnemonic, setMnenomic] = useState<string | undefined>()
     const dispatch = useDispatch()
     const minersById = useSelector((state: RootState) => state.miners.byId)
+    const minerPoolsById = useSelector((state: RootState) => state.minerPools.byId)
+
+    console.log("data", useSelector(state => state))
 
     const inputRef = useRef<TextInput | null>(null);
 
     const { showModal, hideModal } = useBottomModal()
+
+    useEffect(() => {
+        if (minerId) {
+            (async () => {
+                setName(minersById[minerId].name)
+                setAddress(minersById[minerId].address)
+                const keypair = await getKeypairMiner(minerId)
+                setKeypair(keypair)
+                const mnemonic = await getMnemonicMiner(minerId)
+                setMnenomic(mnemonic)
+            })()
+        }
+
+    }, [minerId])
 
     function onSelectAddress() {
         inputRef.current?.blur()
@@ -88,7 +107,7 @@ export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigation
         <KeyboardDismissPressable className='flex-1 bg-baseBg'>
             <View className="flex-1">
                 <View className="my-2 mx-4">
-                    <CustomText className="text-primary">Name</CustomText>
+                    <CustomText className="text-primary font-PlusJakartaSansSemiBold">Name</CustomText>
                     <Input
                         ref={inputRef}
                         className="text-primary"
@@ -97,46 +116,96 @@ export default function UpdateMinerScreen({ navigation } : UpdateMinerNavigation
                     />
                 </View>
                 <View className="my-2 mx-4">
-                    <CustomText className="text-primary">Wallet Address</CustomText>
+                    <CustomText className="text-primary font-PlusJakartaSansSemiBold">Wallet Address</CustomText>
                     <Pressable
-                        onPress={onSelectAddress}
+                        onPress={() => {
+                            if(!minerId || (minerId && !minersById[minerId].isMain)) onSelectAddress()
+                        }}
                     >
                         <View className="bg-baseComponent px-2 py-2 rounded-xl border border-solid border-gray-800">
-                            <CustomText ellipsizeMode="tail" className="text-primary mb-2 mb-1 font-PlusJakartaSans" numberOfLines={1}>{address}</CustomText>
+                            <CustomText
+                                ellipsizeMode="tail" className="text-primary mb-1 font-PlusJakartaSans"
+                                numberOfLines={1}
+                            >{address}</CustomText>
                         </View>
                     </Pressable>
                 </View>
             </View>
-            <Button
+            {minerId && <Button
+                containerClassName="my-4 mx-6"
+                title={"Edit Miner"}
+                disabled={!address || !name}
+                onPress={async () => {
+                    const miners = Object.keys(minersById).map(key => minersById[key].address)
+                    if (address !== minersById[minerId].address && miners.includes(address)) {
+                        Alert.alert("This address is already in the data miner")
+                        return;
+                    }
+                    if(keypair) {
+                        await saveCredentialsMiner(minerId, keypair, mnemonic)
+                    }
+                    if (address !== minersById[minerId].address) {
+                        minersById[minerId].minerPoolIds.forEach(minerPoolId => {
+                            dispatch(minerPoolActions.updateBalanceMiner({
+                                minerPoolId: minerPoolId,
+                                minerPool: {
+                                    ...minerPoolsById[minerPoolId],
+                                    rewardsOre: 0,
+                                    rewardsCoal: 0,
+                                    running: false,
+                                    avgRewards: { ore: 0, coal: 0, initOre: 0, initCoal: 0 },
+                                    earnedOre: 0,
+                                    startMiningAt: null,
+                                    lastUpdateAt: dayjs().toISOString(),
+                                    lastClaimAt: dayjs('1900-01-01').toISOString(),
+                                }
+                            }))
+                        })
+                    }
+                    dispatch(minerActions.editMiner({
+                        minerId: minerId,
+                        name: name,
+                        address: address,
+                        useKeypair: keypair ? true : false,
+                        useMnemonic: mnemonic ? true : false
+                    }))
+                    navigation.goBack()
+                }}
+            />}
+            {!minerId && <Button
                 containerClassName="my-4 mx-6"
                 title={"Add Miner"}
                 disabled={!address || !name}
                 onPress={async () => {
+                    let minerId = nanoid(GENERATE_ID_NUMBER)
                     const miners = Object.keys(minersById).map(key => minersById[key].address)
                     if (miners.includes(address)) {
                         Alert.alert("This address is already in the data miner")
                         return;
                     }
                     if(keypair) {
-                        await saveCredentialsMiner(address, keypair, mnemonic)
+                        await saveCredentialsMiner(minerId, keypair, mnemonic)
                     }
-                    let minerId = nanoid(GENERATE_ID_NUMBER)
+                    
                     dispatch(minerActions.addMiner({
                         minerId: minerId,
                         name: name,
                         address: address,
-                        isMain: false
+                        isMain: false,
+                        useKeypair: keypair ? true : false,
+                        useMnemonic: mnemonic ? true : false
                     }))
                     navigation.goBack()
                 }}
-            />
+            />}
         </KeyboardDismissPressable>
     )
 }
 
-export const screenOptions: StackOptionsFn = ({ navigation }) => {
+export const screenOptions = createStackOptions<'UpdateMiner'>(({ navigation, route }) => {
+    const minerId = route?.params?.minerId
     return {
-        headerTitle: 'Update Miner',
+        headerTitle: minerId? 'Eit Miner' : 'Add Miner',
         headerTintColor: Colors.primary,
         headerTitleStyle: {
             fontFamily: Fonts.PlusJakartaSansSemiBold,
@@ -152,4 +221,4 @@ export const screenOptions: StackOptionsFn = ({ navigation }) => {
             />
         )
     }
-}
+})

@@ -1,6 +1,6 @@
 import { createMigrate, PersistState } from 'redux-persist';
 import { RootState } from './types';
-import { POOL_LIST } from '@constants';
+import { BOOSTLIST, POOL_LIST } from '@constants';
 
 type PersistedRootState = RootState & {
     _persist: PersistState;
@@ -40,6 +40,36 @@ const migrations : Record<number, (state: any) => any> = {
                     ...Object.keys(POOL_LIST).filter(item => !state.pools.order.includes(item))
                 ]
             },
+        })
+    },
+    3: (state: PersistedRootState) : Promise<PersistedRootState> => {
+        return Promise.resolve({
+            ...state,
+            boost: {
+                ...state.boost,
+                boosts: Object.fromEntries(Object.keys(BOOSTLIST).map(item => {
+                    return [item, {
+                        ...state.boost.boosts[item],
+                        liquidityPair: {
+                            depositsOre: 0,
+                            depositsPair: 0,
+                            totalValueUsd: 0,
+                            shares: 0,
+                        }
+                    }]
+                })),
+                netDeposits: 0
+            },
+            miners: {
+                ...state.miners,
+                byId: Object.fromEntries(Object.keys(state.miners.byId).map(minerId => {
+                    return [minerId, {
+                        ...state.miners.byId[minerId],
+                        useKeypair: false,
+                        useMnemonic: false
+                    }]
+                }))
+            }
         })
     },
 };

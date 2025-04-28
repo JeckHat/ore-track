@@ -68,6 +68,8 @@ export interface MinerType {
     address: string
     isMain: boolean
     minerPoolIds: string[]
+    useKeypair: boolean
+    useMnemonic: boolean
 }
 
 export interface MinerState {

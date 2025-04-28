@@ -10,12 +10,21 @@ const initialState: MinerState = {
     order: []
 }
 
+interface updateMinerAction {
+    minerId: string,
+    name: string,
+    address: string,
+    isMain?: boolean,
+    useKeypair: boolean,
+    useMnemonic: boolean
+}
+
 const MinerSlice = createSlice({
     name: 'miners',
     initialState: initialState,
     reducers: {
-        addMiner(state, action: PayloadAction<{ minerId: string, name: string, address: string, isMain: boolean }>) {
-            const { minerId, name, address, isMain } = action.payload
+        addMiner(state, action: PayloadAction<updateMinerAction>) {
+            const { minerId, name, address, isMain, useKeypair, useMnemonic } = action.payload
             let order = state.order
             order.push(minerId)
             state.byId = {
@@ -25,20 +34,24 @@ const MinerSlice = createSlice({
                     id: minerId,
                     name: name,
                     address: address,
-                    isMain: isMain,
-                    minerPoolIds: []
+                    isMain: isMain ?? false,
+                    minerPoolIds: [],
+                    useKeypair: useKeypair,
+                    useMnemonic: useMnemonic
                 }
             }
             state.order = order
         },
-        editMiner(state, action: PayloadAction<{ minerId: string, name: string, address: string }>) {
-            const { minerId, name, address } = action.payload
+        editMiner(state, action: PayloadAction<updateMinerAction>) {
+            const { minerId, name, address, useKeypair, useMnemonic } = action.payload
             state.byId = {
                 ...state.byId,
                 [minerId]: {
                     ...state.byId[minerId],
                     name: name,
                     address: address,
+                    useKeypair: useKeypair,
+                    useMnemonic: useMnemonic
                 }
             }
         },

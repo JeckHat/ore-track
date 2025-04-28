@@ -3,12 +3,13 @@ import { useDispatch, useSelector } from "react-redux"
 
 import { ChevronLeftIcon, HardHatIcon } from "@assets/icons"
 import { Button, CustomText, HeaderButton, OptionMenu } from "@components"
-import { ManageMinerNavigationProps, StackOptionsFn } from "@navigations/types"
+import { createStackOptions, ManageMinerNavigationProps } from "@navigations/types"
 import { Colors, Fonts } from "@styles"
 import { shortenAddress } from "@helpers"
 import { RootState } from "@store/types"
 import { removeMiner } from "@store/thunks"
 import { store } from "@store/index"
+import { getKeypairMiner, getMnemonicMiner } from "@store/actions"
 
 const useAppDispatch = () => useDispatch<typeof store.dispatch>()
 
@@ -30,72 +31,107 @@ export default function ManageMinerScreen({ navigation } : ManageMinerNavigation
             <FlatList
                 data={Object.keys(miners)}
                 keyExtractor={(_, idx) => `miner-${idx}`}
-                renderItem={({ item }) => (
-                    <View className="flex-row items-center mx-2 mb-2 p-4 rounded-lg bg-gray-800">
-                        <HardHatIcon
-                            width={32} height={32} color={Colors.primary}
-                        />
-                        <View className="flex-1 mx-2">
-                            <CustomText className="text-primary font-PlusJakartaSansSemiBold leading-none mb-1">
-                                {miners[item].name}
-                            </CustomText>
-                            <CustomText className="text-primary font-PlusJakartaSans">
-                                {shortenAddress(miners[item].address)}
-                            </CustomText>
-                        </View>
-                        <View className="flex-1 mx-2">
-                            <CustomText className="text-primary font-PlusJakartaSans text-sm">
-                                Used Pools: {miners[item].minerPoolIds.length}
-                            </CustomText>
-                        </View>
-                        {miners[item].isMain && <View className="w-5"/>}
-                        {!miners[item].isMain && <OptionMenu
-                            iconSize={20}
-                            menu={[
-                                {
-                                    text: 'Address',
-                                    onPress: () => {
-                                        navigation.navigate('Receive', {
-                                            walletAddress: miners[item].address
-                                        })
-                                    }
-                                },
-                                {
-                                    text: 'Private Key',
-                                    onPress: () => {
-                                        navigation.navigate('Receive', {
-                                            walletAddress: miners[item].address
-                                        })
-                                    }
-                                },
-                                {
+                renderItem={({ item }) => {
+                    let menu = [
+                        {
+                            text: 'Address',
+                            onPress: () => {
+                                navigation.navigate('Receive', {
+                                    walletAddress: miners[item].address
+                                })
+                            }
+                        },
+                    ]
+                    if (miners[item].useMnemonic) {
+                        getMnemonicMiner(item).then(mnemonic => {
+                            if (miners[item].useKeypair) {
+                                menu.push({
                                     text: 'Recovery Phrase',
                                     onPress: () => {
-                                        navigation.navigate('Receive', {
-                                            walletAddress: miners[item].address
+                                        navigation.navigate('PrivateKey', {
+                                            isSeedPhrase: true,
+                                            importWallet: false,
+                                            words: mnemonic
                                         })
                                     }
-                                },
-                                {
-                                    text: 'Edit',
-                                    onPress: () => {}
-                                },
-                                {
-                                    text: 'Delete',
+                                })
+                            }
+                        })
+                    }
+                    if (miners[item].useKeypair) {
+                        getKeypairMiner(item).then(keypair => {
+                            if (miners[item].useKeypair) {
+                                menu.push({
+                                    text: 'Private Key',
                                     onPress: () => {
-                                        dispatch(removeMiner({ minerId: miners[item].id }))
+                                        navigation.navigate('PrivateKey', {
+                                            isSeedPhrase: false,
+                                            importWallet: false,
+                                            words: keypair.secretKey.toString()
+                                        })
                                     }
-                                }
-                            ]}
-                        />}
-                    </View>
-                )}
+                                })
+                            }
+                        })
+                    }
+                    
+                    if (miners[item].useKeypair) {
+                        menu.push({
+                            text: 'Private Key',
+                            onPress: () => {
+                                navigation.navigate('PrivateKey', {
+                                    isSeedPhrase: true,
+                                    importWallet: false,
+                                    words: 'asdasdasd asd as da sd'
+                                })
+                            }
+                        })
+                    }
+                    menu.push(...[{
+                        text: 'Edit',
+                        onPress: () => {
+                            navigation.navigate('UpdateMiner', {
+                                minerId: miners[item].id
+                            })
+                        }
+                    },
+                    {
+                        text: 'Delete',
+                        onPress: () => {
+                            dispatch(removeMiner({ minerId: miners[item].id }))
+                        }
+                    }])
+                    return (
+                        <View className="flex-row items-center mx-2 mb-2 p-4 rounded-lg bg-gray-800">
+                            <HardHatIcon
+                                width={32} height={32} color={Colors.primary}
+                            />
+                            <View className="flex-1 mx-2">
+                                <CustomText className="text-primary font-PlusJakartaSansSemiBold leading-none mb-1">
+                                    {miners[item].name}
+                                </CustomText>
+                                <CustomText className="text-primary font-PlusJakartaSans">
+                                    {shortenAddress(miners[item].address)}
+                                </CustomText>
+                            </View>
+                            <View className="flex-1 mx-2">
+                                <CustomText className="text-primary font-PlusJakartaSans text-sm">
+                                    Used Pools: {miners[item].minerPoolIds.length}
+                                </CustomText>
+                            </View>
+                            <OptionMenu
+                                iconSize={20}
+                                menu={menu}
+                            />
+                        </View>
+                    )
+                }}
             />
         </SafeAreaView>
     )
 }
 
-export const screenOptions: StackOptionsFn = ({ navigation }) => {
+export const screenOptions = createStackOptions<'ManageMiner'>(({ navigation }) => {
     return {
         headerTitle: 'Manage Miner',
         headerTintColor: Colors.primary,
@@ -113,4 +149,4 @@ export const screenOptions: StackOptionsFn = ({ navigation }) => {
             />
         )
     }
-}
+})

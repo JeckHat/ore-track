@@ -19,7 +19,7 @@ export type MainStackParamList = {
     ManagePool: {} | undefined
     ManageMiner: {} | undefined
     PoolDetail: { poolId?: string } | undefined
-    UpdateMiner: {} | undefined
+    UpdateMiner: { minerId?: string } | undefined
     DepositStake: { boost?: string } | undefined
     WithdrawStake: { boost?: string } | undefined
     RPC: {} | undefined
@@ -127,14 +127,7 @@ export type TabScreenOptionsProps = {
 export type TabScreenOptionsFn = (
     props: TabScreenOptionsProps
 ) => BottomTabNavigationOptions;
-
-export type StackOptionsProps = {
-    navigation: NativeStackNavigationProp<ParamListBase, string>;
-    route: RouteProp<ParamListBase, string>;
-}
   
-export type StackOptionsFn = (props: StackOptionsProps) => NativeStackNavigationOptions
-
 export function createStackOptions<
     RouteName extends keyof MainStackParamList
 >(
