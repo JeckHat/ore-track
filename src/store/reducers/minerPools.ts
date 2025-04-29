@@ -99,6 +99,13 @@ const minerPoolSlice = createSlice({
                 avgRewards: avgRewards
             }
         },
+        updateMachine(state, action: PayloadAction<{ minerPoolId: string, machine: number }>) {
+            const { minerPoolId, machine } = action.payload
+            state.byId[minerPoolId] = {
+                ...state.byId[minerPoolId],
+                machine: machine,
+            }
+        },
         resetMinerPool(state) {
             Object.assign(state, initialState)
         }

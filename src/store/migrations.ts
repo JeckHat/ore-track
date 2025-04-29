@@ -60,6 +60,15 @@ const migrations : Record<number, (state: any) => any> = {
                 })),
                 netDeposits: 0
             },
+            pools: {
+                ...state.pools,
+                byId: Object.fromEntries(Object.keys(state.pools.byId).map(poolId => {
+                    return [poolId, {
+                        ...state.pools.byId[poolId],
+                        machine: 0
+                    }]
+                }))
+            },
             miners: {
                 ...state.miners,
                 byId: Object.fromEntries(Object.keys(state.miners.byId).map(minerId => {
@@ -68,6 +77,15 @@ const migrations : Record<number, (state: any) => any> = {
                         useKeypair: false,
                         useMnemonic: false,
                         allowTrx: state.miners.byId[minerId].useKeypair? true : false
+                    }]
+                }))
+            },
+            minerPools: {
+                ...state.minerPools,
+                byId:  Object.fromEntries(Object.keys(state.minerPools.byId).map(minerPoolId => {
+                    return [minerPoolId, {
+                        ...state.minerPools.byId[minerPoolId],
+                        machine: 0,
                     }]
                 }))
             },

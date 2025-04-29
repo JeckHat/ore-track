@@ -13,6 +13,7 @@ const initialState: PoolState = {
         avgOre: 0,
         avgCoal: 0,
         totalRunning: 0,
+        machine: 0,
         show: true,
         minerPoolIds: [],
     }])),
@@ -48,6 +49,15 @@ const poolSlice = createSlice({
                 avgCoal: avgCoal,
                 rewardsOre: rewardsOre,
                 rewardsCoal: rewardsCoal
+            }
+        },
+        updateMachine(state, action: PayloadAction<{
+            poolId: string, machine: number
+        }>) {
+            const { poolId, machine } = action.payload
+            state.byId[poolId] = {
+                ...state.byId[poolId],
+                machine: machine
             }
         },
         reorderPools: (state, action: PayloadAction<string[]>) => {

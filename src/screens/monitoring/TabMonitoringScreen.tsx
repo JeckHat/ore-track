@@ -276,11 +276,12 @@ export default function TabMonitoringScreen({ navigation }: TabMonitoringScreenP
                     return (
                         <MinerPoolItem
                             id={item}
-                            shouldUpdate={!total.loading && pools[item]?.totalRunning > 0}
+                            shouldUpdate={!total.loading}
                             name={pools[item].name}
                             isCoal={pools[item].isCoal}
                             miners={pools[item]?.minerPoolIds.map(minerPoolId => {
                                 return {
+                                    minerPoolId: minerPoolId,
                                     address: miners[minerPools[minerPoolId].minerId].address,
                                     running: minerPools[minerPoolId].running
                                 }
@@ -303,7 +304,7 @@ interface minerPoolItemProps {
     id: string
     name: string
     isCoal: boolean
-    miners: { address: string, running: boolean }[]
+    miners: { minerPoolId: string, address: string, running: boolean }[]
     totalRunning: number
     avg: {
         ore: number
@@ -322,13 +323,22 @@ interface minerPoolItemProps {
 
 function MinerPoolItem(props: minerPoolItemProps) {
     const { shouldUpdate, id, name, isCoal, miners, totalRunning, avg, rewards, price, onPress } = props
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const machine = useSelector((state: RootState) => state.pools.byId[id].machine)
 
-    const [activeMachines, setActiveMachines] = useState(0)
+    const dispatch = useDispatch()
 
     useEffect(() => {
-        if (shouldUpdate) getTotalMachines()
-    }, [shouldUpdate])
+        if (shouldUpdate && totalRunning > 0) {
+            getTotalMachines() 
+        } else {
+            dispatch(poolActions.updateMachine({
+                poolId: id,
+                machine: 0
+            }))
+            setLoading(false)
+        }
+    }, [shouldUpdate, totalRunning, rewards.ore])
 
     async function getTotalMachines() {
         setLoading(true)
@@ -337,12 +347,24 @@ function MinerPoolItem(props: minerPoolItemProps) {
             const machinesApi = miners.filter(miner => miner.running)
                 .map((miner) => POOL_LIST[id]?.api?.getMachines?.(miner.address))
             const workers = await Promise.all(machinesApi)
-            workers.forEach(worker => {
+            const minerPools = miners.filter(miner => miner.running)
+                .map((miner) => miner.minerPoolId)
+            workers.forEach((worker, idx) => {
+                dispatch(minerPoolActions.updateMachine({
+                    minerPoolId: minerPools[idx],
+                    machine: worker?.activeCount ?? 0
+                }))
                 totalMachines += (worker?.activeCount ?? 0)
             })
-            setActiveMachines(totalMachines)
+            dispatch(poolActions.updateMachine({
+                poolId: id,
+                machine: totalMachines
+            }))
         } else {
-            setActiveMachines(totalRunning)
+            dispatch(poolActions.updateMachine({
+                poolId: id,
+                machine: totalRunning
+            }))
         }
         setLoading(false)
     }
@@ -403,7 +425,7 @@ function MinerPoolItem(props: minerPoolItemProps) {
                             className="text-gold mx-1 font-LatoBold text-[12px] flex-1"
                             numberOfLines={1}
                         >
-                            {`${activeMachines} Machines`}
+                            {`${machine} Machines`}
                         </CustomText>}
                     </View>
                     {totalRunning > 0 && <CustomText

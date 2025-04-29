@@ -88,6 +88,7 @@ export interface PoolType {
     avgOre: number
     avgCoal: number
     totalRunning: number
+    machine: number
     show: boolean
     minerPoolIds: string[]
 }
@@ -109,6 +110,7 @@ export interface MinerPoolType {
         initOre: number
         initCoal: number
     }
+    machine: number
     earnedOre: number
     running: boolean
     startMiningAt?: string | null

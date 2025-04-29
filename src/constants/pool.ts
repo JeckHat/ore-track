@@ -166,7 +166,7 @@ export const POOL_LIST: Record<string, PoolInfo> = {
             },
             getMachines: async (pubkey: string) => {
                 const day = dayjs()
-                const response = await fetch(`https://pool.excalivator.xyz/miner/earnings-submissions?pubkey=${pubkey}&start_time=${day.subtract(2, 'minute').unix()}&end_time=${day.unix()}`, {
+                const response = await fetch(`https://pool.excalivator.xyz/miner/submissions?pubkey=${pubkey}`, {
                     method: 'GET'
                 })
                 const resData = await response.json()
