@@ -50,6 +50,7 @@ const minerPoolSlice = createSlice({
                 running: false,
                 avgRewards: { ore: 0, coal: 0, initOre: 0, initCoal: 0 },
                 earnedOre: 0,
+                machine: 0,
                 startMiningAt: null,
                 lastUpdateAt: dayjs().toISOString(),
                 lastClaimAt: dayjs('1900-01-01').toISOString(),
@@ -95,6 +96,7 @@ const minerPoolSlice = createSlice({
             state.byId[minerPoolId] = {
                 ...state.byId[minerPoolId],
                 ...minerPool,
+                machine: minerPool.running? state.byId[minerPoolId].machine : 0,
                 startMiningAt: startMiningAt,
                 avgRewards: avgRewards
             }
