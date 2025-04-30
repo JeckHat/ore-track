@@ -7,7 +7,7 @@ import rootReducer from "./reducers";
 import { RootState } from "./types";
 import migrations from "./migrations";
 
-const STATE_VERSION = 2
+const STATE_VERSION = 3
 
 const persistedReducer = persistReducer<Partial<RootState>>(
     {
