@@ -33,6 +33,25 @@ export const TOKENLIST: Record<string, TokenInfo> = {
         boostAddress: "D3U1nvrCapUiuCK3T3asBPyeKjYptVA4RTXcDTqNpP14",
         isAlways: true
     },
+    "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN": {
+        id: 'jup',
+        name: 'JUP',
+        ticker: 'JUP',
+        image: 'JupiterToken',
+        pairImage: null,
+        decimals: 6,
+        isLP: false,
+        boostAddress: undefined,
+        isAlways: true
+    },
+    // mint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
+    // name: Jupiter
+    // ticker: JUP
+    // description: "Jupiter is a decentralized exchange protocol that allows users to trade cryptocurrencies on the Solana blockchain. It provides a fast and secure platform for trading tokens, with low fees and high liquidity. Jupiter is built on the Jupiter protocol, which is a decentralized exchange protocol that allows users to trade cryptocurrencies on the Solana blockchain."
+    // image: https://static.jup.ag/jup/icon.png
+    // twitter: https://twitter.com/JupiterExchange
+    // homepage: https://jup.ag
+    // decimals: 6
     "E3yUqBNTZxV8ELvW99oRLC7z4ddbJqqR4NphwrMug9zu": {
         id: 'coal',
         name: 'COAL',

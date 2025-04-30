@@ -8,6 +8,7 @@ const Images = {
     CoalToken: require('./coal-token.png'),
     UsdcToken: require('./usdc-token.png'),
     HntToken: require('./hnt-token.png'),
+    JupiterToken: require('./jup-token.png'),
     MeteoraLogo: require('./meteora-logo.jpg'),
     KaminoLogo: require('./kamino-logo.jpg'),
     OreGold: require('./ore-gold.png')
