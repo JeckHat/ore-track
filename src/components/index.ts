@@ -5,3 +5,4 @@ export {
     LoadingModal, BottomModal, ModalTransaction, ModalButtonList, ModalImportAddress, ModalSelectMiner
 } from './Modals'
 export { KeyboardDismissPressable, SkeletonLoader, OptionMenu } from './Views'
+export { LineChart } from './Charts'

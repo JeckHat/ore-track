@@ -14,7 +14,7 @@ import WithdrawStakeScreen from "@screens/stake/WithdrawStakeScreen"
 // settings
 import RPCScreen from "@screens/settings/RPCScreen"
 import PrivateKeyScreen from "@screens/settings/PrivateKeyScreen"
-import TokenScreen from "@screens/wallet/TokenScreen"
+import TokenScreen, { screenOptions as tokenOptions } from "@screens/wallet/TokenScreen"
 import ManagePoolScreen, { screenOptions as managePoolOptions } from "@screens/monitoring/pool/ManagePoolScreen"
 import ManageMinerScreen, { screenOptions as manageMinerOptions } from "@screens/monitoring/miner/ManageMinerScreen"
 import UpdateMinerScreen, { screenOptions as updateMinerOptions } from "@screens/monitoring/miner/UpdateMinerScreen"
@@ -105,16 +105,7 @@ export default function MainNavigation() {
             <NativeStack.Screen
                 name="Token"
                 component={TokenScreen}
-                options={{
-                    headerTintColor: Colors.primary,
-                    headerTitleStyle: {
-                        fontFamily: Fonts.PlusJakartaSansSemiBold,
-                        color: Colors.primary,
-                    },
-                    // headerTitleAlign: 'center',
-                    // headerTitleAlign: 'center',
-                    headerStyle: { backgroundColor: Colors.baseBg }
-                }}
+                options={tokenOptions}
             />
             <NativeStack.Screen
                 name="RPC"
